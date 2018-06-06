@@ -37,11 +37,11 @@ import copy
 import time
 from termcolor import colored
 from tabulate import tabulate
-from son.profile.helper import read_yaml, write_yaml, relative_path, ensure_dir
-from son.profile.generator import ServiceConfigurationGenerator
-from son.workspace.project import Project
-from son.workspace.workspace import Workspace
-from son.package.package import Packager
+from tngsdk.profile.helper import read_yaml, write_yaml, relative_path, ensure_dir
+from tngsdk.profile.generator import ServiceConfigurationGenerator
+#from son.workspace.project import Project
+#from son.workspace.workspace import Workspace
+#from son.package.package import Packager
 
 
 LOG = logging.getLogger(__name__)

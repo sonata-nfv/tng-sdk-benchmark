@@ -1,4 +1,4 @@
-#  Copyright (c) 2017 SONATA-NFV, Paderborn University
+#  Copyright (c) 2018 SONATA-NFV, 5GTANGO, Paderborn University
 # ALL RIGHTS RESERVED.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Neither the name of the SONATA-NFV, Paderborn University, UBIWHERE
+# Neither the name of the SONATA-NFV, 5GTANGO, Paderborn University
 # nor the names of its contributors may be used to endorse or promote
 # products derived from this software without specific prior written
 # permission.
@@ -23,19 +23,29 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.sonata-nfv.eu).
+#
+# This work has also been performed in the framework of the 5GTANGO project,
+# funded by the European Commission under Grant number 761493 through
+# the Horizon 2020 and 5G-PPP programmes. The authors would like to
+# acknowledge the contributions of their colleagues of the SONATA
+# partner consortium (www.5gtango.eu).
+
 
 import os
 import unittest
 import tempfile
-from son.profile.helper import compute_cartesian_product
-from son.profile.profile import ProfileManager, parse_args
-from son.profile.generator.sonata import SonataServiceConfigurationGenerator
-from son.workspace.workspace import Workspace
+from tngsdk.profile.helper import compute_cartesian_product
+from tngsdk.profile import ProfileManager, parse_args
+#from tngsdk.profile.generator.sonata import SonataServiceConfigurationGenerator
 
 
 # get path to our test files
-TEST_PED_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "misc/unittest_ped1.yml")
-TEST_SON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "misc/sonata-fw-vtc-service.son")
+TEST_PED_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "fixtures/unittest_ped1.yml")
+TEST_SON_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "fixtures/sonata-fw-vtc-service.son")
 TEST_WORK_DIR = tempfile.mkdtemp()
 
 
@@ -119,6 +129,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
         ws.create_dirs()
         ws.create_files()
 
+    @unittest.skip("skipped. not supported in 5GTANGO version")
     def test_load_and_extract(self):
         """
         Test extraction and loading of test *.son package and the contained
@@ -136,7 +147,8 @@ class UnitSonataGeneratorTests(unittest.TestCase):
         self.assertEqual(str(s), "SonataService(eu.sonata-nfv.package.sonata-fw-vtc-service.0.1)")
         self.assertTrue(os.path.exists(str(s.metadata.get("project_disk_path"))))
         self.assertFalse(os.path.exists(str(s.metadata.get("package_disk_path"))))
-        
+
+    @unittest.skip("skipped. not supported in 5GTANGO version")
     def test_generate_function_experiments(self):
         """
         Test function experiment generation:
@@ -213,6 +225,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
             self.assertIsInstance(rl.get("memory").get("size"), int)
             self.assertIsInstance(rl.get("storage").get("size"), int)        
 
+    @unittest.skip("skipped. not supported in 5GTANGO version")
     def test_generate_service_experiments(self):
         """
         Test service experiment generation:
@@ -281,6 +294,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
             self.assertIsInstance(rl.get("memory").get("size"), int)
             self.assertIsInstance(rl.get("storage").get("size"), int)       
 
+    @unittest.skip("skipped. not supported in 5GTANGO version")
     def test_write_and_pack(self):
         """
         Test write-out and packaging of generated services.
