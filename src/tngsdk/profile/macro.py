@@ -31,9 +31,8 @@
 # partner consortium (www.5gtango.eu).
 
 import logging
-import coloredlogs
-# import numpy as np
 import re
+
 LOG = logging.getLogger(__name__)
 
 
@@ -100,7 +99,7 @@ def loop_macro_to_list(m):
     m = re.split('to|step', m)
     # detect if the values should be float or int
     cls = float
-    if not '.' in str(m):
+    if '.' not in str(m):
         cls = int
     m = [cls(i) for i in m]
     step = DEFAULT_STEP
@@ -122,9 +121,9 @@ def list_macro_to_list(m):
     m = re.split(',', m)
     # detect if the values should be float or int
     cls = str
-    if is_number(str(m)):  
+    if is_number(str(m)):
         cls = float
-        if not '.' in str(m):
+        if '.' not in str(m):
             cls = int
     m = [cls(i) for i in m]
     return m
@@ -147,10 +146,10 @@ def frange(start, stop, step):
         yield x
         x += step
 
+
 def is_number(s):
     try:
-        float(s) 
+        float(s)
     except ValueError:
         return False
     return True
-

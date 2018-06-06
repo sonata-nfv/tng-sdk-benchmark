@@ -52,7 +52,6 @@ class Experiment(object):
         # store original experiment definition for late use
         self.original_definition = definition.copy()
 
-
     def populate(self):
         """
         Search for parameter study macros and generate
@@ -66,33 +65,39 @@ class Experiment(object):
         for mp in self.measurement_points:
             rewrite_parameter_macros_to_lists(mp)
 
-        ######## IMEC
+        # IMEC
         # check for vnfs that need overload detection (imec mode)
-        if hasattr(self, 'overload_detection') :
+        if hasattr(self, 'overload_detection'):
             for vnf_name in self.overload_detection:
                 self.overload_vnf_list.append(vnf_name)
-        # gather all configuration commands per VNF that need to be executed once before all tests start
+        # gather all configuration commands per VNF that
+        # need to be executed once before all tests start
         self.pre_configuration = self._get_pre_configuration_as_dict()
 
-        ######## UPB
-        # generate a single flat dict containing all the parameter study lists defined in the PED
-        # this includes: header parameters (repetitions), measurement point commands (all), and
+        # UPB
+        # generate a single flat dict containing all the
+        # parameter study lists defined in the PED
+        # this includes: header parameters (repetitions),
+        # measurement point commands (all), and
         # function resource limitations
         configuration_dict = dict()
         configuration_dict.update(self._get_experiment_header_space_as_dict())
         configuration_dict.update(self._get_function_resource_space_as_dict())
         configuration_dict.update(self._get_mp_space_as_dict())
         LOG.debug("configuration space:{0}".format(configuration_dict))
-        # explore entire parameter space by calculating the Cartesian product over the given dict
-        configuration_space_list = compute_cartesian_product(configuration_dict)  # imec backward compatibility
+        # explore entire parameter space by calculating the
+        # Cartesian product over the given dict
+        configuration_space_list = compute_cartesian_product(
+            configuration_dict)
         self.configuration_space_list = configuration_space_list
-        # create a experiment configuration objects for each calculated configuration to test
+        # create a experiment configuration objects for each calculated
+        # configuration to test
         for c in configuration_space_list:
             rc = ExperimentConfiguration(self, c)
             self.experiment_configurations.append(rc)
-        LOG.info("Populated experiment specification: {} with {} configurations to be executed.".format(
-            self.name,
-            len(self.experiment_configurations)))
+        LOG.info("Populated experiment specification: {} with {} "
+                 + "configurations to be executed."
+                 .format(self.name, len(self.experiment_configurations)))
 
     def _get_pre_configuration_as_dict(self):
         """
@@ -110,11 +115,10 @@ class Experiment(object):
             if vnf_config:
                 if not isinstance(vnf_config, list):
                     vnf_config = [vnf_config]
-                config_dict[vnf_name]=vnf_config
+                config_dict[vnf_name] = vnf_config
 
         LOG.debug('pre-configuration commands:{}'.format(config_dict))
         return config_dict
-
 
     def _get_experiment_header_space_as_dict(self):
         """
@@ -126,7 +130,8 @@ class Experiment(object):
 
     def _get_function_resource_space_as_dict(self):
         """
-        Create a flat dictionary with configuration lists to be tested for each configuration parameter.
+        Create a flat dictionary with configuration lists to be tested
+        # for each configuration parameter.
         Output: dict
         {"resource_limitation:funname1:parameter1" : [0.1, 0.2, ...],
          "resource_limitation:funname1:parameterN" : [0.1, ...],
@@ -147,7 +152,8 @@ class Experiment(object):
 
     def _get_mp_space_as_dict(self):
         """
-        Create a flat dictionary with configuration lists to be tested for each configuration parameter.
+        Create a flat dictionary with configuration lists to
+        # be tested for each configuration parameter.
         Output: dict
         {"measurement_point:mpname1:parameter1" : [0.1, 0.2, ...],
          "measurement_point:mpname1:parameterN" : [0.1, ...],
@@ -159,7 +165,9 @@ class Experiment(object):
         for rl in self.measurement_points:
             name = rl.get("name")
             for k, v in rl.items():
-                if k == "name" or k == "connection_point" or k == "configuration":  # skip some fields
+                if (k == "name"
+                        or k == "connection_point"
+                        or k == "configuration"):  # skip some fields
                     continue
                 if not isinstance(v, list):
                     v = [v]
@@ -192,7 +200,7 @@ class ExperimentConfiguration(object):
         self.run_id = ExperimentConfiguration.RUN_ID
         ExperimentConfiguration.RUN_ID += 1
         self.name = experiment.name
-        self.experiment = experiment  # have backward point to ease navigation in generators
+        self.experiment = experiment
         self.parameter = p
         LOG.debug("Created: {}".format(self))
 

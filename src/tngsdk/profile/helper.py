@@ -84,4 +84,7 @@ def compute_cartesian_product(p_dict):
         ]
     """
     p_names = sorted(p_dict)
-    return [dict(zip(p_names, prod)) for prod in it.product(*(p_dict[n] for n in p_names))]
+    return [dict(
+        zip(p_names, prod))
+            for prod in it.product(
+                    *(p_dict[n] for n in p_names))]

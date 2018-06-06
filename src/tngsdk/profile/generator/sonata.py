@@ -37,20 +37,22 @@ import copy
 import time
 from termcolor import colored
 from tabulate import tabulate
-from tngsdk.profile.helper import read_yaml, write_yaml, relative_path, ensure_dir
+from tngsdk.profile.helper import read_yaml, write_yaml
+from tngsdk.profile.helper import relative_path, ensure_dir
 from tngsdk.profile.generator import ServiceConfigurationGenerator
-#from son.workspace.project import Project
-#from son.workspace.workspace import Workspace
-#from son.package.package import Packager
 
 
 LOG = logging.getLogger(__name__)
 
 # working directories created in "output_path"
-SON_BASE_DIR = ".tmp_base_service"  # temp folder with input package contents
-SON_GEN_SERVICES = ".tmp_gen_services"  # temp folder holding the unpacked generated services
+# temp folder with input package contents
+SON_BASE_DIR = ".tmp_base_service"
+# temp folder holding the unpacked generated services
+SON_GEN_SERVICES = ".tmp_gen_services"
 
-class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
+
+class SonataServiceConfigurationGenerator(
+        ServiceConfigurationGenerator):
     """
     SONATA Service Configuration Generator.
     Input: SONATA service package.
@@ -63,10 +65,12 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         self.generated_services = dict()
         LOG.info("SONATA service configuration generator initialized")
 
-    def generate(self, input_reference, function_experiments, service_experiments, working_path):
+    def generate(self, input_reference, function_experiments,
+                 service_experiments, working_path):
         """
         Generates service configurations according to the inputs.
-        Returns a list of identifiers / paths to the generated service configurations.
+        Returns a list of identifiers / paths to the
+        generated service configurations.
         """
         self.start_time = time.time()
         self.output_path = working_path
@@ -79,7 +83,9 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         generated_service_objs.update(self._generate_service_experiments(
             base_service_obj, service_experiments))
         # pack all generated services and write them to disk
-        LOG.info("Starting to pack {} service configurations ...".format(len(generated_service_objs)))
+        LOG.info(
+            "Starting to pack {} service configurations ..."
+            .format(len(generated_service_objs)))
         return self._pack(working_path, generated_service_objs)
 
     def _extract(self, input_reference, working_path):
@@ -92,12 +98,16 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         ensure_dir(base_service_path)
         # locate referenced *.son file
         if not os.path.exists(input_reference):
-            raise BaseException("Couldn't find referenced SONATA package: %r" % input_reference)
+            raise BaseException(
+                "Couldn't find referenced SONATA package: {}"
+                .format(input_reference))
         # extract *.son file and put it into base_service_path
-        LOG.debug("Unzipping: {} to {}".format(input_reference, base_service_path))
+        LOG.debug("Unzipping: {} to {}"
+                  .format(input_reference, base_service_path))
         with zipfile.ZipFile(input_reference, "r") as z:
             z.extractall(base_service_path)
-        LOG.info("Extracted SONATA service package: {}".format(input_reference))
+        LOG.info("Extracted SONATA service package: {}"
+                 .format(input_reference))
         return base_service_path
 
     def _load(self, input_reference, working_path):
@@ -116,19 +126,19 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         the given experiment configurations.
         """
         n = base_service_obj.copy()
-        #n.manifest["name"] += "-{}".format(ec.run_id)
+        # n.manifest["name"] += "-{}".format(ec.run_id)
         n.metadata["run_id"] = ec.run_id
         n.metadata["exname"] = ec.name
-        # lets store the entire experiment configuration for later use in the execution
+        # lets store the entire experiment configuration for later use
         n.metadata["ec"] = {
-            "parameter" : ec.parameter.copy(),
-            "experiment" : ec.experiment.original_definition.copy()
+            "parameter": ec.parameter.copy(),
+            "experiment": ec.experiment.original_definition.copy()
         }
-        LOG.debug("Created service from base: '{}' for experiment '{}' with run ID: {}".format(
-            n.manifest["name"],
-            n.metadata["exname"],
-            n.metadata["run_id"]
-        ))
+        LOG.debug("Created service from base: '{}' "
+                  + "for experiment '{}' with run ID: {}"
+                  .format(n.manifest["name"],
+                          n.metadata["exname"],
+                          n.metadata["run_id"]))
         return n
 
     def _embed_function_into_experiment_nsd(
@@ -143,7 +153,7 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         The NSD template for this can be found in the template/ folder.
         """
         template_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), template)
+            os.path.dirname(os.path.abspath(__file__)), template)
         new_nsd = read_yaml(template_path)
         # 1. update VNF section
         old_vnf_dict = None
@@ -157,14 +167,16 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
             ))
         new_vnf_dict = new_nsd.get("network_functions")[0]
         new_vnf_dict.update(old_vnf_dict)
-        LOG.debug("Updated VNF section in '{}': {}".format(service, new_vnf_dict))
+        LOG.debug("Updated VNF section in '{}': {}"
+                  .format(service, new_vnf_dict))
         # 1.5 remove obsolete VNFDs
         old_list = service.vnfd_list.copy()
         service.vnfd_list = list()
         for vnfd in old_list:
             if vnfd.get("name") == new_vnf_dict.get("vnf_name"):
                 service.vnfd_list.append(vnfd)
-        LOG.debug("Updated VNFD list in '{}': {}".format(service, service.vnfd_list))
+        LOG.debug("Updated VNFD list in '{}': {}"
+                  .format(service, service.vnfd_list))
         # 2. update virtual link section (get first three CPs from VNFD)
         # TODO remove order assumptions (current version is more a HACK!)
         vnfd = service.get_vnfd_by_uid(ec.experiment.function)
@@ -174,8 +186,10 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
             cpr = new_link_list[i]["connection_points_reference"]
             for j in range(0, len(cpr)):
                 if "test_vnf" in cpr[j]:
-                    cpr[j] = "{}:{}".format(new_vnf_dict.get("vnf_id"), cp_ids[i])
-        LOG.debug("Updated VLink section in '{}': {}".format(service, new_link_list))
+                    cpr[j] = "{}:{}".format(
+                        new_vnf_dict.get("vnf_id"), cp_ids[i])
+        LOG.debug("Updated VLink section in '{}': {}"
+                  .format(service, new_link_list))
         # 3. update forwarding path section
         # TODO remove order assumptions (current version is more a HACK!)
         for fg in new_nsd.get("forwarding_graphs"):
@@ -183,9 +197,13 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
             for nfp in fg.get("network_forwarding_paths"):
                 nfp_cp_list = nfp.get("connection_points")
                 for i in range(1, min(len(nfp_cp_list), len(cp_ids))):
-                    if "test_vnf" in nfp_cp_list[i].get("connection_point_ref"):
-                        nfp_cp_list[i]["connection_point_ref"] = "{}:{}".format(new_vnf_dict.get("vnf_id"), cp_ids[i])
-        LOG.debug("Updated forwarding graph section in '{}': {}".format(service, new_nsd.get("forwarding_graphs")))      
+                    if "test_vnf" in nfp_cp_list[i].get(
+                            "connection_point_ref"):
+                        nfp_cp_list[i]["connection_point_ref"] = (
+                            "{}:{}".format(new_vnf_dict.get("vnf_id"),
+                                           cp_ids[i]))
+        LOG.debug("Updated forwarding graph section in '{}': {}"
+                  .format(service, new_nsd.get("forwarding_graphs")))
         # 4. replace NSD
         service.nsd = new_nsd
 
@@ -219,7 +237,8 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
                     if cprs[i] == mp_cp:
                         cprs[i] = new_cp
                         LOG.debug(
-                            "Replaced virtual link CPR '{}' by '{}'".format(mp_cp, cprs[i]))
+                            "Replaced virtual link CPR '{}' by '{}'"
+                            .format(mp_cp, cprs[i]))
             # update forwarding graph (replace ns in and out)
             for fg in service.nsd.get("forwarding_graphs"):
                 # add MP VNF to constituent VNF list
@@ -232,12 +251,10 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
                             fp_cp["connection_point_ref"] = new_cp
                 # update number of endpoints
                 fg["number_of_endpoints"] -= 1
-                LOG.debug("Updated forwarding graph '{}': {}".format(fg.get("fg_id"), fg))
-
-            LOG.debug("Added measurement point VNF '{}' to '{}'".format(
-                vnfd.get("name"),
-                service
-            ))
+                LOG.debug("Updated forwarding graph '{}': {}"
+                          .format(fg.get("fg_id"), fg))
+            LOG.debug("Added measurement point VNF '{}' to '{}'"
+                      .format(vnfd.get("name"), service))
 
     def _apply_resource_limitations(self, service, ec):
         """
@@ -252,16 +269,16 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
         for rlk, rlv in ec.parameter.items():
             # only consider resource limit parameters
             if "resource_limitation" in rlk:
-                # for each resource limit config find the corresponding VNFD in service
+                # for each resource limit find corresponding VNFD in service
                 vnf_uid, param_name = split_conf_parameter_key(rlk)
                 vnfd = service.get_vnfd_by_uid(vnf_uid)
                 if vnfd is None:
-                    LOG.error("VNF '{}' not found in service '{}'. Skip.".format(
-                        vnf_uid, service
-                    ))
+                    LOG.error("VNF '{}' not found in service '{}'. Skip."
+                              .format(vnf_uid, service))
                     continue
-                # apply configuration to corresponding VNFD field (we assume a single VDU!)
-                rr = vnfd.get("virtual_deployment_units")[0].get("resource_requirements")
+                # apply configuration to corresponding VNFD field
+                rr = vnfd.get(
+                    "virtual_deployment_units")[0].get("resource_requirements")
                 # cpu cores
                 if param_name == "cpu_cores":
                     rr.get("cpu")["vcpus"] = int(float(rlv))
@@ -277,13 +294,16 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
                 LOG.debug("Updated '{}' resource requirements '{}': {}".format(
                     param_name, vnf_uid, rr
                 ))
-        LOG.debug("Applied resource limitations to service '{}'".format(service))
+        LOG.debug("Applied resource limitations to service '{}'"
+                  .format(service))
 
     def _generate_function_experiments(self, base_service_obj, experiments):
         """
-        Generate function experiments according to given experiment descriptions.
+        Generate function experiments according to given
+        experiment descriptions.
         Generated experiments are based on the given network service.
-        A single function is extracted and embedded into a test service descriptor
+        A single function is extracted and embedded into a test
+        service descriptor
         to test the function in isolation.
         return: dict<run_id, service_obj>
         """
@@ -303,13 +323,14 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
                 r[ec.run_id] = ns
                 # INFO message
                 LOG.info(
-                    "Generated function experiment '{}': '{}' with run ID: {}".format(
-                        e.name, ns, ec.run_id))
+                    "Generated function experiment '{}': '{}' with run ID: {}"
+                    .format(e.name, ns, ec.run_id))
         return r
 
     def _generate_service_experiments(self, base_service_obj, experiments):
         """
-        Generate service experiments according to given experiment descriptions.
+        Generate service experiments according to given
+        experiment descriptions.
         Generated experiments are based on the given network service.
         return: dict<run_id, service_obj>
         """
@@ -326,20 +347,22 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
                 r[ec.run_id] = ns
                 # INFO message
                 LOG.info(
-                    "Generated service experiment '{}': '{}' with run ID: {}".format(
-                        e.name, ns, ec.run_id))
+                    "Generated service experiment '{}': '{}' with run ID: {}"
+                    .format(e.name, ns, ec.run_id))
         return r
 
-    def _pack(self, output_path, service_objs, workspace_dir=Workspace.DEFAULT_WORKSPACE_DIR):
+    def _pack(self, output_path, service_objs,
+              workspace_dir=None):  # Workspace.DEFAULT_WORKSPACE_DIR
         """
         return: dict<run_id: package_path>
         """
         r = dict()
         for i, s in service_objs.items():
             r[i] = dict()
-            r[i]["sonfile"] = s.pack(output_path, self.args.verbose, workspace_dir=workspace_dir)
+            r[i]["sonfile"] = s.pack(
+                output_path, self.args.verbose, workspace_dir=workspace_dir)
             r[i]["experiment_configuration"] = s.metadata.get("ec")
-            self.generated_services[i] = s  # keep a pointformat(len(r), output_path))
+            self.generated_services[i] = s  # keep a pointer
         return r
 
     def print_generation_and_packaging_statistics(self):
@@ -351,35 +374,45 @@ class SonataServiceConfigurationGenerator(ServiceConfigurationGenerator):
             return set(s.metadata.get("exname") for s in slist)
 
         def get_services_by_exname(exname):
-            return [s for s in self.generated_services.values() if s.metadata.get("exname") == exname]
+            return [s for s
+                    in self.generated_services.values()
+                    if s.metadata.get("exname") == exname]
 
         def get_pkg_time(l):
             return sum([s.metadata.get("package_generation_time") for s in l])
 
         def get_pkg_size(l):
-            return sum([float(s.metadata.get("package_disk_size")) / 1024 for s in l])
+            return sum([float(s.metadata.get("package_disk_size"))
+                        / 1024 for s in l])
 
         def generate_table():
             rows = list()
             # header
-            rows.append([b("Experiment"), b("Num. Pkg."), b("Pkg. Time (s)"), b("Pkg. Sizes (kB)")])
+            rows.append([b("Experiment"),
+                         b("Num. Pkg."),
+                         b("Pkg. Time (s)"),
+                         b("Pkg. Sizes (kB)")])
             # body
             sum_pack_time = 0.0
             sum_file_size = 0.0
             for en in get_exname_list(self.generated_services.values()):
                 filtered_s = get_services_by_exname(en)
-                rows.append([en, len(filtered_s), get_pkg_time(filtered_s), get_pkg_size(filtered_s)])
+                rows.append([en, len(filtered_s),
+                             get_pkg_time(filtered_s),
+                             get_pkg_size(filtered_s)])
                 sum_pack_time += get_pkg_time(filtered_s)
                 sum_file_size += get_pkg_size(filtered_s)
             # footer
-            rows.append([b("Total"), b(len(self.generated_services)), b(sum_pack_time), b(sum_file_size)])
+            rows.append([b("Total"), b(len(self.generated_services)),
+                         b(sum_pack_time), b(sum_file_size)])
             return rows
 
         print(b("-" * 80))
-        print(b("SONATA Profiler: Experiment Package Generation Report (sonata-pkg-gen)"))
+        print(b("SONATA Profiler: Experiment Package Gen.n Report"))
         print(b("-" * 80))
         print("")
-        print(tabulate(generate_table(), headers="firstrow", tablefmt="orgtbl"))
+        print(tabulate(
+            generate_table(), headers="firstrow", tablefmt="orgtbl"))
         print("")
         print("Generated service packages path: %s" % b(self.output_path))
         print("Total time: %s" % b("%.4f" % (time.time() - self.start_time)))
@@ -400,7 +433,6 @@ class SonataService(object):
         self.metadata = self._init_metadata()
         self.metadata.update(metadata)
         LOG.debug("Initialized: {}".format(self))
-
 
     def __repr__(self):
         return "SonataService({}.{}.{})".format(
@@ -476,7 +508,8 @@ class SonataService(object):
         Generate name used for generated service project folder and package.
         :return: string
         """
-        return "%s_%05d" % (self.metadata.get("exname"), self.metadata.get("run_id"))
+        return "%s_%05d" % (
+            self.metadata.get("exname"), self.metadata.get("run_id"))
 
     def copy(self):
         """
@@ -502,7 +535,8 @@ class SonataService(object):
         # write nsd
         nsd_dir = os.path.join(path, "sources/nsd")
         ensure_dir(nsd_dir)
-        write_yaml(os.path.join(nsd_dir,  "%s.yml" % self.nsd.get("name")), self.nsd)
+        write_yaml(os.path.join(
+            nsd_dir, "%s.yml" % self.nsd.get("name")), self.nsd)
         # write all vnfds
         vnf_dir = os.path.join(path, "sources/vnf")
         for vnfd in self.vnfd_list:
@@ -511,11 +545,13 @@ class SonataService(object):
             write_yaml(os.path.join(d, "%s.yml" % vnfd.get("name")), vnfd)
         LOG.debug("Wrote: {} to {}".format(self, path))
         return path
-    
-    def pack(self, output_path, verbose=False, workspace_dir=Workspace.DEFAULT_WORKSPACE_DIR):
+
+    def pack(self, output_path, verbose=False,
+             workspace_dir=None):  # Workspace.DEFAULT_WORKSPACE_DIR
         """
         Creates a *.son file of this service object.
-        First writes the normal project structure to disk (to be used with packaging tool)
+        First writes the normal project structure to disk
+        (to be used with packaging tool)
         """
         start_time = time.time()
         tmp_path = self._write(output_path)
@@ -526,19 +562,22 @@ class SonataService(object):
         ensure_dir(output_path)
         # obtain workspace
         # TODO have workspace dir as command line argument
-        workspace = Workspace.__create_from_descriptor__(workspace_dir)
+        workspace = None  # Workspace.__create_from_descriptor__(workspace_dir)
         if workspace is None:
-            LOG.error("Couldn't initialize workspace: %r. Abort." % workspace_dir)
+            LOG.error("Couldn't initialize workspace: {}. Abort."
+                      .format(workspace_dir))
             exit(1)
         # force verbosity of external tools if required
         workspace.log_level = "DEBUG" if verbose else "INFO"
         # obtain project
-        project = Project.__create_from_descriptor__(workspace, tmp_path)
+        # Project.__create_from_descriptor__(workspace, tmp_path)
+        project = None
         if project is None:
-            LOG.error("Packager couldn't load service project: %r. Abort." % tmp_path)
+            LOG.error("Packager couldn't load service project: {}. Abort."
+                      .format(tmp_path))
             exit(1)
         # initialize and run packager
-        pck = Packager(workspace, project, dst_path=output_path)
+        pck = None  # Packager(workspace, project, dst_path=output_path)
         pck.generate_package(self.pkg_name)
         self.metadata["package_disk_size"] = os.path.getsize(pkg_path)
         self.metadata["package_generation_time"] = time.time() - start_time
@@ -561,9 +600,10 @@ class SonataService(object):
                 return vnfd
         return None
 
-###
-### Helper
-###
+#
+# Helper
+#
+
 
 def measurement_point_to_vnfd(mp, ec, template="template/sonata_vnfd_mp.yml"):
     """
@@ -589,6 +629,6 @@ def split_conf_parameter_key(rlk):
     try:
         p = rlk.split(":")
         return p[1], p[2]
-    except:
+    except BaseException:
         LOG.error("Couldn't parse configuration parameter key.")
     return None, None

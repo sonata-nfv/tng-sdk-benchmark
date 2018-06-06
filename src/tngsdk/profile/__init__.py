@@ -36,8 +36,6 @@ import argparse
 import logging
 import coloredlogs
 import time
-from termcolor import colored
-from tabulate import tabulate
 from tngsdk.profile.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.profile.helper import read_yaml
 from tngsdk.profile.emulator import Emulator as Active_Emu_Profiler
@@ -80,13 +78,15 @@ class ProfileManager(object):
         self.ped = self._load_ped_file(self.args.ped)
         self._validate_ped_file(self.ped)
         # load and populate experiment specifications
-        self.service_experiments, self.function_experiments = self._generate_experiment_specifications(self.ped)
+        (self.service_experiments,
+         self.function_experiments) = (
+             self._generate_experiment_specifications(self.ped))
 
-        if self.args.mode=="passive":
+        if self.args.mode == "passive":
             print("NO passive mode")
             exit(1)
             # self._passive_execution()
-        elif self.args.mode=="active":
+        elif self.args.mode == "active":
             self._active_execution()
 
     def _active_execution(self):
@@ -95,15 +95,17 @@ class ProfileManager(object):
             # select and instantiate configuration generator
             cgen = None
             if self.args.service_generator == "sonata":
-                from son.profile.generator.sonata import SonataServiceConfigurationGenerator
+                from tngsdk.profile.generator.sonata \
+                    import SonataServiceConfigurationGenerator
                 cgen = SonataServiceConfigurationGenerator(self.args)
             else:
                 LOG.error(
-                    "Unknown service configuration generator specified: {0}".format(
+                    "Unknown service configuration generator specified: {0}"
+                    .format(
                         self.args.service_generator))
                 exit(1)
             if cgen is None:
-                LOG.error("Service configuration generator instantiation failed.")
+                LOG.error("Service conf. generator instantiation failed.")
                 exit(1)
             # generate one service configuration for each experiment based
             # on the service referenced in the PED file.
@@ -111,7 +113,7 @@ class ProfileManager(object):
                 os.path.join(  # ensure that the reference is an absolute path
                     os.path.dirname(
                         self.ped.get("ped_path", "/")),
-                        self.ped.get("service_package")),
+                    self.ped.get("service_package")),
                 self.function_experiments,
                 self.service_experiments,
                 self.work_dir)
@@ -128,7 +130,8 @@ class ProfileManager(object):
 
             if not gen_conf_list:
                 LOG.error("No generated packages, stopping execution")
-                raise Exception("Cannot execute experiments: No generated packages")
+                raise Exception(
+                    "Cannot execute experiments: No generated packages")
 
             # get config file and read remote hosts description
             config_loc = self.args.config
@@ -142,7 +145,6 @@ class ProfileManager(object):
             profiler = Active_Emu_Profiler(remote_hosts)
             profiler.do_experiment_series(gen_conf_list)
 
-
     @staticmethod
     def _load_ped_file(ped_path):
         """
@@ -155,10 +157,11 @@ class ProfileManager(object):
             yml = read_yaml(ped_path)
             if yml is None:
                 raise BaseException("PED file YAML error.")
-        except:
+        except BaseException:
             LOG.error("Couldn't load PED file %r. Abort." % ped_path)
             exit(1)
-        # add path annotation to ped file (simpler handling of referenced artifacts)
+        # add path annotation to ped file (simpler
+        # handling of referenced artifacts)
         yml["ped_path"] = ped_path
         LOG.info("Loaded PED file %r." % ped_path)
         return yml
@@ -175,7 +178,7 @@ class ProfileManager(object):
             if "service_package" not in input_ped:
                 raise BaseException("No service_package field found.")
             # TODO extend this with PED fields that are REQUIRED
-        except:
+        except BaseException:
             LOG.exception("PED file verification error:")
 
     @staticmethod
@@ -210,7 +213,8 @@ def parse_args(manual_args=None):
     TODO move to cli.py module
     """
     parser = argparse.ArgumentParser(
-        description="Manage and control VNF and service profiling experiments.")
+        description="Manage and control VNF and "
+        + "service profiling experiments.")
 
     parser.add_argument(
         "-v",
@@ -230,7 +234,9 @@ def parse_args(manual_args=None):
 
     parser.add_argument(
         "--work-dir",
-        help="Dictionary for generated artifacts, e.g., profiling packages. Will use a temporary folder as default.",
+        help="Dictionary for generated artifacts,"
+        + " e.g., profiling packages. Will use a temporary"
+        + " folder as default.",
         required=False,
         default=tempfile.mkdtemp(),
         dest="work_dir")
@@ -300,11 +306,11 @@ def parse_args(manual_args=None):
     parser.add_argument(
         "-c",
         "--config",
-        help="Son Profile config file. Default is config.yml. Path has to either be absolute or relative to location of python script.",
+        help="Son Profile config file. Default is config.yml. Path has to "
+        + "either be absolute or relative to location of python script.",
         required=False,
         default="config.yml",
         dest="config")
-
 
     if manual_args is not None:
         return parser.parse_args(manual_args)

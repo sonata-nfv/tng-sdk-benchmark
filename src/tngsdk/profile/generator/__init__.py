@@ -1,4 +1,4 @@
-#  Copyright (c) 2015 SONATA-NFV, 5GTANGO, Paderborn University
+#  Copyright (c) 2018 SONATA-NFV, 5GTANGO, Paderborn University
 # ALL RIGHTS RESERVED.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,16 +34,19 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+
 class ServiceConfigurationGenerator(object):
     """
     Base service configuration generator class.
     Custom generator plugins should overwrite the following methods.
     """
 
-    def generate(self, input_reference, function_experiments, service_experiments, output_path):
+    def generate(self, input_reference,
+                 function_experiments, service_experiments, output_path):
         """
         Generates service configurations according to the inputs.
-        Returns a list of identifiers / paths to the generated service configurations.
+        Returns a list of identifiers / paths to the generated
+        # service configurations.
         """
         LOG.warning("Service configuration generation not implemented.")
         return list()

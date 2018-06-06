@@ -5,6 +5,4 @@ jsonschema
 coloredlogs
 requests
 mock
-termcolor
-tabulate
 paramiko
