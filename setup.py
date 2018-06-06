@@ -42,7 +42,7 @@ Component to automatically benchmark network services
 and VNFs.
 """
 
-setup(name='tngsdk.package',
+setup(name='tngsdk.profile',
       license='Apache License, Version 2.0',
       version='0.1',
       url='https://github.com/sonata-nfv/tng-sdk-profile',
