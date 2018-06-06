@@ -1,0 +1,60 @@
+author: Manuel Peuster, Paderborn University, manuel.peuster@uni-paderborn.de
+connection_points:
+- id: ns:mgmt
+  interface: ipv4
+  type: management
+- id: ns:input
+  interface: ipv4
+  type: external
+- id: ns:output
+  interface: ipv4
+  type: external
+description: 'son-profile function experiment wrapper NSD'
+name: 'son-profile-function-experiment'
+descriptor_version: '1.0'
+forwarding_graphs:
+- constituent_virtual_links:
+  - mgmt
+  - link-input
+  - link-output
+  constituent_vnfs:
+  - "{{test_vnf}}"
+  fg_id: ns:fg01
+  network_forwarding_paths:
+  - connection_points:
+    - connection_point_ref: ns:input
+      position: 1
+    - connection_point_ref: "{{test_vnf:input}}"
+      position: 2
+    - connection_point_ref: "{{test_vnf:output}}"
+      position: 3
+    - connection_point_ref: ns:output
+      position: 4
+    fp_id: ns:fg01:fp01
+    policy: none
+  number_of_endpoints: 3
+  number_of_virtual_links: 3
+network_functions:
+- vnf_id: "{{test_vnf}}"
+  vnf_name: "{{vnf-name}}"
+  vnf_vendor: "{{vnf-vendor}}"
+  vnf_version: "{{vnf-version}}"
+vendor: son-profile
+version: '1.0'
+virtual_links:
+- connection_points_reference:
+  - "{{test_vnf:mgmt}}"
+  - ns:mgmt
+  connectivity_type: E-LAN
+  id: mgmt
+- connection_points_reference:
+  - ns:input
+  - "{{test_vnf:input}}"
+  connectivity_type: E-Line
+  id: link-input
+- connection_points_reference:
+  - "{{test_vnf:output}}"
+  - ns:output
+  connectivity_type: E-Line
+  id: link-output
+ 

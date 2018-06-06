@@ -1,0 +1,8 @@
+setuptools
+pytest
+pyaml
+jsonschema
+coloredlogs
+requests
+mock
+paramiko

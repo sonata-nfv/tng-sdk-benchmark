@@ -1,0 +1,179 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # All Vagrant configuration is done here. The most common configuration
+  # options are documented and commented below. For a complete reference,
+  # please see the online documentation at vagrantup.com.
+
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "ubuntu/trusty64"
+
+  # The url from where the 'config.vm.box' box will be fetched if it
+  # doesn't already exist on the user's system.
+  # config.vm.box_url = "http://domain.com/path/to/above.box"
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  config.vm.network "forwarded_port", guest: 5000, host: 5000 # dummy gatekeeper
+  config.vm.network "forwarded_port", guest: 5001, host: 5001 # REST API
+  config.vm.network "forwarded_port", guest: 8081, host: 8081 # cAdvisor
+  config.vm.network "forwarded_port", guest: 9091, host: 9091 # push gateway
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network :private_network, ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  # config.vm.network :public_network
+
+  # If true, then any SSH connections made will enable agent forwarding.
+  # Default value: false
+  # config.ssh.forward_agent = true
+
+  # set default user to root
+  #config.ssh.username = "root"
+  #config.ssh.private_key_path = "~/.ssh/id_rsa"
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "/root/.ssh", "/home/vagrant/ssh_files"
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+  #
+  config.vm.provider :virtualbox do |vb|
+    vb.name = "son-emu"
+  #   Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+  #
+  #   # Use VBoxManage to customize the VM. For example to change memory:
+     vb.customize ["modifyvm", :id, "--memory", "1024"]
+  # end
+  #
+  # View the documentation for the provider you're using for more
+  # information on available options.
+
+  # Enable provisioning with Puppet stand alone.  Puppet manifests
+  # are contained in a directory path relative to this Vagrantfile.
+  # You will need to create the manifests directory and a manifest in
+  # the file ubuntu/trusty64.pp in the manifests_path directory.
+  #
+  # An example Puppet manifest to provision the message of the day:
+  #
+  # # group { "puppet":
+  # #   ensure => "present",
+  # # }
+  # #
+  # # File { owner => 0, group => 0, mode => 0644 }
+  # #
+  # # file { '/etc/motd':
+  # #   content => "Welcome to your Vagrant-built virtual machine!
+  # #               Managed by Puppet.\n"
+  # # }
+  #
+  # config.vm.provision :puppet do |puppet|
+  #   puppet.manifests_path = "manifests"
+  #   puppet.manifest_file  = "site.pp"
+  # end
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  config.vm.provision "shell", inline: <<-SHELL
+     sudo apt-get update
+     sudo apt-get install -y git ansible
+     sudo echo "localhost ansible_connection=local" >> /etc/ansible/hosts
+     # install containernet
+     git clone https://github.com/containernet/containernet.git /home/vagrant/containernet
+     echo "Installing containernet (will take some time ~30 minutes) ..."
+     cd /home/vagrant/containernet/ansible
+     sudo ansible-playbook install.yml
+
+     # install son-emu
+     echo "Installing son-emu (will take some time) ..."
+     git clone https://github.com/sonata-nfv/son-emu.git /home/vagrant/son-emu
+     cd /home/vagrant/son-emu/ansible
+     sudo ansible-playbook install.yml
+
+     # execute son-emu tests at the end to validate installation
+     echo "Running son-emu unit tests to validate installation"
+     cd /home/vagrant/son-emu
+     sudo python setup.py develop
+     sudo py.test -v src/emuvim/test/unittests
+
+     # install son-cli
+     #sudo apt-get install -y python3.4 python3-dev python3-pip libyaml-dev build-essential
+     #sudo pip install pip -U --force-reinstall
+     #sudo pip install virtualenv 
+     #sudo pip install numpy
+     #sudo pip install scipy
+
+     # place motd
+     #cd /home/ubuntu/son-emu
+     #sudo cp utils/vagrant/motd /etc/motd
+
+     # pre-fetch sonata example vnfs from DockerHub
+     echo "Fetching SONATA example VNF container from DockerHub/sonatanfv"
+     sudo docker pull sonatanfv/sonata-empty-vnf 
+     sudo docker pull sonatanfv/sonata-iperf3-vnf 
+     sudo docker pull sonatanfv/sonata-snort-ids-vnf
+     sudo docker pull sonatanfv/sonata-ovs1-vnf
+     sudo docker pull sonatanfv/sonata-ryu-vnf
+     sudo docker pull sonatanfv/sonata-vtc-vnf
+     sudo docker pull sonatanfv/son-emu-sap
+
+     # set up ssh with key
+     cp /home/vagrant/ssh_files/id_rsa.pub /home/vagrant/.ssh/authorized_keys
+  SHELL
+
+end
+
+  # Enable provisioning with chef solo, specifying a cookbooks path, roles
+  # path, and data_bags path (all relative to this Vagrantfile), and adding
+  # some recipes and/or roles.
+  #
+  # config.vm.provision :chef_solo do |chef|
+  #   chef.cookbooks_path = "../my-recipes/cookbooks"
+  #   chef.roles_path = "../my-recipes/roles"
+  #   chef.data_bags_path = "../my-recipes/data_bags"
+  #   chef.add_recipe "mysql"
+  #   chef.add_role "web"
+  #
+  #   # You may also specify custom JSON attributes:
+  #   chef.json = { :mysql_password => "foo" }
+  # end
+
+  # Enable provisioning with chef server, specifying the chef server URL,
+  # and the path to the validation key (relative to this Vagrantfile).
+  #
+  # The Opscode Platform uses HTTPS. Substitute your organization for
+  # ORGNAME in the URL and validation key.
+  #
+  # If you have your own Chef Server, use the appropriate URL, which may be
+  # HTTP instead of HTTPS depending on your configuration. Also change the
+  # validation key to validation.pem.
+  #
+  # config.vm.provision :chef_client do |chef|
+  #   chef.chef_server_url = "https://api.opscode.com/organizations/ORGNAME"
+  #   chef.validation_key_path = "ORGNAME-validator.pem"
+  # end
+  #
+  # If you're using the Opscode platform, your validator client is
+  # ORGNAME-validator, replacing ORGNAME with your organization name.
+  #
+  # If you have your own Chef Server, the default validation client name is
+  # chef-validator, unless you changed the configuration.
+  #
+  #   chef.validation_client_name = "ORGNAME-validator"
+end
