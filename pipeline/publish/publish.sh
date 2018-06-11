@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e
-docker push registry.sonata-nfv.eu:5000/tng-sdk-profile
+docker push registry.sonata-nfv.eu:5000/tng-sdk-benchmark

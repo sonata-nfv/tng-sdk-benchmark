@@ -42,10 +42,10 @@ Component to automatically benchmark network services
 and VNFs.
 """
 
-setup(name='tngsdk.profile',
+setup(name='tngsdk.benchmark',
       license='Apache License, Version 2.0',
       version='0.1',
-      url='https://github.com/sonata-nfv/tng-sdk-profile',
+      url='https://github.com/sonata-nfv/tng-sdk-benchmark',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
       long_description=longdesc,
@@ -60,9 +60,9 @@ setup(name='tngsdk.profile',
       zip_safe=False,
       entry_points={
           'console_scripts': [
-              'tng-sdk-profile=tngsdk.profile:main',
-              'tng-profile=tngsdk.profile:main',
-              'tng-prf=tngsdk.profile:main'
+              'tng-sdk-benchmark=tngsdk.benchmark:main',
+              'tng-benchmark=tngsdk.benchmark:main',
+              'tng-bench=tngsdk.benchmark:main'
           ],
       },
       test_suite='tngsdk',

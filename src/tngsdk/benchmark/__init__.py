@@ -36,9 +36,9 @@ import argparse
 import logging
 import coloredlogs
 import time
-from tngsdk.profile.experiment import ServiceExperiment, FunctionExperiment
-from tngsdk.profile.helper import read_yaml
-from tngsdk.profile.emulator import Emulator as Active_Emu_Profiler
+from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
+from tngsdk.benchmark.helper import read_yaml
+from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
 
 
 LOG = logging.getLogger(os.path.basename(__file__))

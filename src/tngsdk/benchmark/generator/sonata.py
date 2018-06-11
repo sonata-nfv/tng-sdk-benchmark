@@ -37,9 +37,9 @@ import copy
 import time
 from termcolor import colored
 from tabulate import tabulate
-from tngsdk.profile.helper import read_yaml, write_yaml
-from tngsdk.profile.helper import relative_path, ensure_dir
-from tngsdk.profile.generator import ServiceConfigurationGenerator
+from tngsdk.benchmark.helper import read_yaml, write_yaml
+from tngsdk.benchmark.helper import relative_path, ensure_dir
+from tngsdk.benchmark.generator import ServiceConfigurationGenerator
 
 
 LOG = logging.getLogger(__name__)

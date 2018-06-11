@@ -36,11 +36,11 @@ MAINTAINER 5GTANGO
 # Installation
 #
 RUN pip install flake8
-ADD . /tng-sdk-profile
-WORKDIR /tng-sdk-profile
+ADD . /tng-sdk-benchmark
+WORKDIR /tng-sdk-benchmark
 RUN python setup.py install
 
 #
 # Runtime
 #
-CMD ["/bin/bbash"]
+CMD ["/bin/bash"]
