@@ -31,8 +31,8 @@
 # partner consortium (www.5gtango.eu).
 
 import logging
-from tngsdk.profile.macro import rewrite_parameter_macros_to_lists
-from tngsdk.profile.helper import compute_cartesian_product
+from tngsdk.benchmark.macro import rewrite_parameter_macros_to_lists
+from tngsdk.benchmark.helper import compute_cartesian_product
 
 LOG = logging.getLogger(__name__)
 

@@ -34,8 +34,8 @@
 import os
 import unittest
 import tempfile
-from tngsdk.profile.helper import compute_cartesian_product
-from tngsdk.profile import ProfileManager, parse_args
+from tngsdk.benchmark.helper import compute_cartesian_product
+from tngsdk.benchmark import ProfileManager, parse_args
 
 
 # get path to our test files
