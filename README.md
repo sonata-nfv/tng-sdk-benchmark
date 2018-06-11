@@ -2,7 +2,7 @@
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
 
-# tng-sdk-benchmark
+# 5GTANGO VNF/NS Benchmarking Framework (tng-sdk-benchmark)
 
 This repository contains the `tng-sdk-benchmark` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible to automatically execute performance benchmarks of NFV network services and functions.
 
@@ -17,6 +17,8 @@ $ python setup.py install
 ## Usage
 
 ```
+tng-bench ...
+
 TODO
 ```
 
