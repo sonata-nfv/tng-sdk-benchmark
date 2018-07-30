@@ -66,7 +66,7 @@ class ProfileManager(object):
         self.output_dir = self.args.output_dir
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
-        LOG.info("SONATA profiling tool initialized")
+        LOG.info("5GTANGO benchmarking/profiling tool initialized")
         LOG.debug("Arguments: %r" % self.args)
 
     def run(self):
