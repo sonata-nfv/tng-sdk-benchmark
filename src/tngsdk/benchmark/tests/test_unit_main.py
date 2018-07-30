@@ -54,7 +54,7 @@ class UnitProfileTests(unittest.TestCase):
         """
         Test reading and validation of test PED file.
         """
-        args = parse_args(["-p", TEST_PED_FILE, "-v", "--mode", "active"])
+        args = parse_args(["-p", TEST_PED_FILE, "-v"])
         p = ProfileManager(args)
         # laod
         ped = p._load_ped_file(p.args.ped)
@@ -62,26 +62,26 @@ class UnitProfileTests(unittest.TestCase):
         p._validate_ped_file(ped)
         # test ped contents
         self.assertEqual(len(ped.get("service_experiments")), 1)
-        self.assertEqual(len(ped.get("function_experiments")), 2)
-        self.assertEqual(len(ped), 10)
+        self.assertIsNone(ped.get("function_experiments"))
+        self.assertEqual(len(ped), 9)
 
     def test_generate_experiment_specifications(self):
         """
         Test the generation of the experiment specifications
         based on the test PED file.
         """
-        args = parse_args(["-p", TEST_PED_FILE, "-v", "--mode", "active"])
+        args = parse_args(["-p", TEST_PED_FILE, "-v"])
         p = ProfileManager(args)
         ped = p._load_ped_file(p.args.ped)
         # trigger generation
         se, fe = p._generate_experiment_specifications(ped)
         # test number of generated experiments
         self.assertEqual(len(se), 1)
-        self.assertEqual(len(fe), 2)
+        self.assertEqual(len(fe), 0)
         # test number of generated configurations
-        self.assertEqual(len(se[0].experiment_configurations), 16)
-        self.assertEqual(len(fe[0].experiment_configurations), 6)
-        self.assertEqual(len(fe[1].experiment_configurations), 2)
+        self.assertEqual(len(se[0].experiment_configurations), 64)
+        # self.assertEqual(len(fe[0].experiment_configurations), 6)
+        # self.assertEqual(len(fe[1].experiment_configurations), 2)
         # test contents of the experiment configurations
         for ex in (se + fe):
             for c in ex.experiment_configurations:
@@ -93,40 +93,40 @@ class UnitProfileTests(unittest.TestCase):
                     c.parameter)
                 if ex.name != "func_vtc_throughput":
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.fw-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf1.0.1"
                         + ":mem_swap_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.fw-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf1.0.1"
                         + ":mem_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.fw-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf1.0.1"
                         + ":cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.fw-vnf.0.1:io_bw",
+                        "resource_limitation:eu.5gtango.vnf1.0.1:io_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.fw-vnf.0.1:cpu_bw",
+                        "resource_limitation:eu.5gtango.vnf1.0.1:cpu_bw",
                         c.parameter)
                 if ex.name != "func_fw_throughput":
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.vtc-vnf.0.1:cpu_bw",
+                        "resource_limitation:eu.5gtango.vnf2.0.1:cpu_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.vtc-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf2.0.1"
                         + ":mem_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.vtc-vnf.0.1:io_bw",
+                        "resource_limitation:eu.5gtango.vnf2.0.1:io_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.vtc-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf2.0.1"
                         + ":cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.sonata-nfv.vtc-vnf.0.1"
+                        "resource_limitation:eu.5gtango.vnf2.0.1"
                         + ":mem_swap_max",
                         c.parameter)
                 self.assertIn(

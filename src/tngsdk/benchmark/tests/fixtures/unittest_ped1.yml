@@ -1,19 +1,17 @@
 ---
 #
-# This is the PED file used for the son-profile unit tests.
-# Do not use/change this file for demo purposes.
-# Changes might cause uinit tests to break.
+# This is an example for a profiling experiment descriptor (PED).
+# It defines a profiling experiment executed by the tng-sdk-benchmark tool.
 #
-descriptor_version: 0.1
-# SONATA-like identifier (just in case we need it)
-vendor: "eu.sonata-nfv"
-name: "sonata-fw-vtc-profile-experiment"
+descriptor_version: 0.2  # 5GTANGO: 0.2, SONATA 0.1
+vendor: "eu.5gtango"
+name: "example_ped1"
 version: "0.1"
 author: "Manuel Peuster, Paderborn University, manuel.peuster@uni-paderborn.de"
 description: "This is an example profiling experiment descriptor (PED)."
 
 # path to the package of the service we want to profile
-service_package: "./sonata-fw-vtc-service.son"
+service_package: "./examples/services/example_benchmarking_service.tgo"
 
 #
 # Firs type of experiments: Service level experiments
@@ -21,35 +19,34 @@ service_package: "./sonata-fw-vtc-service.son"
 service_experiments:
   - name: "service_throughput"
     description: "iperf test for entire service"
-    repetitions: 2
+    repetitions: 1
     time_limit: "120"
-    # NSD to be used (SONATA-like vendor.name.version reference)
-    service: "eu.sonata-nfv.sonata-fw-vtc-service.0.1"
+    # NSD to be used (vendor.name.version reference)
+    service: "eu.5gtango.exampleservice.0.1"
     # additional containers for traffic generation/measurements (like SAPs)
     measurement_points:
       - name: "mp.output"
         connection_point: "ns:serviceout"
         container: "mpeuster/p2-mp"
-        cmd_start: ${"iperf -s", "iperf -s -u"}
+        cmd_start: ["iperf -s", "iperf -s -u"]
         cmd_stop: null
       - name: "mp.input"
         connection_point: "ns:servicein"
         container: "mpeuster/p2-mp"
-        cmd_start: "iperf -c 1.1.1.1 -t ${80 to 120 step 20}"
+        cmd_start: "iperf -c 1.1.1.1 -t 120"
         cmd_stop: null
     # resource configurations to be tested during profiling run (defined per VNF)
     resource_limitations:
-      # again: SONATA-like references
-      - function: "eu.sonata-nfv.fw-vnf.0.1"
-        cpu_bw: "${0.1 to 0.2 step 0.1}" # Omnet++ style parameter study macros
+      - function: "eu.5gtango.vnf1.0.1"
+        cpu_bw: {min: 0.05, max: 0.2, step: 0.05}       
         cpu_cores: 1
-        mem_max: 64
+        mem_max: [64, 128]
         mem_swap_max: null
         io_bw: null
-      - function: "eu.sonata-nfv.vtc-vnf.0.1"
-        cpu_bw: 0.5
+      - function: "eu.5gtango.vnf2.0.1"
+        cpu_bw: {min: 0.05, max: 0.1, step: 0.05}
         cpu_cores: 1
-        mem_max: "${256, 512}"
+        mem_max: [256, 512]
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
@@ -65,88 +62,6 @@ service_experiments:
         mem_swap_max: null
         io_bw: null
 
-#
 # Second type of experiments: VNF level experiments (individually test each VNF)
 #
-function_experiments:
-  - name: "func_fw_throughput"
-    description: "iperf test for fw vnf"
-    repetitions: 3
-    time_limit: "120"
-    # VNFD to be used (SONATA-like vendor.name.version reference)
-    function: "eu.sonata-nfv.fw-vnf.0.1"
-    # additional containers for traffic generation/measurements (like SAPs)
-    measurement_points:
-      - name: "mp.output"
-        connection_point: "ns:output"
-        container: "sonata-son-emu-sap:latest"
-        cmd_start: "iperf -s"
-        cmd_stop: null
-      - name: "mp.input"
-        connection_point: "ns:input"
-        container: "sonata-son-emu-sap:latest"
-        cmd_start: "iperf -c 1.1.1.1 -t 120"
-        cmd_stop: null
-    # resource configurations to be tested during profiling run (defined per VNF)
-    resource_limitations:  # shortened (fields are optional)
-      # again: SONATA-like references
-      - function: "eu.sonata-nfv.fw-vnf.0.1"
-        cpu_bw: "${0.01 to 0.03 step 0.01}" # Omnet++ style parameter study macros
-        cpu_cores: 1
-        mem_max: 64
-        mem_swap_max: null
-        io_bw: null
-      - function: "mp.input"
-        cpu_bw: 0.2
-        cpu_cores: 1
-        mem_max: 64
-        mem_swap_max: null
-        io_bw: null
-      - function: "mp.output"
-        cpu_bw: 0.2
-        cpu_cores: 1
-        mem_max: 64
-        mem_swap_max: null
-        io_bw: null
-  - name: "func_vtc_throughput"
-    description: "iperf test for vtc vnf"
-    repetitions: 1
-    time_limit: "120"
-    # VNFD to be used (SONATA-like vendor.name.version reference)
-    function: "eu.sonata-nfv.vtc-vnf.0.1"
-    # additional containers for traffic generation/measurements (like SAPs)
-    measurement_points:
-      - name: "mp.output"
-        connection_point: "ns:output"
-        container: "sonata-son-emu-sap:latest"
-        cmd_start: "iperf -s"
-        cmd_stop: null
-      - name: "mp.input"
-        connection_point: "ns:input"
-        container: "sonata-son-emu-sap:latest"
-        cmd_start: "iperf -c 1.1.1.1 -t 120"
-        cmd_stop: null
-    # resource configurations to be tested during profiling run (defined per VNF)
-    resource_limitations: # shortened (fields are optional)
-      # again: SONATA-like references
-      - function: "eu.sonata-nfv.vtc-vnf.0.1"
-        cpu_bw: 0.4
-        cpu_cores: 1
-        mem_max: "${64}"
-        mem_swap_max: null
-        io_bw: null
-      - function: "mp.input"
-        cpu_bw: 0.2
-        cpu_cores: 1
-        mem_max: "${16 to 18}"
-        mem_swap_max: null
-        io_bw: null
-      - function: "mp.output"
-        cpu_bw: 0.2
-        cpu_cores: 1
-        mem_max: 512
-        mem_swap_max: null
-        io_bw: null
-
-
-
+# (not supported anymore >= version 4.0 (5GTAGNO), can easily be done manually)

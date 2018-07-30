@@ -81,15 +81,10 @@ class ProfileManager(object):
         (self.service_experiments,
          self.function_experiments) = (
              self._generate_experiment_specifications(self.ped))
+        # trigger experiment execution
+        self._experiment_execution()
 
-        if self.args.mode == "passive":
-            print("NO passive mode")
-            exit(1)
-            # self._passive_execution()
-        elif self.args.mode == "active":
-            self._active_execution()
-
-    def _active_execution(self):
+    def _experiment_execution(self):
         # generate service configuration using the specified generator module
         if not self.args.no_generation:
             # select and instantiate configuration generator
@@ -100,9 +95,8 @@ class ProfileManager(object):
                 cgen = SonataServiceConfigurationGenerator(self.args)
             else:
                 LOG.error(
-                    "Unknown service configuration generator specified: {0}"
-                    .format(
-                        self.args.service_generator))
+                    "Unknown service configuration generator '{0}'. Exit 1."
+                    .format(self.args.service_generator))
                 exit(1)
             if cgen is None:
                 LOG.error("Service conf. generator instantiation failed.")
@@ -290,18 +284,11 @@ def parse_args(manual_args=None):
 
     parser.add_argument(
         "--generator",
-        help="Service configuration generator to be used. Default: 'sonata'",
+        help="Service configuration generator to be used."
+        + " Default: 'eu.5gtango'",
         required=False,
-        default="sonata",
+        default="eu.5gtango",
         dest="service_generator")
-
-    parser.add_argument(
-        "--mode",
-        help="Choose between active and passive execution. Default is passive",
-        required=False,
-        choices=["active", "passive"],
-        default="passive",
-        dest="mode")
 
     parser.add_argument(
         "-c",
