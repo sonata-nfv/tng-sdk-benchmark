@@ -65,11 +65,6 @@ class Experiment(object):
         for mp in self.measurement_points:
             rewrite_parameter_macros_to_lists(mp)
 
-        # IMEC
-        # check for vnfs that need overload detection (imec mode)
-        if hasattr(self, 'overload_detection'):
-            for vnf_name in self.overload_detection:
-                self.overload_vnf_list.append(vnf_name)
         # gather all configuration commands per VNF that
         # need to be executed once before all tests start
         self.pre_configuration = self._get_pre_configuration_as_dict()
@@ -95,9 +90,9 @@ class Experiment(object):
         for c in configuration_space_list:
             rc = ExperimentConfiguration(self, c)
             self.experiment_configurations.append(rc)
-        LOG.info("Populated experiment specification: {} with {} "
-                 + "configurations to be executed."
-                 .format(self.name, len(self.experiment_configurations)))
+        LOG.info("Populated experiment specification: '{}' with {} "
+                 .format(self.name, len(self.experiment_configurations))
+                 + "configurations to be executed.")
 
     def _get_pre_configuration_as_dict(self):
         """

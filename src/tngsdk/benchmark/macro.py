@@ -31,7 +31,7 @@
 # partner consortium (www.5gtango.eu).
 
 import logging
-import re
+
 
 LOG = logging.getLogger(__name__)
 
@@ -47,86 +47,34 @@ def rewrite_parameter_macros_to_lists(d):
     :return: result dict
     """
     for k, v in d.items():
-        if is_macro(v):
-            p = re.compile("\${.*}")
-            match = p.search(v)
-            if match:
-                macro = match.group(0)
-                list = macro_to_list(macro)
-                new_list = []
-                for value in list:
-                    new_list.append(v.replace(macro, str(value)))
-                d[k] = new_list
+        d[k] = expand_parameters(v)
     return d
 
 
-def is_macro(s):
+def expand_parameters(p):
     """
-    Checks if string is a parameter macro.
-    :param s: string
-    :return: bool
+    Expand single values, lists or dicts to a
+    list of parameters.
     """
-    if isinstance(s, str):
-        if "${" in s:  # TODO improve: use regex
-            return True
-    return False
-
-
-def macro_to_list(m):
-    """
-    Parses macro and translates it to a list.
-    Loop macro: Unroll loop and create list.
-    List macro: Translate macro list to Python list.
-    :param m: macro as string
-    :return: list
-    """
-    if "to" in m:
-        # loop macro
-        return loop_macro_to_list(m)
-    else:
-        # list macro
-        return list_macro_to_list(m)
-
-
-def loop_macro_to_list(m):
-    """
-    Unroll macro loop to list.
-    :param m: macro string
-    :return: list
-    """
-    r = list()
-    m = m.strip("${}")
-    m = re.split('to|step', m)
-    # detect if the values should be float or int
-    cls = float
-    if '.' not in str(m):
-        cls = int
-    m = [cls(i) for i in m]
-    step = DEFAULT_STEP
-    if len(m) > 2:
-        step = m[2]
-    # unroll the given loop to a list of values
-    for i in frange(m[0], m[1], step):
-        r.append(i)
-    return r
-
-
-def list_macro_to_list(m):
-    """
-    Translate macro list to Python list.
-    :param m: macro sting
-    :return: list
-    """
-    m = m.strip("${}")
-    m = re.split(',', m)
-    # detect if the values should be float or int
-    cls = str
-    if is_number(str(m)):
-        cls = float
-        if '.' not in str(m):
-            cls = int
-    m = [cls(i) for i in m]
-    return m
+    if p is None:
+        return [None]
+    if isinstance(p, int) or isinstance(p, float):
+        return [p]
+    elif isinstance(p, list):
+        return p
+    elif isinstance(p, dict):
+        try:
+            assert("min" in p)
+            assert("max" in p)
+            # assert("step" in p)
+            return list(
+                frange(p.get("min"),
+                       p.get("max"),
+                       p.get("step", DEFAULT_STEP)))
+        except BaseException as ex:
+            LOG.exception("AssertionError in dict expansion.")
+    # default: no expansion (e.g. for strings)
+    return p
 
 
 def frange(start, stop, step):
@@ -141,15 +89,7 @@ def frange(start, stop, step):
     # TODO ugly. Replace by numpy.arange or linspace.
     x = start
     while True:
-        if x >= stop:
+        if round(x, 4) > stop:
             return
-        yield x
+        yield round(x, 4)  # attention: we do some rounding here
         x += step
-
-
-def is_number(s):
-    try:
-        float(s)
-    except ValueError:
-        return False
-    return True
