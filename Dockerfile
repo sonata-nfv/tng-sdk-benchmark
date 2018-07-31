@@ -35,6 +35,7 @@ MAINTAINER 5GTANGO
 #
 # Installation
 #
+RUN apt-get update && apt-get install -y git
 RUN pip install flake8
 ADD . /tng-sdk-benchmark
 WORKDIR /tng-sdk-benchmark
