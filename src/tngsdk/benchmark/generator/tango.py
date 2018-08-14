@@ -98,3 +98,6 @@ class TangoServiceConfigurationGenerator(
 
     def _pack(proj_path, pkg_path):
         pass
+
+    def _generate_projects(self, base_proj_path):
+        pass
