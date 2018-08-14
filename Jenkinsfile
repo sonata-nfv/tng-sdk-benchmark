@@ -27,6 +27,7 @@ pipeline {
                 sh "pipeline/checkstyle/check.sh"
             }
         }
+        /*
         stage('Container publication') {
             steps {
                 echo 'Stage: Container publication...'
@@ -52,6 +53,7 @@ pipeline {
                 sh "pipeline/promote/promote-int.sh"
             }
         }
+        */
     }
     post {
          success {
