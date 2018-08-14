@@ -10,8 +10,8 @@ version: "0.1"
 author: "Manuel Peuster, Paderborn University, manuel.peuster@uni-paderborn.de"
 description: "This is an example profiling experiment descriptor (PED)."
 
-# path to the package of the service we want to profile
-service_package: "./examples/services/example_benchmarking_service.tgo"
+# path to the package of the service we want to profile (relative from PED location)
+service_package: "../services/5gtango-benchmark-example-service-package.tgo"
 
 #
 # Firs type of experiments: Service level experiments

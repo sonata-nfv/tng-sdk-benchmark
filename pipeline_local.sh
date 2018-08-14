@@ -3,6 +3,9 @@ set -e
 # Helper script that runs parts of the CI/CD pipeline locally.
 # Can be used to check code before pushing.
 
+# check style early
+flake8 --exclude .eggs 
+
 # build container
 pipeline/build/build.sh
 # run tests

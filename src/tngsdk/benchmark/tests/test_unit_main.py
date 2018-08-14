@@ -36,15 +36,16 @@ import unittest
 import tempfile
 from tngsdk.benchmark.helper import compute_cartesian_product
 from tngsdk.benchmark import ProfileManager, parse_args
+from tngsdk.benchmark.generator.tango import TangoServiceConfigurationGenerator
 
 
 # get path to our test files
 TEST_PED_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "fixtures/unittest_ped1.yml")
-TEST_SON_FILE = os.path.join(
+TEST_TNG_PKG = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    "fixtures/sonata-fw-vtc-service.son")
+    "fixtures/5gtango-test-package.tgo")
 TEST_WORK_DIR = tempfile.mkdtemp()
 
 
@@ -161,42 +162,25 @@ class UnitProfileTests(unittest.TestCase):
                     "repetition", c.parameter)
 
 
-class UnitSonataGeneratorTests(unittest.TestCase):
+class UnitTangoGeneratorTests(unittest.TestCase):
 
     def setUp(self):
-        """
-        Creates a fresh test workspace in a temp dir to ensure
-        we do not have conflicts with other CLI tests.
-        """
-        self.tmp_ws_dir = os.path.join(tempfile.mkdtemp(), "son-workspace")
-        ws = None  # Workspace(
-        # self.tmp_ws_dir, ws_name="son-profile test workspace")
-        ws.create_dirs()
-        ws.create_files()
+        pass
 
-    @unittest.skip("skipped. not supported in 5GTANGO version")
-    def test_load_and_extract(self):
+    def test_unpack(self):
         """
         Test extraction and loading of test *.son package and the contained
         service.
         """
-        args = parse_args(["-p", TEST_PED_FILE, "-v", "--mode", "active"])
+        args = parse_args(["-p", TEST_PED_FILE])
         print(args)
-        # init generator
-        sg = None  # SonataServiceConfigurationGenerator(args)
-        s = sg._load(TEST_SON_FILE, TEST_WORK_DIR)
-        # tests
-        self.assertEqual(len(s.manifest), 10)
-        self.assertTrue(s.nsd is not None)
-        self.assertEqual(len(s.vnfd_list), 2)
-        self.assertTrue(s.metadata is not None)
-        self.assertEqual(
-            str(s),
-            "SonataService(eu.sonata-nfv.package.sonata-fw-vtc-service.0.1)")
-        self.assertTrue(
-            os.path.exists(str(s.metadata.get("project_disk_path"))))
-        self.assertFalse(
-            os.path.exists(str(s.metadata.get("package_disk_path"))))
+        # unpack
+        g = TangoServiceConfigurationGenerator(args)
+        pp = g._unpack(TEST_TNG_PKG, TEST_WORK_DIR)
+        # test
+        self.assertTrue(os.path.exists(pp))
+        self.assertTrue(os.path.exists(
+            os.path.join(pp, "project.yml")))
 
     @unittest.skip("skipped. not supported in 5GTANGO version")
     def test_generate_function_experiments(self):
@@ -214,7 +198,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
         ses, fes = p._generate_experiment_specifications(ped)
         # init generator
         sg = None  # SonataServiceConfigurationGenerator(args)
-        base_service = sg._load(TEST_SON_FILE, TEST_WORK_DIR)
+        base_service = sg._load(TEST_TNG_PKG, TEST_WORK_DIR)
         # generate experiments
         gen = sg._generate_function_experiments(base_service, fes)
         # test generated data structures
@@ -293,7 +277,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
         ses, fes = p._generate_experiment_specifications(ped)
         # init generator
         sg = None  # SonataServiceConfigurationGenerator(args)
-        base_service = sg._load(TEST_SON_FILE, TEST_WORK_DIR)
+        base_service = sg._load(TEST_TNG_PKG, TEST_WORK_DIR)
         # generate experiments
         gen = sg._generate_service_experiments(base_service, ses)
         # test generated data structures
@@ -363,7 +347,7 @@ class UnitSonataGeneratorTests(unittest.TestCase):
         ses, fes = p._generate_experiment_specifications(ped)
         # init generator
         sg = None  # SonataServiceConfigurationGenerator(args)
-        base_service = sg._load(TEST_SON_FILE, TEST_WORK_DIR)
+        base_service = sg._load(TEST_TNG_PKG, TEST_WORK_DIR)
         # generate experiments
         gen = dict()
         gen.update(sg._generate_function_experiments(base_service, fes))
