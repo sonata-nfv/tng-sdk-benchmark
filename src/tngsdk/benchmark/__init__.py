@@ -90,9 +90,13 @@ class ProfileManager(object):
             # select and instantiate configuration generator
             cgen = None
             if self.args.service_generator == "sonata":
-                from tngsdk.profile.generator.sonata \
+                from tngsdk.benchmark.generator.sonata \
                     import SonataServiceConfigurationGenerator
                 cgen = SonataServiceConfigurationGenerator(self.args)
+            if self.args.service_generator == "eu.5gtango":
+                from tngsdk.benchmark.generator.tango \
+                    import TangoServiceConfigurationGenerator
+                cgen = TangoServiceConfigurationGenerator(self.args)
             else:
                 LOG.error(
                     "Unknown service configuration generator '{0}'. Exit 1."
@@ -109,8 +113,7 @@ class ProfileManager(object):
                         self.ped.get("ped_path", "/")),
                     self.ped.get("service_package")),
                 self.function_experiments,
-                self.service_experiments,
-                self.work_dir)
+                self.service_experiments)
             LOG.debug("Generation result: {}".format(gen_conf_list))
             # display generator statistics
             if not self.args.no_display:
