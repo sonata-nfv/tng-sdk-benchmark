@@ -17,15 +17,13 @@ $ python setup.py install
 ## Usage
 
 ```
-tng-bench ...
-
-TODO
+TODO show help
 ```
 
 ## Examples
 
 ```
-TODO
+tng-bench -p examples/peds/example_ped1.yml
 ```
 
 ## Development

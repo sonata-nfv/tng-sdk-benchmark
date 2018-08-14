@@ -87,77 +87,77 @@ class UnitProfileTests(unittest.TestCase):
         for ex in (se + fe):
             for c in ex.experiment_configurations:
                 self.assertIn(
-                    "measurement_point:mp.input:container",
+                    "mp::mp.input::container",
                     c.parameter)
                 self.assertIn(
-                    "measurement_point:mp.output:container",
+                    "mp::mp.output::container",
                     c.parameter)
                 if ex.name != "func_vtc_throughput":
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf1.0.1"
-                        + ":mem_swap_max",
+                        "rl::eu.5gtango.vnf1.0.1"
+                        + "::mem_swap_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf1.0.1"
-                        + ":mem_max",
+                        "rl::eu.5gtango.vnf1.0.1"
+                        + "::mem_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf1.0.1"
-                        + ":cpu_cores",
+                        "rl::eu.5gtango.vnf1.0.1"
+                        + "::cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf1.0.1:io_bw",
+                        "rl::eu.5gtango.vnf1.0.1::io_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf1.0.1:cpu_bw",
+                        "rl::eu.5gtango.vnf1.0.1::cpu_bw",
                         c.parameter)
                 if ex.name != "func_fw_throughput":
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf2.0.1:cpu_bw",
+                        "rl::eu.5gtango.vnf2.0.1::cpu_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf2.0.1"
-                        + ":mem_max",
+                        "rl::eu.5gtango.vnf2.0.1"
+                        + "::mem_max",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf2.0.1:io_bw",
+                        "rl::eu.5gtango.vnf2.0.1::io_bw",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf2.0.1"
-                        + ":cpu_cores",
+                        "rl::eu.5gtango.vnf2.0.1"
+                        + "::cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "resource_limitation:eu.5gtango.vnf2.0.1"
-                        + ":mem_swap_max",
+                        "rl::eu.5gtango.vnf2.0.1"
+                        + "::mem_swap_max",
                         c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.output:cpu_bw", c.parameter)
+                    "rl::mp.output::cpu_bw", c.parameter)
                 self.assertIn(
-                    "measurement_point:mp.input:cmd_start", c.parameter)
+                    "mp::mp.input::cmd_start", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.output:mem_swap_max", c.parameter)
+                    "rl::mp.output::mem_swap_max", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.output:io_bw", c.parameter)
+                    "rl::mp.output::io_bw", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.output:mem_max", c.parameter)
+                    "rl::mp.output::mem_max", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.input:cpu_bw", c.parameter)
+                    "rl::mp.input::cpu_bw", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.output:cpu_cores", c.parameter)
+                    "rl::mp.output::cpu_cores", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.input:io_bw", c.parameter)
+                    "rl::mp.input::io_bw", c.parameter)
                 self.assertIn(
-                    "measurement_point:mp.input:cmd_stop", c.parameter)
+                    "mp::mp.input::cmd_stop", c.parameter)
                 self.assertIn(
-                    "measurement_point:mp.output:cmd_start", c.parameter)
+                    "mp::mp.output::cmd_start", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.input:mem_swap_max", c.parameter)
+                    "rl::mp.input::mem_swap_max", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.input:mem_max", c.parameter)
+                    "rl::mp.input::mem_max", c.parameter)
                 self.assertIn(
-                    "measurement_point:mp.output:cmd_stop", c.parameter)
+                    "mp::mp.output::cmd_stop", c.parameter)
                 self.assertIn(
-                    "resource_limitation:mp.input:cpu_cores", c.parameter)
+                    "rl::mp.input::cpu_cores", c.parameter)
                 self.assertIn(
                     "repetition", c.parameter)
 

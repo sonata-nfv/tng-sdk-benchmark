@@ -54,7 +54,6 @@ class TangoServiceConfigurationGenerator(
 
     def __init__(self, args):
         self.args = args
-        self.RUN_ID = 0
         self.start_time = -1
         LOG.info("5GTANGO service configuration generator initialized")
         LOG.debug("5GTANGO generator args: {}".format(self.args))
@@ -77,11 +76,16 @@ class TangoServiceConfigurationGenerator(
             self.args.work_dir, BASE_PROJECT_PATH)
         base_proj_path = self._unpack(in_pkg_path, base_proj_path)
         # Step 2: Generate for each experiment
+        for ex in service_ex:
+            self._generate_projects(base_proj_path, ex)
         # Step 3: Package each generated project
         # Step 4: Return (TODO check what is really needed and refactor)
         return dict()
 
     def _unpack(self, pkg_path, proj_path):
+        """
+        Wraps the tng-sdk-package unpacking functionality.
+        """
         args = [
             "--unpackage", pkg_path,
             "--output", proj_path,
@@ -97,7 +101,12 @@ class TangoServiceConfigurationGenerator(
         return proj_path
 
     def _pack(proj_path, pkg_path):
+        """
+        Wraps the tng-sdk-package packaging functionality.
+        """
         pass
 
-    def _generate_projects(self, base_proj_path):
-        pass
+    def _generate_projects(self, base_proj_path, ex):
+        print(ex)
+        for ec in ex.experiment_configurations:
+            LOG.warning(ec.pprint())

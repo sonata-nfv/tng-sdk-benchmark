@@ -31,6 +31,7 @@
 # partner consortium (www.5gtango.eu).
 
 import logging
+from pprint import pformat
 from tngsdk.benchmark.macro import rewrite_parameter_macros_to_lists
 from tngsdk.benchmark.helper import compute_cartesian_product
 
@@ -128,10 +129,10 @@ class Experiment(object):
         Create a flat dictionary with configuration lists to be tested
         # for each configuration parameter.
         Output: dict
-        {"resource_limitation:funname1:parameter1" : [0.1, 0.2, ...],
-         "resource_limitation:funname1:parameterN" : [0.1, ...],
-         "resource_limitation:funname2:parameter1" : [0.1],
-         "resource_limitation:funname2:parameterN" : [0.1, 0.2, ...],
+        {"rl::funname1::parameter1" : [0.1, 0.2, ...],
+         "rl::funname1::parameterN" : [0.1, ...],
+         "rl::funname2::parameter1" : [0.1],
+         "rl::funname2::parameterN" : [0.1, 0.2, ...],
         ... }
         """
         r = dict()
@@ -142,7 +143,7 @@ class Experiment(object):
                     continue
                 if not isinstance(v, list):
                     v = [v]
-                r["resource_limitation:%s:%s" % (name, k)] = v
+                r["rl::%s::%s" % (name, k)] = v
         return r
 
     def _get_mp_space_as_dict(self):
@@ -150,10 +151,10 @@ class Experiment(object):
         Create a flat dictionary with configuration lists to
         # be tested for each configuration parameter.
         Output: dict
-        {"measurement_point:mpname1:parameter1" : [0.1, 0.2, ...],
-         "measurement_point:mpname1:parameterN" : [0.1, ...],
-         "measurement_point:mpname2:parameter1" : [0.1],
-         "measurement_point:mpname2:parameterN" : [0.1, 0.2, ...],
+        {"mp::mpname1::parameter1" : [0.1, 0.2, ...],
+         "mp::mpname1::parameterN" : [0.1, ...],
+         "mp::mpname2::parameter1" : [0.1],
+         "mp::mpname2::parameterN" : [0.1, 0.2, ...],
          ...}
         """
         r = dict()
@@ -166,7 +167,7 @@ class Experiment(object):
                     continue
                 if not isinstance(v, list):
                     v = [v]
-                r["measurement_point:%s:%s" % (name, k)] = v
+                r["mp::%s::%s" % (name, k)] = v
         return r
 
 
@@ -187,17 +188,21 @@ class FunctionExperiment(Experiment):
 class ExperimentConfiguration(object):
     """
     Holds the configuration parameters for a single experiment run.
+    Only these objects should be used by the package generators.
     """
     # have globally unique run_ids for simplicity
     RUN_ID = 0
 
     def __init__(self, experiment, p):
-        self.run_id = ExperimentConfiguration.RUN_ID
-        ExperimentConfiguration.RUN_ID += 1
-        self.name = experiment.name
         self.experiment = experiment
         self.parameter = p
+        self.run_id = ExperimentConfiguration.RUN_ID
+        ExperimentConfiguration.RUN_ID += 1
+        self.name = "{}_{}".format(experiment.name, self.run_id)
         LOG.debug("Created: {}".format(self))
 
     def __repr__(self):
-        return "ExperimentConfiguration({}_{})".format(self.name, self.run_id)
+        return "ExperimentConfiguration({})".format(self.name)
+
+    def pprint(self):
+        return "{}\n{}".format(self, pformat(self.parameter))
