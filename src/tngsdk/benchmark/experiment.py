@@ -161,10 +161,9 @@ class Experiment(object):
         for rl in self.measurement_points:
             name = rl.get("name")
             for k, v in rl.items():
-                if (k == "name"
-                        or k == "connection_point"
-                        or k == "configuration"):  # skip some fields
-                    continue
+                # if (k == "name"
+                #        or k == "configuration"):  # skip some fields
+                #    continue
                 if not isinstance(v, list):
                     v = [v]
                 r["mp::%s::%s" % (name, k)] = v
