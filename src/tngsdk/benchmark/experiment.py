@@ -53,6 +53,9 @@ class Experiment(object):
         # store original experiment definition for late use
         self.original_definition = definition.copy()
 
+    def __repr__(self):
+        return "Experiment({})".format(self.name)
+
     def populate(self):
         """
         Search for parameter study macros and generate
@@ -197,7 +200,9 @@ class ExperimentConfiguration(object):
         self.parameter = p
         self.run_id = ExperimentConfiguration.RUN_ID
         ExperimentConfiguration.RUN_ID += 1
-        self.name = "{}_{}".format(experiment.name, self.run_id)
+        self.project_path = None  # path of generated project
+        self.package_path = None  # path of generated package
+        self.name = "{}_{:05d}".format(experiment.name, self.run_id)
         LOG.debug("Created: {}".format(self))
 
     def __repr__(self):

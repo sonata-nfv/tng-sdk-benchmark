@@ -32,15 +32,20 @@
 
 import logging
 import time
+import shutil
 import os
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
+from tngsdk.benchmark.helper import ensure_dir
 import tngsdk.package as tngpkg
 
 LOG = logging.getLogger(__name__)
+# decrease the loglevel of the packager tool
+logging.getLogger("packager.py").setLevel(logging.WARNING)
 
 
 BASE_PROJECT_PATH = "base_project/"
-GEN_PROJECT_PATH = "generated_projects/"
+GEN_PROJECT_PATH = "gen_projects/"
+GEN_PKG_PATH = "gen_pkgs/"
 
 
 class TangoServiceConfigurationGenerator(
@@ -89,24 +94,85 @@ class TangoServiceConfigurationGenerator(
         args = [
             "--unpackage", pkg_path,
             "--output", proj_path,
-            "--store-backend", "TangoProjectFilesystemBackend"
+            "--store-backend", "TangoProjectFilesystemBackend",
+            "--quiet"
         ]
         # call the package component
         r = tngpkg.run(args)
         if r.error is not None:
-            raise BaseException("Can't read package {}".format(pkg_path))
+            raise BaseException("Can't read package {}: {}"
+                                .format(pkg_path, r.error))
         # return the full path to the project
         proj_path = r.metadata.get("_storage_location")
-        LOG.info("Unpacked {} to {}".format(pkg_path, proj_path))
+        LOG.debug("Unpacked {} to {}".format(pkg_path, proj_path))
         return proj_path
 
-    def _pack(proj_path, pkg_path):
+    def _pack(self, proj_path, pkg_path):
         """
         Wraps the tng-sdk-package packaging functionality.
         """
-        pass
+        args = [
+            "--package", proj_path,
+            "--output", pkg_path,
+            "--store-backend", "TangoProjectFilesystemBackend",
+            "--quiet"
+        ]
+        # call the package component
+        r = tngpkg.run(args)
+        if r.error is not None:
+            raise BaseException("Can't create package {}: {}"
+                                .format(pkg_path, r.error))
+        # return the full path to the package
+        pkg_path = r.metadata.get("_storage_location")
+        LOG.debug("Packed {} to {}".format(proj_path, pkg_path))
+        return pkg_path
 
     def _generate_projects(self, base_proj_path, ex):
-        print(ex)
+        LOG.info("Generating {} projects for {}"
+                 .format(len(ex.experiment_configurations), ex))
+        # iterate over all experiment configurations
+        n_done = 0
         for ec in ex.experiment_configurations:
-            LOG.warning(ec.pprint())
+            # 1. create project by copying base_proj
+            self._copy_project(base_proj_path, ec)
+            # 2. add MPs to project
+            self._add_mps_to_project(ec)
+            # 3. apply configuration parameters to project
+            self._add_params_to_project(ec)
+            # 4. package project
+            self._package_project(ec)
+            # 5. status output
+            n_done += 1
+            LOG.info("Generated project ({}/{}): {}"
+                     .format(n_done,
+                             len(ex.experiment_configurations),
+                             os.path.basename(ec.package_path)))
+
+    def _copy_project(self, base_proj_path, ec):
+        ec.project_path = os.path.join(
+            self.args.work_dir, GEN_PROJECT_PATH, ec.name)
+        LOG.debug("Created project: {}".format(ec.project_path))
+        shutil.copytree(base_proj_path, ec.project_path)
+
+    def _add_mps_to_project(self, ec):
+        """
+        Extend a project's VNFFG with the MPs.
+        """
+        pass
+
+    def _add_params_to_project(self, ec):
+        """
+        Apply parameters, like resource limits, commands,
+        to the project descriptors.
+        """
+        pass
+
+    def _package_project(self, ec):
+        """
+        Package the project of the given experiment configuration.
+        """
+        tmp = os.path.join(
+            self.args.work_dir, GEN_PKG_PATH)
+        ensure_dir(tmp)
+        ec.package_path = "{}{}.tgo".format(tmp, ec.name)
+        self._pack(ec.project_path, ec.package_path)
