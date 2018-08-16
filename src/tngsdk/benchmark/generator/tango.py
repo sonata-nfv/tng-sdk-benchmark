@@ -35,7 +35,7 @@ import time
 import shutil
 import os
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
-from tngsdk.benchmark.helper import ensure_dir
+from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
 import tngsdk.package as tngpkg
 
 LOG = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ logging.getLogger("packager.py").setLevel(logging.WARNING)
 BASE_PROJECT_PATH = "base_project/"
 GEN_PROJECT_PATH = "gen_projects/"
 GEN_PKG_PATH = "gen_pkgs/"
+TEMPLATE_VNFD_MP = "template/tango_vnfd_mp.yml"
 
 
 class TangoServiceConfigurationGenerator(
@@ -156,9 +157,15 @@ class TangoServiceConfigurationGenerator(
 
     def _add_mps_to_project(self, ec):
         """
-        Extend a project's VNFFG with the MPs.
+        Extend a project's VNFFG with the MPs
+        and add the MPs as new VNFs.
         """
-        pass
+        ex = ec.experiment
+        for mp in ex.measurement_points:
+            # 1. add MP VNFDs to project
+            self._add_mp_vnfd_to_project(mp, ec)
+            # 2. extend NSD
+            # TODO
 
     def _add_params_to_project(self, ec):
         """
@@ -176,3 +183,33 @@ class TangoServiceConfigurationGenerator(
         ensure_dir(tmp)
         ec.package_path = "{}{}.tgo".format(tmp, ec.name)
         self._pack(ec.project_path, ec.package_path)
+
+    def _add_mp_vnfd_to_project(self, mp, ec,
+                                template=TEMPLATE_VNFD_MP):
+        """
+        Uses templates/tango_vnfd_mp.yml as basis,
+        extends it and stores it in project folder.
+        Finally the project.yml is updated.
+        """
+        tpath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), template)
+        vnfd = read_yaml(tpath)
+        # TODO better use template engine like Jinja
+        # replace placeholder fields (this highly depends on used template!)
+        vnfd["name"] = mp.get("name")
+        # allow different containers as parameter study
+        vnfd["virtual_deployment_units"][0]["vm_image"] = mp.get("container")
+        # write vnfd to project
+        vname = "{}.yaml".format(mp.get("name"))
+        write_yaml(os.path.join(ec.project_path, vname), vnfd)
+        # add vnfd to project.yml
+        ppath = os.path.join(ec.project_path, "project.yml")
+        projd = read_yaml(ppath)
+        projd.get("files").append({
+            "path": vname,
+            "type": "application/vnd.5gtango.vnfd",
+            "tags": ["eu.5gtango", "mp"]
+        })
+        write_yaml(ppath, projd)
+        LOG.debug("Added MP VNFD {} to project {}"
+                  .format(vname, projd.get("name")))
