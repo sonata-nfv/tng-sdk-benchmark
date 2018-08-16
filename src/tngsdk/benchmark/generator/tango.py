@@ -165,7 +165,7 @@ class TangoServiceConfigurationGenerator(
             # 1. add MP VNFDs to project
             self._add_mp_vnfd_to_project(mp, ec)
             # 2. extend NSD
-            # TODO
+            self._add_mp_to_nsd(mp, ec)
 
     def _add_params_to_project(self, ec):
         """
@@ -213,3 +213,63 @@ class TangoServiceConfigurationGenerator(
         write_yaml(ppath, projd)
         LOG.debug("Added MP VNFD {} to project {}"
                   .format(vname, projd.get("name")))
+
+    def _add_mp_to_nsd(self, mp, ec):
+        """
+        Add MP to NSD:
+        - add VNF to functions section
+        - connect measurement points w. virt. links
+        - update forwarding graph
+        """
+        # 1. load NSD
+        nsd = read_yaml(self._get_nsd_path(ec))
+        # 2. add MP VNF to NSD
+        nsd.get("network_functions").append({
+                "vnf_id": mp.get("name"),
+                "vnf_name": mp.get("name"),
+                "vnf_vendor": "eu.5gtango.benchmark",
+                "vnf_version": "1.0"
+        })
+        # 3. connect measurement point to service (replace virt. links)
+        mp_cp = mp.get("connection_point")
+        new_cp = "{}:data".format(mp.get("name"))
+        for vl in nsd.get("virtual_links"):
+            cprs = vl.get("connection_points_reference")
+            # replace ns in/out link endpoints in NSD
+            for i in range(0, len(cprs)):
+                if cprs[i] == mp_cp:
+                    cprs[i] = new_cp
+                    LOG.debug(
+                        "Replaced virtual link CPR '{}' by '{}'"
+                        .format(mp_cp, cprs[i]))
+        # 4. update forwarding graph (replace ns in and out)
+        for fg in nsd.get("forwarding_graphs"):
+            # add MP VNF to constituent VNF list
+            fg.get("constituent_vnfs").append(mp.get("name"))
+            # update forwarding paths
+            for fp in fg.get("network_forwarding_paths"):
+                # search and replace connection points specified in PED
+                for fp_cp in fp.get("connection_points"):
+                    if fp_cp.get("connection_point_ref") == mp_cp:
+                        fp_cp["connection_point_ref"] = new_cp
+            # update number of endpoints
+            fg["number_of_endpoints"] -= 1
+            LOG.debug("Updated forwarding graph '{}': {}"
+                      .format(fg.get("fg_id"), fg))
+        # 5. store updated nsd
+        write_yaml(self._get_nsd_path(ec), nsd)
+        # 6. log
+        LOG.debug("Added measurement point VNF '{}' to NDS '{}'"
+                  .format(mp.get("name"), nsd.get("name")))
+
+    def _get_nsd_path(self, ec):
+        """
+        Returns path of NSD for given EC project.
+        """
+        projd = read_yaml(os.path.join(ec.project_path, "project.yml"))
+        for f in projd.get("files"):
+            # always use the first NSD we find (TODO improve)
+            if f.get("type") == "application/vnd.5gtango.nsd":
+                return os.path.join(ec.project_path, f.get("path"))
+        raise BaseException(
+            "No NSD found in project {}".format(projd.get("name")))
