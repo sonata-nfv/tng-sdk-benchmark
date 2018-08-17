@@ -172,7 +172,11 @@ class TangoServiceConfigurationGenerator(
         Apply parameters, like resource limits, commands,
         to the project descriptors.
         """
-        pass
+        # 1. read vnfds
+        # 2. upadate vnfds
+        # 3. write vnfds
+        # for p, d in path_vnfd_dict.items():
+        #    write_yaml(p, d)
 
     def _package_project(self, ec):
         """
@@ -266,10 +270,34 @@ class TangoServiceConfigurationGenerator(
         """
         Returns path of NSD for given EC project.
         """
-        projd = read_yaml(os.path.join(ec.project_path, "project.yml"))
-        for f in projd.get("files"):
+        nsd_paths = self._get_paths_from_projectdescriptor(
+            ec, "application/vnd.5gtango.nsd")
+        if len(nsd_paths) > 0:
             # always use the first NSD we find (TODO improve)
-            if f.get("type") == "application/vnd.5gtango.nsd":
-                return os.path.join(ec.project_path, f.get("path"))
+            return nsd_paths[0]
         raise BaseException(
-            "No NSD found in project {}".format(projd.get("name")))
+            "No NSD found for {}".format(ec.experiment))
+
+    def _get_vnfd_paths(self, ec):
+        """
+        Returns paths of VNFDs for given EC project.
+        """
+        pass
+
+    def _get_paths_from_projectdescriptor(self, ec, mime_type):
+        """
+        Get paths from project.yml for given mime_type.
+        """
+        projd = read_yaml(os.path.join(ec.project_path, "project.yml"))
+        r = list()
+        for f in projd.get("files"):
+            if f.get("type") == mime_type:
+                r.append(os.path.join(ec.project_path, f.get("path")))
+        return r
+
+    def read_vnfds(self, ec):
+        """
+        Real all VNFDs from given project.
+        Return {path, dict(vnfd)}.
+        """
+        pass
