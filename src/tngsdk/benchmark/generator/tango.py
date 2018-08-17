@@ -172,11 +172,14 @@ class TangoServiceConfigurationGenerator(
         Apply parameters, like resource limits, commands,
         to the project descriptors.
         """
-        # 1. read vnfds
-        # 2. upadate vnfds
-        # 3. write vnfds
-        # for p, d in path_vnfd_dict.items():
-        #    write_yaml(p, d)
+        # 1. read all VNFDs
+        vnfds = self._read_vnfds(ec)
+        # 2. update VNFDs
+        for _, vnfd in vnfds.items():
+            self._apply_parameters_to_vnfds(ec, vnfd)
+        # 3. write updated VNFDs
+        for path, vnfd in vnfds.items():
+            write_yaml(path, vnfd)
 
     def _package_project(self, ec):
         """
@@ -266,6 +269,40 @@ class TangoServiceConfigurationGenerator(
         LOG.debug("Added measurement point VNF '{}' to NDS '{}'"
                   .format(mp.get("name"), nsd.get("name")))
 
+    def _apply_parameters_to_vnfds(self, ec, vnfd):
+        # iterate over all parameters to be applied
+        for pname, pvalue in ec.parameter.items():
+            vnf_uid, field_name = parse_conf_parameter_name(pname)
+            if vnf_uid != "{}.{}.{}".format(
+                    vnfd.get("vendor"), vnfd.get("name"),
+                    vnfd.get("version")):
+                # parameter should be applied to given VNF
+                self._apply_parameter_to_vnfd(field_name, pvalue, vnfd)
+
+    def _apply_parameter_to_vnfd(self, field_name, value, vnfd):
+        """
+        Applies a single parameter (given by field name)
+        to the given VNFD.
+        """
+        # Apply configuration to corresponding VNFD field
+        # TODO only a single VDU per VNF is supported right now
+        rr = vnfd.get(
+            "virtual_deployment_units")[0].get("resource_requirements")
+        # cpu cores
+        if field_name == "cpu_cores":
+            rr.get("cpu")["vcpus"] = int(float(value))
+        elif field_name == "cpu_bw":
+            rr.get("cpu")["cpu_bw"] = float(value)
+        elif field_name == "mem_max":
+            rr.get("memory")["size"] = int(float(value))
+            rr.get("memory")["size_unit"] = "MB"
+        elif field_name == "disk_max":
+            rr.get("storage")["size"] = int(float(value))
+            rr.get("storage")["size_unit"] = "GB"
+            # TODO extend this with io_bw etc?
+        LOG.debug("Updated '{}' in VNFD '{}' to: {}"
+                  .format(field_name, vnfd.get("name"), rr))
+
     def _get_nsd_path(self, ec):
         """
         Returns path of NSD for given EC project.
@@ -282,7 +319,8 @@ class TangoServiceConfigurationGenerator(
         """
         Returns paths of VNFDs for given EC project.
         """
-        pass
+        return self._get_paths_from_projectdescriptor(
+            ec, "application/vnd.5gtango.vnfd")
 
     def _get_paths_from_projectdescriptor(self, ec, mime_type):
         """
@@ -295,9 +333,26 @@ class TangoServiceConfigurationGenerator(
                 r.append(os.path.join(ec.project_path, f.get("path")))
         return r
 
-    def read_vnfds(self, ec):
+    def _read_vnfds(self, ec):
         """
         Real all VNFDs from given project.
         Return {path, dict(vnfd)}.
         """
-        pass
+        r = dict()
+        for p in self._get_vnfd_paths(ec):
+            r[p] = read_yaml(p)
+        return r
+
+
+def parse_conf_parameter_name(name):
+    """
+    Parses RL parameter names.
+    Returns: (function_id, parameter_name)
+    """
+    try:
+        p = name.split("::")
+        return p[1], p[2]
+    except BaseException:
+        LOG.error("Couldn't parse parameter key {}"
+                  .format(name))
+    return None, None

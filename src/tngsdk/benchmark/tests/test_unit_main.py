@@ -159,7 +159,7 @@ class UnitProfileTests(unittest.TestCase):
                 self.assertIn(
                     "rl::mp.input::cpu_cores", c.parameter)
                 self.assertIn(
-                    "repetition", c.parameter)
+                    "header::all::repetition", c.parameter)
 
 
 class UnitTangoGeneratorTests(unittest.TestCase):

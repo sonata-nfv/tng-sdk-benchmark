@@ -124,7 +124,7 @@ class Experiment(object):
         {"repetition" : [0, 1, ...]}
         """
         r = dict()
-        r["repetition"] = list(range(0, self.repetitions))
+        r["header::all::repetition"] = list(range(0, self.repetitions))
         return r
 
     def _get_function_resource_space_as_dict(self):
