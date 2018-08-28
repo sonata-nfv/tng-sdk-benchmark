@@ -93,7 +93,7 @@ class UnitTangoGeneratorTests(unittest.TestCase):
             self.assertEqual(64, len(ex.experiment_configurations))
         # run the generator with test experiments
         g = TangoServiceConfigurationGenerator(args)
-        r = g.generate(TEST_TNG_PKG, None, ex_list)
+        g.generate(TEST_TNG_PKG, None, ex_list)
         # check results
         # import pdb; pdb.set_trace()
         for ex in ex_list:
@@ -144,5 +144,3 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 # check generated package artifacts exist
                 pkg_p = ec.package_path
                 self.assertTrue(os.path.exists(pkg_p))
-        # TODO check correct return values
-        self.assertEqual(len(r), 0)

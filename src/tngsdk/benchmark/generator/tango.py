@@ -61,6 +61,8 @@ class TangoServiceConfigurationGenerator(
     def __init__(self, args):
         self.args = args
         self.start_time = -1
+        self.stat_n_ex = 0
+        self.stat_n_ec = 0
         LOG.info("5GTANGO service configuration generator initialized")
         LOG.debug("5GTANGO generator args: {}".format(self.args))
 
@@ -84,8 +86,9 @@ class TangoServiceConfigurationGenerator(
         # Step 2: Generate for each experiment and package it
         for ex in service_ex:
             self._generate_projects(base_proj_path, ex)
-        # Step 3: Return (TODO check what is really needed and refactor)
-        return dict()
+            self.stat_n_ex += 1
+        # Step 3: Return pointers to func_ex and service_ex
+        return func_ex, service_ex
 
     def _unpack(self, pkg_path, proj_path):
         """
@@ -147,6 +150,7 @@ class TangoServiceConfigurationGenerator(
                      .format(n_done,
                              len(ex.experiment_configurations),
                              os.path.basename(ec.package_path)))
+        self.stat_n_ec += n_done
 
     def _copy_project(self, base_proj_path, ec):
         ec.project_path = os.path.join(
@@ -299,8 +303,8 @@ class TangoServiceConfigurationGenerator(
             rr.get("storage")["size"] = int(float(value))
             rr.get("storage")["size_unit"] = "GB"
             # TODO extend this with io_bw etc?
-        LOG.debug("Updated '{}' in VNFD '{}' to: {}"
-                  .format(field_name, vnfd.get("name"), rr))
+        # LOG.debug("Updated '{}' in VNFD '{}' to: {}"
+        #          .format(field_name, vnfd.get("name"), rr))
 
     def _get_nsd_path(self, ec):
         """
@@ -341,6 +345,15 @@ class TangoServiceConfigurationGenerator(
         for p in self._get_vnfd_paths(ec):
             r[p] = read_yaml(p)
         return r
+
+    def print_generation_and_packaging_statistics(self):
+        print("-" * 80)
+        print("5GTANGO tng-bench: Experiment generation report")
+        print("-" * 80)
+        print("Generated packages for {} experiments with {} configurations."
+              .format(self.stat_n_ex, self.stat_n_ec))
+        print("Total time: %s" % "%.4f" % (time.time() - self.start_time))
+        print("-" * 80)
 
 
 def parse_conf_parameter_name(name):
