@@ -38,7 +38,7 @@ import coloredlogs
 import time
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.helper import read_yaml
-from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
+# from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -82,65 +82,83 @@ class ProfileManager(object):
          self.function_experiments) = (
              self._generate_experiment_specifications(self.ped))
         # trigger experiment execution
-        self._experiment_execution()
+        self.cgen = self.load_generator()
+        if self.cgen is None:
+            return
+        self.generate_experiments()
+        self.execute_experiments()
 
-    def _experiment_execution(self):
-        # generate service configuration using the specified generator module
-        if not self.args.no_generation:
-            # select and instantiate configuration generator
-            cgen = None
-            if self.args.service_generator == "sonata":
-                from tngsdk.benchmark.generator.sonata \
-                    import SonataServiceConfigurationGenerator
-                cgen = SonataServiceConfigurationGenerator(self.args)
-            if self.args.service_generator == "eu.5gtango":
-                from tngsdk.benchmark.generator.tango \
-                    import TangoServiceConfigurationGenerator
-                cgen = TangoServiceConfigurationGenerator(self.args)
-            else:
-                LOG.error(
-                    "Unknown service configuration generator '{0}'. Exit 1."
-                    .format(self.args.service_generator))
-                exit(1)
-            if cgen is None:
-                LOG.error("Service conf. generator instantiation failed.")
-                exit(1)
-            # generate one service configuration for each experiment based
-            # on the service referenced in the PED file.
-            gen_conf_list = cgen.generate(
-                os.path.join(  # ensure that the reference is an absolute path
-                    os.path.dirname(
-                        self.ped.get("ped_path", "/")),
-                    self.ped.get("service_package")),
-                self.function_experiments,
-                self.service_experiments)
-            LOG.debug("Generation result: {}".format(gen_conf_list))
-            # display generator statistics
-            if not self.args.no_display:
-                cgen.print_generation_and_packaging_statistics()
+    def load_generator(self):
+        if self.args.no_generation:
+            print("Skipping generation: --no-generation")
+            return None
+        # select and instantiate configuration generator
+        cgen = None
+        if self.args.service_generator == "sonata":
+            from tngsdk.benchmark.generator.sonata \
+                import SonataServiceConfigurationGenerator
+            cgen = SonataServiceConfigurationGenerator(self.args)
+        if self.args.service_generator == "eu.5gtango":
+            from tngsdk.benchmark.generator.tango \
+                import TangoServiceConfigurationGenerator
+            cgen = TangoServiceConfigurationGenerator(self.args)
+        else:
+            LOG.error(
+                "Unknown service configuration generator '{0}'. Exit 1."
+                .format(self.args.service_generator))
+            exit(1)
+        if cgen is None:
+            LOG.error("Service conf. generator instantiation failed.")
+            exit(1)
+        return cgen
 
-        #
+    def generate_experiments(self):
+        if self.cgen is None:
+            raise BaseException("No generator loaded.")
+        # generate one service configuration for each experiment based
+        # on the service referenced in the PED file.
+        # outputs are annotated to
+        # service_experiments.experiment.configurations
+        #    .run_id
+        #    .project_path
+        #    .package_path
+        self.cgen.generate(
+            os.path.join(  # ensure that the reference is an absolute path
+                 os.path.dirname(
+                     self.ped.get("ped_path", "/")),
+                 self.ped.get("service_package")),
+            self.function_experiments,
+            self.service_experiments)
+        # display generator statistics
+        if not self.args.no_display:
+            self.cgen.print_generation_and_packaging_statistics()
+
+    def execute_experiments(self):
+        if self.args.no_execution:
+            print("Skipping execution: --no-execution")
+            return
+        LOG.error("Experiment execution not yet implemented.")
+        exit(1)
+        # TODO: continue with those old code fragments
         # @Edmaas dict 'gen_conf_list' holds the generation data you need.
         #
         # Execute the generated packages
-        if not self.args.no_execution:
+        #    if not gen_conf_list:
+        #        LOG.error("No generated packages, stopping execution")
+        #        raise Exception(
+        #            "Cannot execute experiments: No generated packages")
 
-            if not gen_conf_list:
-                LOG.error("No generated packages, stopping execution")
-                raise Exception(
-                    "Cannot execute experiments: No generated packages")
+        #    # get config file and read remote hosts description
+        #    config_loc = self.args.config
+        #    if not os.path.isabs(config_loc):
+        #        config_loc = os.path.join(
+        #                os.path.dirname(os.path.abspath(__file__)),
+        #                config_loc)
+        #    remote_hosts = read_yaml(config_loc).get("target_platforms")
 
-            # get config file and read remote hosts description
-            config_loc = self.args.config
-            if not os.path.isabs(config_loc):
-                config_loc = os.path.join(
-                        os.path.dirname(os.path.abspath(__file__)),
-                        config_loc)
-            remote_hosts = read_yaml(config_loc).get("target_platforms")
-
-            # start the experiment series
-            profiler = Active_Emu_Profiler(remote_hosts)
-            profiler.do_experiment_series(gen_conf_list)
+        #   # start the experiment series
+        #    profiler = Active_Emu_Profiler(remote_hosts)
+        #    profiler.do_experiment_series(gen_conf_list)
 
     @staticmethod
     def _load_ped_file(ped_path):

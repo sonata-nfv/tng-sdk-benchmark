@@ -38,7 +38,7 @@ service_experiments:
     # resource configurations to be tested during profiling run (defined per VNF)
     resource_limitations:
       - function: "eu.5gtango.vnf1.0.1"
-        cpu_bw: {min: 0.05, max: 0.2, step: 0.05}       
+        cpu_bw: {min: 0.05, max: 0.15, step: 0.05}       
         cpu_cores: 1
         mem_max: [64, 128]
         mem_swap_max: null
@@ -46,7 +46,7 @@ service_experiments:
       - function: "eu.5gtango.vnf2.0.1"
         cpu_bw: {min: 0.05, max: 0.1, step: 0.05}
         cpu_cores: 1
-        mem_max: [256, 512]
+        mem_max: [256]
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
@@ -61,6 +61,50 @@ service_experiments:
         mem_max: 512
         mem_swap_max: null
         io_bw: null
+  - name: "service_delay"
+    description: "ping test for entire service"
+    repetitions: 1
+    time_limit: "120"
+    # NSD to be used (vendor.name.version reference)
+    service: "eu.5gtango.exampleservice.0.1"
+    # additional containers for traffic generation/measurements (like SAPs)
+    measurement_points:
+      - name: "mp.output"
+        connection_point: "ns:serviceout"
+        container: "mpeuster/p2-mp"
+        cmd_start: null
+        cmd_stop: null
+      - name: "mp.input"
+        connection_point: "ns:servicein"
+        container: "mpeuster/p2-mp"
+        cmd_start: "ping -c 60 1.1.1.1"
+        cmd_stop: null
+    # resource configurations to be tested during profiling run (defined per VNF)
+    resource_limitations:
+      - function: "eu.5gtango.vnf1.0.1"
+        cpu_bw: {min: 0.05, max: 0.1, step: 0.05}       
+        cpu_cores: 1
+        mem_max: [64]
+        mem_swap_max: null
+        io_bw: null
+      - function: "eu.5gtango.vnf2.0.1"
+        cpu_bw: {min: 0.05, max: 0.05, step: 0.05}
+        cpu_cores: 1
+        mem_max: [256]
+        mem_swap_max: null
+        io_bw: null
+      - function: "mp.input"
+        cpu_bw: 0.2
+        cpu_cores: 1
+        mem_max: 512
+        mem_swap_max: null
+        io_bw: null
+      - function: "mp.output"
+        cpu_bw: 0.2
+        cpu_cores: 1
+        mem_max: 512
+        mem_swap_max: null
+        io_bw: null   
 
 # Second type of experiments: VNF level experiments (individually test each VNF)
 #
