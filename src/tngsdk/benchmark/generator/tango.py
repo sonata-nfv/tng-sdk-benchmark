@@ -81,11 +81,10 @@ class TangoServiceConfigurationGenerator(
         base_proj_path = os.path.join(
             self.args.work_dir, BASE_PROJECT_PATH)
         base_proj_path = self._unpack(in_pkg_path, base_proj_path)
-        # Step 2: Generate for each experiment
+        # Step 2: Generate for each experiment and package it
         for ex in service_ex:
             self._generate_projects(base_proj_path, ex)
-        # Step 3: Package each generated project
-        # Step 4: Return (TODO check what is really needed and refactor)
+        # Step 3: Return (TODO check what is really needed and refactor)
         return dict()
 
     def _unpack(self, pkg_path, proj_path):
