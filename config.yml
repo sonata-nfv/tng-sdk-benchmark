@@ -29,37 +29,17 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
-import logging
 
-
-LOG = logging.getLogger(__name__)
-
-
-class Executor(object):
-
-    def __init__(self, args, ex_list):
-        self.args = args
-        # list of experiments to execute
-        self.ex_list = ex_list
-        LOG.info("New executor")
-
-    def setup(self):
-        """
-        Prepare the target platform.
-        """
-        LOG.info("Executor setup")
-        pass
-
-    def run(self):
-        """
-        Executes all experiments.
-        """
-        LOG.info("Executor run")
-        pass
-
-    def teardown(self):
-        """
-        Clean up target platform.
-        """
-        LOG.info("Executor teardown")
-        pass
+#
+# tng-sdk-benchmark configuration file
+#
+---
+# list of target platform for bench. execution
+targets:
+  - name: default
+    description: "vim-emu on rdev"
+    host: fgcn-peuster.cs.upb.de
+    pdriver: vimemu  # type of target (vimemu, osm)
+    pdriver_config:  # structure can be pdriver specific
+      llcm_port: 5000
+      docker_port: 5100

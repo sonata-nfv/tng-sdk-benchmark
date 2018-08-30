@@ -37,6 +37,7 @@ import logging
 import coloredlogs
 import time
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
+from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml
 # from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
 
@@ -58,12 +59,9 @@ class ProfileManager(object):
         self.start_time = time.time()
         self.service_experiments = list()
         self.function_experiments = list()
-        self.generated_services = list()
-        # arguments
         self.args = args
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
-        self.work_dir = self.args.work_dir
-        self.output_dir = self.args.output_dir
+        self.args.config = self._load_config(args.configfile)
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
         LOG.info("5GTANGO benchmarking/profiling tool initialized")
@@ -137,28 +135,23 @@ class ProfileManager(object):
         if self.args.no_execution:
             print("Skipping execution: --no-execution")
             return
-        LOG.error("Experiment execution not yet implemented.")
-        exit(1)
-        # TODO: continue with those old code fragments
-        # @Edmaas dict 'gen_conf_list' holds the generation data you need.
-        #
-        # Execute the generated packages
-        #    if not gen_conf_list:
-        #        LOG.error("No generated packages, stopping execution")
-        #        raise Exception(
-        #            "Cannot execute experiments: No generated packages")
+        # create an executor
+        exe = Executor(self.args, self.service_experiments)
+        # prepare
+        exe.setup()
+        # run
+        exe.run()
+        # clean
+        exe.teardown()
 
-        #    # get config file and read remote hosts description
-        #    config_loc = self.args.config
-        #    if not os.path.isabs(config_loc):
-        #        config_loc = os.path.join(
-        #                os.path.dirname(os.path.abspath(__file__)),
-        #                config_loc)
-        #    remote_hosts = read_yaml(config_loc).get("target_platforms")
-
-        #   # start the experiment series
-        #    profiler = Active_Emu_Profiler(remote_hosts)
-        #    profiler.do_experiment_series(gen_conf_list)
+    @staticmethod
+    def _load_config(path):
+        try:
+            return read_yaml(path)
+        except BaseException as e:
+            LOG.error("Couldn't read config file: '{}'. Abort."
+                      .format(path))
+            exit(1)
 
     @staticmethod
     def _load_ped_file(ped_path):
@@ -248,6 +241,15 @@ def parse_args(manual_args=None):
         dest="ped")
 
     parser.add_argument(
+        "-c",
+        "--config",
+        help="Config file to be used, e.g., defining the execution platforms."
+        + "Default: config.yml",
+        required=False,
+        default="config.yml",
+        dest="configfile")
+
+    parser.add_argument(
         "--work-dir",
         help="Dictionary for generated artifacts,"
         + " e.g., profiling packages. Will use a temporary"
@@ -255,13 +257,6 @@ def parse_args(manual_args=None):
         required=False,
         default=tempfile.mkdtemp(),
         dest="work_dir")
-
-    parser.add_argument(
-        "--output-dir",
-        help="Folder to collect measurements. Default: Current directory.",
-        required=False,
-        default=os.getcwd(),
-        dest="output_dir")
 
     parser.add_argument(
         "--no-generation",
@@ -281,27 +276,11 @@ def parse_args(manual_args=None):
 
     parser.add_argument(
         "--no-display",
-        help="Disable realtime output of profiling results",
+        help="Disable additional outputs.",
         required=False,
         default=False,
         dest="no_display",
         action="store_true")
-
-    parser.add_argument(
-        "--graph-only",
-        help="only display graphs using the stored results",
-        required=False,
-        default=False,
-        dest="graph_only",
-        action="store_true")
-
-    parser.add_argument(
-        "-r",
-        "--results_file",
-        help="file to store the results",
-        required=False,
-        default="test_results.yml",
-        dest="results_file")
 
     parser.add_argument(
         "--generator",
@@ -310,15 +289,6 @@ def parse_args(manual_args=None):
         required=False,
         default="eu.5gtango",
         dest="service_generator")
-
-    parser.add_argument(
-        "-c",
-        "--config",
-        help="Son Profile config file. Default is config.yml. Path has to "
-        + "either be absolute or relative to location of python script.",
-        required=False,
-        default="config.yml",
-        dest="config")
 
     if manual_args is not None:
         return parser.parse_args(manual_args)

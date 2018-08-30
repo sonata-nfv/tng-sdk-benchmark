@@ -63,7 +63,7 @@ class TangoServiceConfigurationGenerator(
         self.start_time = -1
         self.stat_n_ex = 0
         self.stat_n_ec = 0
-        LOG.info("5GTANGO service configuration generator initialized")
+        LOG.info("New 5GTANGO service configuration generator")
         LOG.debug("5GTANGO generator args: {}".format(self.args))
 
     def generate(self, in_pkg_path, func_ex,
