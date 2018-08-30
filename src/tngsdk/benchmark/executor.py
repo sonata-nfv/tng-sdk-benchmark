@@ -30,9 +30,10 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 import logging
+import os
 
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(os.path.basename(__file__))
 
 
 class Executor(object):
@@ -42,6 +43,7 @@ class Executor(object):
         # list of experiments to execute
         self.ex_list = ex_list
         LOG.info("New executor")
+        LOG.debug("Config: {}".format(self.args.config))
 
     def setup(self):
         """
@@ -55,6 +57,9 @@ class Executor(object):
         Executes all experiments.
         """
         LOG.info("Executor run")
+        # iterate over experiments
+        # match to targets (TODO assignment problem)
+        # execute
         pass
 
     def teardown(self):

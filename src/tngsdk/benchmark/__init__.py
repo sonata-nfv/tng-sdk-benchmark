@@ -60,6 +60,7 @@ class ProfileManager(object):
         self.service_experiments = list()
         self.function_experiments = list()
         self.args = args
+        self.args.debug = self.args.verbose
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
         self.args.config = self._load_config(args.configfile)
         # logging setup
