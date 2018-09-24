@@ -34,9 +34,13 @@ import os
 import sys
 import argparse
 import coloredlogs
+import multiprocessing
+import time
+import signal
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
+from gevent.pywsgi import WSGIServer
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -84,18 +88,33 @@ api = Api(blueprint,
           title='5GTANGO tng-bench-emusrv API',
           description="5GTANGO tng-package REST API ")
 app.register_blueprint(blueprint)
+app.emulation_process = None
+app.emulation_process_queue = None
 api.add_namespace(api_v1)
+http_server = None
 
 
 def serve_forever(args, debug=True):
     """
     Start REST API server. Blocks.
     """
-    # TODO replace this with WSGIServer for better performance
+    global http_server
     app.cliargs = args
-    app.run(host=args.service_address,
-            port=args.service_port,
-            debug=debug)
+    # app.run(host=args.service_address,
+    #        port=args.service_port,
+    #        debug=debug)
+    http_server = WSGIServer(
+        (args.service_address, args.service_port), app)
+    http_server.serve_forever()
+
+
+def stop_serve(signum, frame):
+    """
+    Stop REST API and emulation.
+    """
+    LOG.info("Received SIGNAL {}. Stopping.".format(signum))
+    stop_emulation()
+    http_server.close()
 
 
 def main():
@@ -108,6 +127,8 @@ def main():
     else:
         coloredlogs.install(level="INFO")
     LOG.info("Starting tng-bench-emusrv server ... CTRL+C to exit.")
+    signal.signal(signal.SIGINT, stop_serve)
+    signal.signal(signal.SIGTERM, stop_serve)
     serve_forever(args)
 
 
@@ -117,9 +138,61 @@ class EmulationEndpoint(Resource):
     Endpoint to control emulation.
     """
     def post(self):
-        LOG.warning("POST endpoint not implemented yet")
-        return "not implemented", 501
+        """
+        Start emulation.
+        """
+        LOG.info("POST /emulation")
+        if app.emulation_process is not None:
+            return "Conflict: Emulation already running", 409
+        # spawn new process for the emulator
+        # see: https://docs.python.org/3/library/multiprocessing.html
+        ctx = multiprocessing.get_context('spawn')
+        app.emulation_process_queue = ctx.Queue()
+        app.emulation_process = ctx.Process(
+            target=start_emulation,
+            args=(app.emulation_process_queue, ))  # (arg1,)
+        app.emulation_process.start()
+        return "OK", 201
 
     def delete(self):
-        LOG.warning("DELETE endpoint not implemented yet")
-        return "not implemented", 501
+        """
+        Stop emulation.
+        """
+        LOG.info("DELETE /emulation")
+        if app.emulation_process is None:
+            return "Not found: No emulation running?", 403
+        stop_emulation()
+        return "OK", 200
+
+
+def start_emulation(ipc_queue):
+    t = EmulatorProfilingTopology()
+    t.start()
+    # run until emulation is stopped
+    while(True):
+        time.sleep(1)
+        print("Emulation running ...")
+        if not ipc_queue.empty():
+            if ipc_queue.get() == "stop":
+                print("Emulation process received: 'stop'")
+                break
+    t.stop()
+
+
+def stop_emulation():
+    if app.emulation_process is not None:
+        app.emulation_process_queue.put("stop")
+        app.emulation_process.join()
+        app.emulation_process = None
+
+
+class EmulatorProfilingTopology(object):
+
+    def __init__(self):
+        pass
+
+    def start(self):
+        LOG.info("Starting emulation ...")
+
+    def stop(self):
+        LOG.info("Stopping emulation ...")
