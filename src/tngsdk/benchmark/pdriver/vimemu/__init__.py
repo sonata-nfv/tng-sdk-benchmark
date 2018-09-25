@@ -31,6 +31,7 @@
 # partner consortium (www.5gtango.eu).
 import logging
 import os
+import requests
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -42,12 +43,15 @@ class VimEmuDriver(object):
 
     def __init__(self, config):
         self.config = config
+        self.emusrv_url = ("{}:{}/api/v1/emulation"
+                           .format(config.get("host"),
+                                   config.get("emusrv_port")))
         LOG.info("Initialized VimEmuDriver with {}"
                  .format(self.config))
 
     def setup_platform(self):
-        # check connectivity
-        pass
+        # check connectivity to target
+        self._check_platform_ready()
 
     def setup_experiment(self, ec):
         # start emulator
@@ -67,3 +71,10 @@ class VimEmuDriver(object):
 
     def teardown_platform(self):
         pass
+
+    def _check_platform_ready(self):
+        r = requests.get(self.emusrv_url)
+        if r.status_code != 200:
+            raise BaseException("tng-bench-emusrv not ready")
+        if r.text.strip() != "false":
+            raise BaseException("emulation server not empty")
