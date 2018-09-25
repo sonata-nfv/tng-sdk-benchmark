@@ -160,7 +160,7 @@ class EmulationEndpoint(Resource):
             target=start_emulation,
             args=(app.emulation_process_queue, ))  # (arg1,)
         app.emulation_process.start()
-        return "OK", 201
+        return True, 201
 
     def delete(self):
         """
@@ -170,7 +170,14 @@ class EmulationEndpoint(Resource):
         if app.emulation_process is None:
             return "Not found: No emulation running?", 403
         stop_emulation()
-        return "OK", 200
+        return True, 200
+
+    def get(self):
+        """
+        Return status
+        """
+        LOG.info("GET /emulation")
+        return app.emulation_process is not None, 200
 
 
 def start_emulation(ipc_queue):
