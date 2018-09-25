@@ -42,29 +42,54 @@ class Executor(object):
         self.args = args
         # list of experiments to execute
         self.ex_list = ex_list
-        LOG.info("New executor")
+        LOG.info("Initialized executor with {} experiments and {} configs"
+                 .format(len(self.ex_list),
+                         [len(ex.experiment_configurations)
+                          for ex in self.ex_list]))
         LOG.debug("Config: {}".format(self.args.config))
+        # load pdriver module to be used
+        self.pd = None
+        # FIXME only load the "default" target for now
+        for t in self.args.config.get("targets"):
+            if t.get("name") == "default":
+                self.pd = self._load_pdriver(t)
+
+    def _load_pdriver(self, t):
+        if t.get("pdriver") == "vimemu":
+            from tngsdk.benchmark.pdriver.vimemu import VimEmuDriver
+            return VimEmuDriver(t.get("pdriver_config"))
+        else:
+            raise BaseException("Platform driver '{}' not supported."
+                                .format(t.get("pdriver")))
+        return None
 
     def setup(self):
         """
         Prepare the target platform.
         """
-        LOG.info("Executor setup")
-        pass
+        LOG.info("Preparing target platforms")
+        self.pd.setup_platform()
 
     def run(self):
         """
-        Executes all experiments.
+        Executes all experiments and configurations.
         """
-        LOG.info("Executor run")
-        # iterate over experiments
+        LOG.info("Executing experiments")
         # match to targets (TODO assignment problem)
-        # execute
-        pass
+        t_pd = self.pd
+        # iterate over experiments/configs and execute
+        for ex in self.ex_list:
+            for ec in ex.experiment_configurations:
+                LOG.info("Setting up '{}'".format(ec))
+                t_pd.setup_experiment(ec)
+                LOG.info("Executing '{}'".format(ec))
+                t_pd.execute_experiment(ec)
+                LOG.info("Teardown '{}'".format(ec))
+                t_pd.teardown_experiment(ec)
 
     def teardown(self):
         """
         Clean up target platform.
         """
-        LOG.info("Executor teardown")
-        pass
+        LOG.info("Teardown target platforms")
+        self.pd.teardown_platform()

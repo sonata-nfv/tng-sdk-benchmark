@@ -38,8 +38,8 @@
 targets:
   - name: default
     description: "vim-emu on rdev"
-    host: fgcn-peuster.cs.upb.de
     pdriver: vimemu  # type of target (vimemu, osm)
     pdriver_config:  # structure can be pdriver specific
+      host: fgcn-peuster.cs.upb.de
       llcm_port: 5000
       docker_port: 5100

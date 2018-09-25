@@ -29,3 +29,41 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+import logging
+import os
+
+
+LOG = logging.getLogger(os.path.basename(__file__))
+
+
+class VimEmuDriver(object):
+    # FIXME Public API of this class is the
+    # prototype for the generic driver API.
+
+    def __init__(self, config):
+        self.config = config
+        LOG.info("Initialized VimEmuDriver with {}"
+                 .format(self.config))
+
+    def setup_platform(self):
+        # check connectivity
+        pass
+
+    def setup_experiment(self, ec):
+        # start emulator
+        # wait for emulator ready
+        # upload package
+        # instantiate service
+        # wait for service beeing ready
+        # setup monitoring?
+        pass
+
+    def execute_experiment(self, ec):
+        # trigger MP commands
+        pass
+
+    def teardown_experiment(self, ec):
+        pass
+
+    def teardown_platform(self):
+        pass
