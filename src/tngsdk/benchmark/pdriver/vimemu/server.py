@@ -29,12 +29,18 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+
+#
+# Attention: This module requires Python2.7 because of its dependencies
+# to vim-emu.
+#
+
 import logging
 import os
 import sys
 import argparse
 import coloredlogs
-import multiprocessing
+import multiprocessing as mp
 import time
 import signal
 from flask import Flask, Blueprint
@@ -146,9 +152,10 @@ class EmulationEndpoint(Resource):
             return "Conflict: Emulation already running", 409
         # spawn new process for the emulator
         # see: https://docs.python.org/3/library/multiprocessing.html
-        ctx = multiprocessing.get_context('spawn')
-        app.emulation_process_queue = ctx.Queue()
-        app.emulation_process = ctx.Process(
+        # see: https://docs.python.org/2.7/library/multiprocessing.html
+        # ctx = multiprocessing.get_context('spawn')
+        app.emulation_process_queue = mp.Queue()
+        app.emulation_process = mp.Process(
             target=start_emulation,
             args=(app.emulation_process_queue, ))  # (arg1,)
         app.emulation_process.start()
