@@ -43,6 +43,7 @@ import coloredlogs
 import multiprocessing as mp
 import time
 import signal
+import datetime
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
@@ -175,10 +176,12 @@ class EmulationEndpoint(Resource):
 def start_emulation(ipc_queue):
     t = EmulatorProfilingTopology()
     t.start()
+    print("{} Emulation running ..."
+          .format(datetime.datetime.now()))
     # run until emulation is stopped
     while(True):
         time.sleep(1)
-        print("Emulation running ...")
+        # print("Emulation running ...")
         if not ipc_queue.empty():
             if ipc_queue.get() == "stop":
                 print("Emulation process received: 'stop'")
@@ -200,6 +203,26 @@ class EmulatorProfilingTopology(object):
 
     def start(self):
         LOG.info("Starting emulation ...")
+        from mininet.log import setLogLevel
+        from emuvim.dcemulator.net import DCNetwork
+        from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
+        from emuvim.api.tango import TangoLLCMEndpoint
+        setLogLevel('info')  # set Mininet loglevel
+        # create topology
+        self.net = DCNetwork(monitor=False, enable_learning=False)
+        # we only need one DC for benchmarking
+        dc = self.net.addDatacenter("dc1")
+        # add the command line interface endpoint to each DC (REST API)
+        rapi1 = RestApiEndpoint("0.0.0.0", 5001)
+        rapi1.connectDCNetwork(self.net)
+        rapi1.connectDatacenter(dc)
+        rapi1.start()
+        # add the 5GTANGO lightweight life cycle manager (LLCM) to the topology
+        llcm1 = TangoLLCMEndpoint("0.0.0.0", 5000, deploy_sap=False)
+        llcm1.connectDatacenter(dc)
+        llcm1.start()
+        self.net.start()
 
     def stop(self):
         LOG.info("Stopping emulation ...")
+        self.net.stop()

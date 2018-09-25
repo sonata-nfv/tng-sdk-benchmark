@@ -149,9 +149,10 @@ class ProfileManager(object):
     def _load_config(path):
         try:
             return read_yaml(path)
-        except BaseException as e:
+        except BaseException as ex:
             LOG.error("Couldn't read config file: '{}'. Abort."
                       .format(path))
+            LOG.debug(ex)
             exit(1)
 
     @staticmethod
