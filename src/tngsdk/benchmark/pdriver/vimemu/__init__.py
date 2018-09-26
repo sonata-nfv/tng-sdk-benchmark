@@ -31,7 +31,9 @@
 # partner consortium (www.5gtango.eu).
 import logging
 import os
-import requests
+import time
+from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
+from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -43,20 +45,29 @@ class VimEmuDriver(object):
 
     def __init__(self, config):
         self.config = config
-        self.emusrv_url = ("{}:{}/api/v1/emulation"
+        self.emusrv_url = ("{}:{}"
                            .format(config.get("host"),
                                    config.get("emusrv_port")))
+        self.llcm_url = ("{}:{}"
+                         .format(config.get("host"),
+                                 config.get("llcm_port")))
+        # initialize sub-driver
+        self.emusrvc = EmuSrvClient(self.emusrv_url)
+        self.llcmc = LLCMClient(self.llcm_url)
         LOG.info("Initialized VimEmuDriver with {}"
                  .format(self.config))
 
     def setup_platform(self):
         # check connectivity to target
-        self._check_platform_ready()
+        self.emusrvc.check_platform_ready()
 
     def setup_experiment(self, ec):
         # start emulator
+        self.emusrvc.start_emulation()
         # wait for emulator ready
+        self.emusrvc.wait_emulation_ready(self.llcmc)
         # upload package
+        self.llcmc.upload_package(ec.package_path)
         # instantiate service
         # wait for service beeing ready
         # setup monitoring?
@@ -64,17 +75,12 @@ class VimEmuDriver(object):
 
     def execute_experiment(self, ec):
         # trigger MP commands
-        pass
+        for i in range(0, 20):
+            print("Experiment running ...{}/20".format(i))
+            time.sleep(.5)
 
     def teardown_experiment(self, ec):
-        pass
+        self.emusrvc.stop_emulation()
 
     def teardown_platform(self):
         pass
-
-    def _check_platform_ready(self):
-        r = requests.get(self.emusrv_url)
-        if r.status_code != 200:
-            raise BaseException("tng-bench-emusrv not ready")
-        if r.text.strip() != "false":
-            raise BaseException("emulation server not empty")

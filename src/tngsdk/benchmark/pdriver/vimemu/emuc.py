@@ -29,3 +29,82 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+import logging
+import os
+import requests
+import time
+
+
+LOG = logging.getLogger(os.path.basename(__file__))
+
+
+class EmuSrvClient(object):
+
+    def __init__(self, endpoint):
+        self.emu_endpoint = "{}/api/v1/emulation".format(endpoint)
+        LOG.debug("Initialized EmuSrv client for {}".format(endpoint))
+
+    def check_platform_ready(self):
+        try:
+            r = requests.get(self.emu_endpoint)
+        except BaseException as ex:
+            LOG.debug(ex)
+            raise BaseException("con't connect to tng-bench-emusrv ")
+        if r.status_code != 200:
+            raise BaseException("tng-bench-emusrv not ready")
+        if r.text.strip() != "false":
+            raise BaseException("emulation server not empty")
+
+    def start_emulation(self):
+        try:
+            r = requests.post(self.emu_endpoint)
+        except BaseException as ex:
+            LOG.debug(ex)
+            raise BaseException("con't connect to tng-bench-emusrv ")
+        if r.status_code != 201:
+            raise BaseException(
+                "tng-bench-emusrv couldn't start emulation")
+
+    def stop_emulation(self):
+        try:
+            r = requests.delete(self.emu_endpoint)
+        except BaseException as ex:
+            LOG.debug(ex)
+            raise BaseException("con't connect to tng-bench-emusrv ")
+        if r.status_code != 200:
+            raise BaseException(
+                "tng-bench-emusrv couldn't stop emulation")
+
+    def wait_emulation_ready(self, llcmc, timeout=60):
+        for i in range(0, timeout):
+            try:
+                LOG.info("Waiting for emulator LLCM ... {}/{}"
+                         .format(i, timeout))
+                r = llcmc.list_packages()
+                if r.status_code == 200:
+                    LOG.info("Emulator LLCM ready")
+                    return True
+            except BaseException:
+                pass  # ignore connection failures
+            time.sleep(1)  # wait for retry
+        raise BaseException("Timeout. Emulation LLCM was not ready in time")
+
+
+class LLCMClient(object):
+
+    def __init__(self, endpoint):
+        self.pkg_endpoint = "{}/packages".format(endpoint)
+        LOG.debug("Initialized LLCM client for {}".format(endpoint))
+
+    def list_packages(self):
+        return requests.get(self.pkg_endpoint)
+
+    def upload_package(self, pkg_path):
+        LOG.info("On-boarding to LLCM: {}".format(pkg_path))
+        with open(pkg_path, "rb") as f:
+            data = {"package": f.read()}
+            return requests.post(
+                self.pkg_endpoint, files=data)
+
+    def instantiate_service(self, uuid):
+        pass
