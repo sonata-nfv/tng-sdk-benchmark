@@ -39,8 +39,11 @@ from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
 import tngsdk.package as tngpkg
 
 LOG = logging.getLogger(__name__)
-# decrease the loglevel of the packager tool
+
+# overwrite packager log levels
 logging.getLogger("packager.py").setLevel(logging.WARNING)
+logging.getLogger("cli.py").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 BASE_PROJECT_PATH = "base_project/"
@@ -63,7 +66,7 @@ class TangoServiceConfigurationGenerator(
         self.start_time = -1
         self.stat_n_ex = 0
         self.stat_n_ec = 0
-        LOG.info("5GTANGO service configuration generator initialized")
+        LOG.info("New 5GTANGO service configuration generator")
         LOG.debug("5GTANGO generator args: {}".format(self.args))
 
     def generate(self, in_pkg_path, func_ex,
@@ -98,7 +101,8 @@ class TangoServiceConfigurationGenerator(
             "--unpackage", pkg_path,
             "--output", proj_path,
             "--store-backend", "TangoProjectFilesystemBackend",
-            "--quiet"
+            "--quiet",
+            "-v"
         ]
         # call the package component
         r = tngpkg.run(args)
@@ -118,7 +122,8 @@ class TangoServiceConfigurationGenerator(
             "--package", proj_path,
             "--output", pkg_path,
             "--store-backend", "TangoProjectFilesystemBackend",
-            "--quiet"
+            "--quiet",
+            "-v"
         ]
         # call the package component
         r = tngpkg.run(args)

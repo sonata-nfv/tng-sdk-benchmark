@@ -72,7 +72,8 @@ def expand_parameters(p):
                        p.get("max"),
                        p.get("step", DEFAULT_STEP)))
         except BaseException as ex:
-            LOG.exception("AssertionError in dict expansion.")
+            LOG.exception("AssertionError in dict expansion: {}"
+                          .format(ex))
     # default: no expansion (e.g. for strings)
     return p
 

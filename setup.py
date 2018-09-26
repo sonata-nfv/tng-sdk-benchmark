@@ -87,7 +87,8 @@ setup(name='tngsdk.benchmark',
           'console_scripts': [
               'tng-sdk-benchmark=tngsdk.benchmark:main',
               'tng-benchmark=tngsdk.benchmark:main',
-              'tng-bench=tngsdk.benchmark:main'
+              'tng-bench=tngsdk.benchmark:main',
+              'tng-bench-emusrv=tngsdk.benchmark.pdriver.vimemu.server:main'
           ],
       },
       test_suite='tngsdk',

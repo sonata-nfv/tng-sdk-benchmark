@@ -45,6 +45,7 @@ def read_yaml(path):
                 yml = yaml.load(f)
             except yaml.YAMLError as ex:
                 LOG.exception("YAML error while reading %r." % path)
+                LOG.debug(ex)
     return yml
 
 
@@ -54,6 +55,7 @@ def write_yaml(path, data):
             yaml.dump(data, f, default_flow_style=False)
         except yaml.YAMLError as ex:
             LOG.exception("YAML error while writing %r" % path)
+            LOG.debug(ex)
 
 
 def ensure_dir(d):

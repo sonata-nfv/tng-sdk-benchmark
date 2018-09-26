@@ -41,8 +41,11 @@ LOG = logging.getLogger(__name__)
 class Experiment(object):
 
     def __init__(self, definition):
+        self.name = None
         self.resource_limitations = dict()
         self.profile_calculations = list()
+        self.measurement_points = list()
+        self.repetitions = 0
         # populate object from YAML definition
         self.__dict__.update(definition)
         # attributes
