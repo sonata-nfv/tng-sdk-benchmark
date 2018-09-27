@@ -46,6 +46,7 @@ logging.getLogger("cli.py").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
+BASE_PKG_PATH = "base_pkg/"
 BASE_PROJECT_PATH = "base_project/"
 GEN_PROJECT_PATH = "gen_projects/"
 GEN_PKG_PATH = "gen_pkgs/"
@@ -82,6 +83,13 @@ class TangoServiceConfigurationGenerator(
         self.start_time = time.time()
         LOG.info("Generating {} service experiments using {}"
                  .format(len(service_ex), in_pkg_path))
+        # Step 0 (optional): Support 5GTANGO projects
+        if self._is_tango_project(in_pkg_path):
+            # package the project first to temp
+            r = self._pack(in_pkg_path, os.path.join(
+                    self.args.work_dir, BASE_PKG_PATH))
+            # re-write in_pkg_path
+            in_pkg_path = r
         # Step 1: Unpack in_pkg to work_dir/BASE_PROJECT
         base_proj_path = os.path.join(
             self.args.work_dir, BASE_PROJECT_PATH)
@@ -125,6 +133,8 @@ class TangoServiceConfigurationGenerator(
             "--quiet",
             "-v"
         ]
+        # be sure that output dir is there
+        ensure_dir(pkg_path)
         # call the package component
         r = tngpkg.run(args)
         if r.error is not None:
@@ -350,6 +360,15 @@ class TangoServiceConfigurationGenerator(
         for p in self._get_vnfd_paths(ec):
             r[p] = read_yaml(p)
         return r
+
+    def _is_tango_project(self, in_pkg_path):
+        if not str(in_pkg_path).endswith(".tgo"):
+            if (os.path.exists(
+                os.path.join(in_pkg_path, "project.yml"))
+                    or os.path.exists(
+                        os.path.join(in_pkg_path, "project.yaml"))):
+                return True
+        return False
 
     def print_generation_and_packaging_statistics(self):
         print("-" * 80)

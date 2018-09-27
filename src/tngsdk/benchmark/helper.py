@@ -59,7 +59,9 @@ def write_yaml(path, data):
 
 
 def ensure_dir(d):
+    d = os.path.dirname(d)
     if not os.path.exists(d):
+        LOG.debug("Creating path '{}'".format(d))
         os.makedirs(d)
 
 
