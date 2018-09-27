@@ -27,31 +27,6 @@ pipeline {
                 sh "pipeline/checkstyle/check.sh"
             }
         }
-        stage('Container publication') {
-            steps {
-                echo 'Stage: Container publication...'
-                sh "pipeline/publish/publish.sh"
-            }
-        }
-        stage('Deploy in integration') {
-            steps {
-                echo 'Stage: Deploy in integration ... (not implemented)'
-            }
-        }
-        stage('Smoke tests') {
-            steps {
-                echo 'Stage: Smoke test... (not implemented)'
-            }
-        }
-        stage('Promoting containers to integration env') {
-            when {
-                branch 'master'
-            }
-            steps {
-                echo 'Stage: Promoting containers to integration env'
-                sh "pipeline/promote/promote-int.sh"
-            }
-        }
     }
     post {
          success {
