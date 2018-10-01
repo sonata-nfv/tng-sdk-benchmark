@@ -67,15 +67,21 @@ class VimEmuDriver(object):
         # wait for emulator ready
         self.emusrvc.wait_emulation_ready(self.llcmc)
         # upload package
-        self.llcmc.upload_package(ec.package_path)
+        ns_uuid = self.llcmc.upload_package(ec.package_path)
         # instantiate service
+        nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
+        LOG.info("Instantiated servie: {}".format(nsi_uuid))
         # wait for service beeing ready
         # setup monitoring?
         pass
 
     def execute_experiment(self, ec):
         # trigger MP commands
-        for i in range(0, 20):
+        # TODO remove when deployment works
+        print("Wait for user input...")
+        x = input()
+        ###
+        for i in range(0, 5):
             print("Experiment running ...{}/20".format(i))
             time.sleep(.5)
 

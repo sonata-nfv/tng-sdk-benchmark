@@ -33,6 +33,7 @@ import logging
 import os
 import requests
 import time
+import json
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -94,6 +95,7 @@ class LLCMClient(object):
 
     def __init__(self, endpoint):
         self.pkg_endpoint = "{}/packages".format(endpoint)
+        self.nsi_endpoint = "{}/instantiations".format(endpoint)
         LOG.debug("Initialized LLCM client for {}".format(endpoint))
 
     def list_packages(self):
@@ -103,8 +105,17 @@ class LLCMClient(object):
         LOG.info("On-boarding to LLCM: {}".format(pkg_path))
         with open(pkg_path, "rb") as f:
             data = {"package": f.read()}
-            return requests.post(
+            r = requests.post(
                 self.pkg_endpoint, files=data)
+            if r.status_code == 201:
+                return json.loads(r.text).get("service_uuid")
+            raise BaseException("Error during on-boarding.")
 
     def instantiate_service(self, uuid):
-        pass
+        LOG.info("Instantiating NS: {}".format(uuid))
+        data = {"service_uuid": uuid}
+        r = requests.post(
+            self.nsi_endpoint, json=data)
+        if r.status_code == 201:
+            return json.loads(r.text).get("service_instance_uuid")
+        raise BaseException("Error during NS instantiation.")
