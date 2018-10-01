@@ -79,7 +79,7 @@ class VimEmuDriver(object):
         # trigger MP commands
         # TODO remove when deployment works
         print("Wait for user input...")
-        x = input()
+        input()
         ###
         for i in range(0, 5):
             print("Experiment running ...{}/20".format(i))
