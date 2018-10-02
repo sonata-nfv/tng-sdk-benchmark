@@ -224,6 +224,11 @@ class TangoServiceConfigurationGenerator(
         vnfd["name"] = mp.get("name")
         # allow different containers as parameter study
         vnfd["virtual_deployment_units"][0]["vm_image"] = mp.get("container")
+        # add manually defined data interface address
+        if mp.get("address"):
+            for cp in vnfd["connection_points"]:
+                if cp.get("id") == "data":
+                    cp["address"] = mp.get("address")
         # write vnfd to project
         vname = "{}.yaml".format(mp.get("name"))
         write_yaml(os.path.join(ec.project_path, vname), vnfd)
