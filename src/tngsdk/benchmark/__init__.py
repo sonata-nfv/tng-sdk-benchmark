@@ -39,6 +39,7 @@ import time
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml
+from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
 # from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
 
 
@@ -86,6 +87,7 @@ class ProfileManager(object):
             return
         self.generate_experiments()
         self.execute_experiments()
+        self.process_results()
 
     def load_generator(self):
         if self.args.no_generation:
@@ -144,6 +146,19 @@ class ProfileManager(object):
         exe.run()
         # clean
         exe.teardown()
+
+    def process_results(self):
+        if self.args.no_result:
+            print("Skipping results: --no-result")
+            return
+        # create result prcessor
+        rp_list = list()
+        rp_list.append(IetfBmwgResultProcessor(
+            self.args, self.service_experiments))
+        LOG.info("Prepared {} result processor(s)".format(len(rp_list)))
+        # process results
+        for rp in rp_list:
+            LOG.info("Running result processor '{}'". format(rp))
 
     @staticmethod
     def _load_config(path):
@@ -274,6 +289,14 @@ def parse_args(manual_args=None):
         required=False,
         default=False,
         dest="no_execution",
+        action="store_true")
+
+    parser.add_argument(
+        "--no-result",
+        help="Skip result processing step.",
+        required=False,
+        default=False,
+        dest="no_result",
         action="store_true")
 
     parser.add_argument(
