@@ -159,6 +159,7 @@ class ProfileManager(object):
         # process results
         for rp in rp_list:
             LOG.info("Running result processor '{}'". format(rp))
+            rp.run()
 
     @staticmethod
     def _load_config(path):

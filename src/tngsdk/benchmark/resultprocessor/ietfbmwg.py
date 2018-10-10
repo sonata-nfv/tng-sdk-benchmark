@@ -29,12 +29,47 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+import logging
+import os
+from tngsdk.benchmark.helper import ensure_dir
+
+
+LOG = logging.getLogger(__name__)
 
 
 class IetfBmwgResultProcessor(object):
 
     def __init__(self, args, service_experiments):
-        pass
+        self.args = args
+        self.service_experiments = service_experiments
 
     def run(self):
+        # check inputs and possibly skip
+        if self.args.ibbd_dir is None:
+            LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
+            return
+        # prepare
+        ensure_dir(self.args.ibbd_dir)
+        # generate IETF BMWG BD, PP, BR
+        for ex in self.service_experiments:
+            # iterate over all experiment configurations
+            for ec in ex.experiment_configurations:
+                # generate assets
+                bd = self._generate_bd(ec)
+                pp = self._generate_pp(ec)
+                self._generate_br(ec, bd, pp)
+
+    def _generate_bd(self, ec):
+        # output path for YAML file
+        path = os.path.join(self.args.ibbd_dir,
+                            "{}-bd.yaml".format(ec.name))
+        LOG.debug("Generated IETF BMWG BD: {}".format(path))
+        # TODO render BD using template
+        bd = dict()
+        return bd
+
+    def _generate_pp(self, ec):
+        return dict()
+
+    def _generate_br(self, ec, bd, pp):
         pass
