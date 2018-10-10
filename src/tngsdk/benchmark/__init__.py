@@ -315,6 +315,15 @@ def parse_args(manual_args=None):
         default="eu.5gtango",
         dest="service_generator")
 
+    parser.add_argument(
+        "--ibbd",
+        help="Dictionary for generated IETF BMWG"
+        + " 'benchmarking secriptors'."
+        + " Default: None",
+        required=False,
+        default=None,
+        dest="ibbd_dir")
+
     if manual_args is not None:
         return parser.parse_args(manual_args)
     return parser.parse_args()
