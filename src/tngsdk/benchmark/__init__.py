@@ -63,7 +63,7 @@ class ProfileManager(object):
         self.args = args
         self.args.debug = self.args.verbose
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
-        self.args.config = self._load_config(args.configfile)
+        self.args.config = self._load_config(os.path.abspath(args.configfile))
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
         LOG.info("5GTANGO benchmarking/profiling tool initialized")
@@ -330,13 +330,14 @@ def parse_args(manual_args=None):
     return parser.parse_args()
 
 
-def main():
+def main(args=None):
     logging_setup()
-    args = parse_args()
+    args = parse_args(args)
     # TODO better log configuration (e.g. file-based logging)
     if args.verbose:
         coloredlogs.install(level="DEBUG")
     else:
         coloredlogs.install(level="INFO")
+    LOG.debug(args)
     p = ProfileManager(args)
     p.run()

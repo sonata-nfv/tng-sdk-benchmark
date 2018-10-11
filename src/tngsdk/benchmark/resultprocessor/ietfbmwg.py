@@ -83,10 +83,16 @@ class IetfBmwgResultProcessor(object):
         # output path for YAML file
         bd_path = os.path.join(self.args.ibbd_dir,
                                "{}-bd.yaml".format(ec.name))
+
         # TODO collect inputs for BD
-        bd_inputs = {"vnf_id": "vnfid", "vnf_name": "vnfABC"}
+        bd_in = dict()
+        bd_in["vnf_id"] = 1  # fixed
+        bd_in["vnf_vendor"] = None
+        bd_in["vnf_name"] = None
+        bd_in["vnf_version"] = None
+
         # render BD using template
-        bd_str = self._render(bd_inputs, BD_TEMPLATE)
+        bd_str = self._render(bd_in, BD_TEMPLATE)
         # write BD
         ensure_dir(bd_path)
         with open(bd_path, "w") as f:
