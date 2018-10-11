@@ -4,7 +4,7 @@ set -e
 # Can be used to check code before pushing.
 
 # check style early
-flake8 --exclude .eggs --exclude venv
+flake8 --exclude .eggs --exclude venv --exclude build
 
 # build container
 pipeline/build/build.sh

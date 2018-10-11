@@ -39,6 +39,7 @@ import time
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml
+from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
 # from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
 
 
@@ -62,7 +63,7 @@ class ProfileManager(object):
         self.args = args
         self.args.debug = self.args.verbose
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
-        self.args.config = self._load_config(args.configfile)
+        self.args.config = self._load_config(os.path.abspath(args.configfile))
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
         LOG.info("5GTANGO benchmarking/profiling tool initialized")
@@ -86,6 +87,7 @@ class ProfileManager(object):
             return
         self.generate_experiments()
         self.execute_experiments()
+        self.process_results()
 
     def load_generator(self):
         if self.args.no_generation:
@@ -144,6 +146,20 @@ class ProfileManager(object):
         exe.run()
         # clean
         exe.teardown()
+
+    def process_results(self):
+        if self.args.no_result:
+            print("Skipping results: --no-result")
+            return
+        # create result prcessor
+        rp_list = list()
+        rp_list.append(IetfBmwgResultProcessor(
+            self.args, self.service_experiments))
+        LOG.info("Prepared {} result processor(s)".format(len(rp_list)))
+        # process results
+        for rp in rp_list:
+            LOG.info("Running result processor '{}'". format(rp))
+            rp.run()
 
     @staticmethod
     def _load_config(path):
@@ -277,6 +293,14 @@ def parse_args(manual_args=None):
         action="store_true")
 
     parser.add_argument(
+        "--no-result",
+        help="Skip result processing step.",
+        required=False,
+        default=False,
+        dest="no_result",
+        action="store_true")
+
+    parser.add_argument(
         "--no-display",
         help="Disable additional outputs.",
         required=False,
@@ -292,18 +316,28 @@ def parse_args(manual_args=None):
         default="eu.5gtango",
         dest="service_generator")
 
+    parser.add_argument(
+        "--ibbd",
+        help="Dictionary for generated IETF BMWG"
+        + " 'benchmarking secriptors'."
+        + " Default: None",
+        required=False,
+        default=None,
+        dest="ibbd_dir")
+
     if manual_args is not None:
         return parser.parse_args(manual_args)
     return parser.parse_args()
 
 
-def main():
+def main(args=None):
     logging_setup()
-    args = parse_args()
+    args = parse_args(args)
     # TODO better log configuration (e.g. file-based logging)
     if args.verbose:
         coloredlogs.install(level="DEBUG")
     else:
         coloredlogs.install(level="INFO")
+    LOG.debug(args)
     p = ProfileManager(args)
     p.run()

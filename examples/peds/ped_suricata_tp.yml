@@ -11,7 +11,7 @@ author: "Manuel Peuster, Paderborn University, manuel.peuster@uni-paderborn.de"
 description: "This is an example profiling experiment descriptor (PED)."
 
 # path to the package of the service we want to profile (relative from PED location)
-service_package: "../services/5gtango-benchmark-example-service-package.tgo"
+service_package: "../services/ns-1vnf-ids-suricata"
 
 #
 # Firs type of experiments: Service level experiments
@@ -23,33 +23,29 @@ service_experiments:
     time_limit: "120"
     # NSD to be used (vendor.name.version reference)
     target:
-      vendor: "eu.5gtango"
-      name: "exampleservice"
+      vendor: "de.upb"
+      name: "ns-1vnf-ids-suricata"
       version: "0.1"
     # additional containers for traffic generation/measurements (like SAPs)
     measurement_points:
       - name: "mp.output"
         connection_point: "ns:serviceout"
-        container: "mpeuster/p2-mp"
+        container: "mpeuster/tng-bench-mp"
         cmd_start: ["iperf -s"]
         cmd_stop: null
+        address: "20.0.0.254/24"  # address of the data interface of the MP
       - name: "mp.input"
         connection_point: "ns:servicein"
-        container: "mpeuster/p2-mp"
-        cmd_start: "iperf -c 1.1.1.1 -t 120"
+        container: "mpeuster/tng-bench-mp"
+        cmd_start: "iperf -c 20.0.0.254 -t 120"
         cmd_stop: null
+        address: "20.0.0.1/24"  # address of the data interface of the MP
     # resource configurations to be tested during profiling run (defined per VNF)
     resource_limitations:
-      - function: "eu.5gtango.vnf1.0.1"
-        cpu_bw: {min: 0.05, max: 0.15, step: 0.05}       
+      - function: "de.upb.ids-suricata.0.1"
+        cpu_bw: {min: 0.2, max: 0.6, step: 0.4}       
         cpu_cores: 1
-        mem_max: [64]
-        mem_swap_max: null
-        io_bw: null
-      - function: "eu.5gtango.vnf2.0.1"
-        cpu_bw: 1.0
-        cpu_cores: 1
-        mem_max: [256]
+        mem_max: [64, 128]
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"

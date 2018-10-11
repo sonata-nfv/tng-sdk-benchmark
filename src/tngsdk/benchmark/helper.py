@@ -34,6 +34,7 @@ import itertools as it
 import yaml
 import os
 import logging
+import urllib.request
 
 LOG = logging.getLogger(__name__)
 
@@ -71,6 +72,21 @@ def relative_path(path):
     if path.startswith("/"):
         path = path.replace("/", "", 1)
     return path
+
+
+def download_file(url, path):
+    try:
+        ensure_dir(path)
+        LOG.info("Downloading: {}".format(url))
+        urllib.request.urlcleanup()
+        data = urllib.request.urlopen(url)
+        with open(path, "wb") as f:
+            f.write(data.read())
+        return True
+    except BaseException as ex:
+        LOG.debug(ex)
+        LOG.error("Could not download: {}".format(url))
+    return False
 
 
 def compute_cartesian_product(p_dict):
