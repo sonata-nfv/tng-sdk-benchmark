@@ -36,6 +36,19 @@ To contribute to the development of this 5GTANGO component, you may use the very
 $ python setup.py develop
 ```
 
+### VSCode Debugging
+
+```json
+{
+    "name": "Python: tng-bench debug.py",
+    "type": "python",
+    "request": "launch",
+    "program": "${workspaceRoot}/tng-sdk-benchmark/debug.py",
+    "cwd": "${workspaceRoot}/tng-sdk-benchmark/",
+    "console": "integratedTerminal"
+},
+```
+
 ### CI Integration
 
 All pull requests are automatically tested by Jenkins and will only be accepted if no test is broken.
