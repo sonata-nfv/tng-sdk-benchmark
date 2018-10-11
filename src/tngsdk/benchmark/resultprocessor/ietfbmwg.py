@@ -31,13 +31,23 @@
 # partner consortium (www.5gtango.eu).
 import logging
 import os
+import yaml
 from tngsdk.benchmark.helper import ensure_dir, download_file
+from jinja2 import Environment, FileSystemLoader
 
 
 LOG = logging.getLogger(__name__)
 
 
-BD_TEMPLATE_PATH = "/tmp/tng-bench/vnf-bd.yaml"
+# where to fetch the latest tempaltes:
+# BD_TEMPLATE_URL = ("https://raw.githubusercontent.com/mpeuster/"
+#                   + "vnf-bench-model/dev/experiments/vnf-br/templates/"
+#                   + "vnf-bd.yaml")
+BD_TEMPLATE_URL = "file://{}".format(os.path.abspath(
+    "../vnf-bench-model/experiments/vnf-br/templates/vnf-bd.yaml"))
+# local template storage
+TEMPLATE_PATH = "/tmp/tng-bench/templates"
+BD_TEMPLATE = "vnf-bd.yaml"
 
 
 class IetfBmwgResultProcessor(object):
@@ -46,12 +56,14 @@ class IetfBmwgResultProcessor(object):
         self.args = args
         self.service_experiments = service_experiments
         # fetch BD template from GitHub
-        if not download_file("https://raw.githubusercontent.com/mpeuster/"
-                             + "vnf-bench-model/master/experiments/vnf-br/"
-                             + "templates/vnf-bd.yaml",
-                             BD_TEMPLATE_PATH):
+        if not download_file(BD_TEMPLATE_URL,
+                             os.path.join(
+                                TEMPLATE_PATH, BD_TEMPLATE)):
             # TODO this is temporary, don't rely on online resources
             raise BaseException("Could not download BD template. Abort.")
+        # instantiate reder environment
+        self.render_env = Environment(
+            loader=FileSystemLoader(TEMPLATE_PATH))
 
     def run(self):
         # check inputs and possibly skip
@@ -69,17 +81,26 @@ class IetfBmwgResultProcessor(object):
 
     def _generate_bd(self, ec):
         # output path for YAML file
-        path = os.path.join(self.args.ibbd_dir,
-                            "{}-bd.yaml".format(ec.name))
-        # TODO render BD using template
-        bd = dict()
-        # TODO write BD
-        ensure_dir(path)
-        LOG.debug("Generated IETF BMWG BD: {}".format(path))
-        return bd
+        bd_path = os.path.join(self.args.ibbd_dir,
+                               "{}-bd.yaml".format(ec.name))
+        # TODO collect inputs for BD
+        bd_inputs = {"vnf_id": "vnfid", "vnf_name": "vnfABC"}
+        # render BD using template
+        bd_str = self._render(bd_inputs, BD_TEMPLATE)
+        # write BD
+        ensure_dir(bd_path)
+        with open(bd_path, "w") as f:
+            f.write(bd_str)
+        LOG.debug("Generated IETF BMWG BD: {}".format(bd_path))
+        # parse YAML string and return redered dict
+        return yaml.load(bd_str)
 
     def _generate_pp(self, ec):
         return dict()
 
     def _generate_br(self, ec, bd, pp):
         pass
+
+    def _render(self, data, template):
+        t = self.render_env.get_template(template)
+        return t.render(data)

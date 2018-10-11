@@ -78,6 +78,7 @@ def download_file(url, path):
     try:
         ensure_dir(path)
         LOG.info("Downloading: {}".format(url))
+        urllib.request.urlcleanup()
         data = urllib.request.urlopen(url)
         with open(path, "wb") as f:
             f.write(data.read())

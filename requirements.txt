@@ -8,5 +8,6 @@ mock
 paramiko
 flask-restplus
 gevent
+jinja2
 git+https://github.com/sonata-nfv/tng-sdk-package#egg=tngsdk.package
 git+https://github.com/sonata-nfv/tng-sdk-project#egg=tngsdk.project
