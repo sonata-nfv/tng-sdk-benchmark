@@ -31,10 +31,13 @@
 # partner consortium (www.5gtango.eu).
 import logging
 import os
-from tngsdk.benchmark.helper import ensure_dir
+from tngsdk.benchmark.helper import ensure_dir, download_file
 
 
 LOG = logging.getLogger(__name__)
+
+
+BD_TEMPLATE_PATH = "/tmp/tng-bench/vnf-bd.yaml"
 
 
 class IetfBmwgResultProcessor(object):
@@ -42,14 +45,19 @@ class IetfBmwgResultProcessor(object):
     def __init__(self, args, service_experiments):
         self.args = args
         self.service_experiments = service_experiments
+        # fetch BD template from GitHub
+        if not download_file("https://raw.githubusercontent.com/mpeuster/"
+                             + "vnf-bench-model/master/experiments/vnf-br/"
+                             + "templates/vnf-bd.yaml",
+                             BD_TEMPLATE_PATH):
+            # TODO this is temporary, don't rely on online resources
+            raise BaseException("Could not download BD template. Abort.")
 
     def run(self):
         # check inputs and possibly skip
         if self.args.ibbd_dir is None:
             LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
             return
-        # prepare
-        ensure_dir(self.args.ibbd_dir)
         # generate IETF BMWG BD, PP, BR
         for ex in self.service_experiments:
             # iterate over all experiment configurations
@@ -63,9 +71,11 @@ class IetfBmwgResultProcessor(object):
         # output path for YAML file
         path = os.path.join(self.args.ibbd_dir,
                             "{}-bd.yaml".format(ec.name))
-        LOG.debug("Generated IETF BMWG BD: {}".format(path))
         # TODO render BD using template
         bd = dict()
+        # TODO write BD
+        ensure_dir(path)
+        LOG.debug("Generated IETF BMWG BD: {}".format(path))
         return bd
 
     def _generate_pp(self, ec):
