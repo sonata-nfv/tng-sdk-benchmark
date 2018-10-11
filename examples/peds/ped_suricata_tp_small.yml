@@ -22,7 +22,10 @@ service_experiments:
     repetitions: 1
     time_limit: "120"
     # NSD to be used (vendor.name.version reference)
-    service: "de.upb.ns-1vnf-ids-suricata.0.1"
+    target:
+      vendor: "de.upb"
+      name: "ns-1vnf-ids-suricata"
+      version: "0.1"
     # additional containers for traffic generation/measurements (like SAPs)
     measurement_points:
       - name: "mp.output"

@@ -87,9 +87,9 @@ class IetfBmwgResultProcessor(object):
         # TODO collect inputs for BD
         bd_in = dict()
         bd_in["vnf_id"] = 1  # fixed
-        bd_in["vnf_vendor"] = None
-        bd_in["vnf_name"] = None
-        bd_in["vnf_version"] = None
+        bd_in["vnf_vendor"] = ec.experiment.target.get("vendor")
+        bd_in["vnf_name"] = ec.experiment.target.get("name")
+        bd_in["vnf_version"] = ec.experiment.target.get("version")
 
         # render BD using template
         bd_str = self._render(bd_in, BD_TEMPLATE)
