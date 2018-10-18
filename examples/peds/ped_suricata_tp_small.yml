@@ -29,13 +29,13 @@ service_experiments:
     # additional containers for traffic generation/measurements (like SAPs)
     measurement_points:
       - name: "mp.output"
-        connection_point: "ns:serviceout"
+        connection_point: "ns:output"
         container: "mpeuster/tng-bench-mp"
         cmd_start: ["iperf -s"]
         cmd_stop: null
         address: "20.0.0.254/24"  # address of the data interface of the MP
       - name: "mp.input"
-        connection_point: "ns:servicein"
+        connection_point: "ns:input"
         container: "mpeuster/tng-bench-mp"
         cmd_start: "iperf -c 20.0.0.254 -t 120"
         cmd_stop: null
