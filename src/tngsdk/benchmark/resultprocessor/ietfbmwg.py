@@ -100,7 +100,9 @@ class IetfBmwgResultProcessor(object):
         bd_in["sut_name"] = ec.experiment.target.get("name")
         bd_in["sut_version"] = ec.experiment.target.get("version")
         bd_in["sut_author"] = bd_in["sut_vendor"]
+        bd_in["sut_description"] = ec.experiment.description
         bd_in["sut_type"] = "5gtango"  # 5GTANGO SUTs only
+        bd_in["sut_5gtango_pkgpath"] = ec.package_path
         # Agent information (TODO MP order matters, bad design)
         bd_in["agent_1_id"] = ec.experiment.measurement_points[1].get("name")
         bd_in["agent_1_image"] = (ec.experiment.measurement_points[1]
