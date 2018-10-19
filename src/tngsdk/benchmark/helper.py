@@ -34,7 +34,10 @@ import itertools as it
 import yaml
 import os
 import logging
-import urllib.request
+try:  # ensure Python2 compatibility
+    import urllib.request
+except ImportError as e:
+    pass
 
 LOG = logging.getLogger(__name__)
 

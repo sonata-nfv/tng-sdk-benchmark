@@ -263,6 +263,7 @@ class TangoServiceConfigurationGenerator(
         # 3. connect measurement point to service (replace virt. links)
         mp_cp = mp.get("connection_point")
         new_cp = "{}:data".format(mp.get("name"))
+        # update links
         for vl in nsd.get("virtual_links"):
             cprs = vl.get("connection_points_reference")
             # replace ns in/out link endpoints in NSD
