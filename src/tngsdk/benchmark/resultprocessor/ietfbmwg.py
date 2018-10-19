@@ -40,11 +40,11 @@ LOG = logging.getLogger(__name__)
 
 
 # where to fetch the latest tempaltes:
-# BD_TEMPLATE_URL = ("https://raw.githubusercontent.com/mpeuster/"
-#                   + "vnf-bench-model/dev/experiments/vnf-br/templates/"
-#                   + "vnf-bd.yaml")
-BD_TEMPLATE_URL = "file://{}".format(os.path.abspath(
-    "../vnf-bench-model/experiments/vnf-br/templates/vnf-bd.yaml"))
+BD_TEMPLATE_URL = ("https://raw.githubusercontent.com/mpeuster/"
+                   + "vnf-bench-model/dev/experiments/vnf-br/templates/"
+                   + "vnf-bd.yaml")
+# BD_TEMPLATE_URL = "file://{}".format(os.path.abspath(
+#    "../vnf-bench-model/experiments/vnf-br/templates/vnf-bd.yaml"))
 # local template storage
 TEMPLATE_PATH = "/tmp/tng-bench/templates"
 BD_TEMPLATE = "vnf-bd.yaml"
@@ -86,7 +86,7 @@ class IetfBmwgResultProcessor(object):
         bd_path = os.path.join(self.args.ibbd_dir,
                                "{}-bd.yaml".format(ec.name))
 
-        # TODO collect inputs for BD
+        # collect inputs for BD
         bd_in = dict()
         # BD information
         bd_in["bd_id"] = "{:05d}".format(ec.run_id)
@@ -103,13 +103,50 @@ class IetfBmwgResultProcessor(object):
         bd_in["sut_description"] = ec.experiment.description
         bd_in["sut_type"] = "5gtango"  # 5GTANGO SUTs only
         bd_in["sut_5gtango_pkgpath"] = ec.package_path
+        # SUT connections (TODO MP order matters, bad design)
+        bd_in["sut_input_port_id"] = (ec.experiment.measurement_points[1]
+                                      .get("connection_point"))
+        bd_in["sut_input_port_type"] = "external"
+        bd_in["sut_input_port_address"] = None
+        bd_in["sut_output_port_id"] = (ec.experiment.measurement_points[0]
+                                       .get("connection_point"))
+        bd_in["sut_output_port_type"] = "external"
+        bd_in["sut_output_port_address"] = None
         # Agent information (TODO MP order matters, bad design)
         bd_in["agent_1_id"] = ec.experiment.measurement_points[1].get("name")
         bd_in["agent_1_image"] = (ec.experiment.measurement_points[1]
                                   .get("container"))
+        bd_in["agent_1_cp_id"] = "data"
+        bd_in["agent_1_cp_address"] = (ec.experiment.measurement_points[1]
+                                       .get("address"))
         bd_in["agent_2_id"] = ec.experiment.measurement_points[0].get("name")
         bd_in["agent_2_image"] = (ec.experiment.measurement_points[0]
                                   .get("container"))
+        bd_in["agent_2_cp_id"] = "data"
+        bd_in["agent_2_cp_address"] = (ec.experiment.measurement_points[0]
+                                       .get("address"))
+        # Links (TODO MP order matters, bad design)
+        bd_in["network_type"] = "E-LINE"
+        # Resource limits (TODO RL order matters, bad design)
+        sut_func_name = ec.experiment.resource_limitations[0].get("function")
+        bd_in["sut_resource_cpu_cores"] = self._get_rl_from_ec(
+            ec, sut_func_name, "cpu_cores")
+        bd_in["sut_resource_cpu_bw"] = self._get_rl_from_ec(
+            ec, sut_func_name, "cpu_bw")
+        bd_in["sut_resource_mem"] = self._get_rl_from_ec(
+            ec, sut_func_name, "mem_max")
+        bd_in["agent_1_resource_cpu_cores"] = self._get_rl_from_ec(
+            ec, bd_in["agent_1_id"], "cpu_cores")
+        bd_in["agent_1_resource_cpu_bw"] = self._get_rl_from_ec(
+            ec, bd_in["agent_1_id"], "cpu_bw")
+        bd_in["agent_1_resource_mem"] = self._get_rl_from_ec(
+            ec, bd_in["agent_1_id"], "mem_max")
+        bd_in["agent_2_resource_cpu_cores"] = self._get_rl_from_ec(
+            ec, bd_in["agent_2_id"], "cpu_cores")
+        bd_in["agent_2_resource_cpu_bw"] = self._get_rl_from_ec(
+            ec, bd_in["agent_2_id"], "cpu_bw")
+        bd_in["agent_2_resource_mem"] = self._get_rl_from_ec(
+            ec, bd_in["agent_2_id"], "mem_max")
 
         # render BD using template
         bd_str = self._render(bd_in, BD_TEMPLATE)
@@ -130,3 +167,16 @@ class IetfBmwgResultProcessor(object):
     def _render(self, data, template):
         t = self.render_env.get_template(template)
         return t.render(data)
+
+    def _get_rl_from_ec(self, ec, node, rl_name):
+        """
+        Helper that get resource limit from flat
+        parameter list of an EC.
+        """
+        for k in ec.parameter.keys():
+            # fuzzy matchin using "in" statement
+            if node in k and rl_name in k:
+                return ec.parameter.get(k)
+        LOG.warning("Could not find resource limit for node: {}"
+                    .format(node))
+        return None
