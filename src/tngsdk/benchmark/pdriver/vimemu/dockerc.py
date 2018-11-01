@@ -75,4 +75,6 @@ class EmuDockerClient(object):
         cmd = "bash -c 'nohup {} > {} 2>&1 &'".format(cmd, logfile)
         # execute command in target container (blocks if detach=False)
         rcode, rdata = c.exec_run(cmd, stdin=False, stdout=False, detach=False)
-        LOG.debug("Out (empty in detach mode): {}; {}".format(rcode, rdata))
+        LOG.debug("Out (empty in detach mode): return code: {}; stdout: '{}'"
+                  .format(rcode, rdata))
+        LOG.debug("Top on '{}': {}".format(container_name, c.top()))

@@ -20,7 +20,7 @@ service_experiments:
   - name: "service_throughput"
     description: "iperf test for entire service"
     repetitions: 1
-    time_limit: "120"
+    time_limit: 3  # seconds per experiment
     # NSD to be used (vendor.name.version reference)
     target:
       vendor: "de.upb"

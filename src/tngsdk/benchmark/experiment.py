@@ -46,6 +46,7 @@ class Experiment(object):
         self.profile_calculations = list()
         self.measurement_points = list()
         self.repetitions = 0
+        self.time_limit = 0
         # populate object from YAML definition
         self.__dict__.update(definition)
         # attributes
@@ -128,6 +129,7 @@ class Experiment(object):
         """
         r = dict()
         r["header::all::repetition"] = list(range(0, self.repetitions))
+        r["header::all::time_limit"] = [self.time_limit]
         return r
 
     def _get_function_resource_space_as_dict(self):

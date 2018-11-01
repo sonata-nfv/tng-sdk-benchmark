@@ -103,21 +103,38 @@ class VimEmuDriver(object):
         # FIXME make this user-configurable and more flexible
         self.emudocker.execute(mp_out_name, mp_out_cmd_start, "cmd_start.log")
         self.emudocker.execute(mp_in_name, mp_in_cmd_start, "cmd_start.log")
-        time.sleep(5)  # TODO wait for experiment time!
+        self._wait_experiment(ec)
         self.emudocker.execute(mp_in_name, mp_in_cmd_stop, "cmd_stop.log")
         self.emudocker.execute(mp_out_name, mp_out_cmd_stop, "cmd_stop.log")
-
+        WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+        self._wait_time(WAIT_SHUTDOWN_TIME,
+                        "Finalizing experiment '{}'".format(ec))
+        LOG.info("Finalized '{}'".format(ec))
         # TODO remove when deployment works
-
         print("Wait for user input...")
         input()
-        ###
-        for i in range(0, 5):
-            print("Experiment running ...{}/20".format(i))
-            time.sleep(.5)
 
     def teardown_experiment(self, ec):
         self.emusrvc.stop_emulation()
 
     def teardown_platform(self):
         pass
+
+    def _wait_experiment(self, ec, text="Running experiment"):
+        WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
+        time_limit = int(ec.parameter.get("header::all::time_limit", 0))
+        if time_limit < 1:
+            return  # we don't need to wait
+        time_limit += WAIT_PADDING_TIME
+        self._wait_time(time_limit, "{} '{}'".format(text, ec))
+
+    def _wait_time(self, time_limit, text="Wait"):
+        WAIT_NUMBER_OF_OUTPUTS = 10  # FIXME make configurable
+        if time_limit < 1:
+            return  # we don't need to wait
+        time_slot = int(time_limit / WAIT_NUMBER_OF_OUTPUTS)
+        # wait and print status
+        for i in range(0, WAIT_NUMBER_OF_OUTPUTS):
+            time.sleep(time_slot)
+            LOG.debug("{}\t... {}%"
+                      .format(text, (100 / WAIT_NUMBER_OF_OUTPUTS) * (i + 1)))
