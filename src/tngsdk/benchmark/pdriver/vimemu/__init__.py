@@ -34,6 +34,7 @@ import os
 import time
 from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
 from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
+from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -45,15 +46,19 @@ class VimEmuDriver(object):
 
     def __init__(self, config):
         self.config = config
-        self.emusrv_url = ("{}:{}"
+        self.emusrv_url = ("http://{}:{}"
                            .format(config.get("host"),
                                    config.get("emusrv_port")))
-        self.llcm_url = ("{}:{}"
+        self.llcm_url = ("http://{}:{}"
                          .format(config.get("host"),
                                  config.get("llcm_port")))
+        self.docker_url = ("tcp://{}:{}"
+                           .format(config.get("host"),
+                                   config.get("docker_port")))
         # initialize sub-driver
         self.emusrvc = EmuSrvClient(self.emusrv_url)
         self.llcmc = LLCMClient(self.llcm_url)
+        self.emudocker = EmuDockerClient(self.docker_url)
         LOG.info("Initialized VimEmuDriver with {}"
                  .format(self.config))
 
@@ -76,8 +81,34 @@ class VimEmuDriver(object):
         pass
 
     def execute_experiment(self, ec):
-        # trigger MP commands
+        # FIXME currently the keys for selecting the MPs are fixed
+        # FIXME not nice, lots of hard coding, needs more flexability
+        MP_IN_KEY = "mp::mp.input::"
+        MP_OUT_KEY = "mp::mp.output::"
+        # collect names of MPs
+        mp_in_name = ec.parameter.get("{}name".format(MP_IN_KEY))
+        mp_out_name = ec.parameter.get("{}name".format(MP_OUT_KEY))
+        # collect commands for MPs
+        mp_in_cmd_start = ec.parameter.get("{}cmd_start".format(MP_IN_KEY))
+        mp_in_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_IN_KEY))
+        mp_out_cmd_start = ec.parameter.get("{}cmd_start".format(MP_OUT_KEY))
+        mp_out_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_OUT_KEY))
+        # trigger MP commands: we always execute the commands in the following
+        # order:
+        # 1. mp_out_cmd_start
+        # 2. mp_in_cmd_start
+        # - run the experiment -
+        # 3. mp_in_cmd_stop
+        # 4. mp_out_cmd_stop
+        # FIXME make this user-configurable and more flexible
+        self.emudocker.execute(mp_out_name, mp_out_cmd_start, "cmd_start.log")
+        self.emudocker.execute(mp_in_name, mp_in_cmd_start, "cmd_start.log")
+        time.sleep(5)  # TODO wait for experiment time!
+        self.emudocker.execute(mp_in_name, mp_in_cmd_stop, "cmd_stop.log")
+        self.emudocker.execute(mp_out_name, mp_out_cmd_stop, "cmd_stop.log")
+
         # TODO remove when deployment works
+
         print("Wait for user input...")
         input()
         ###
