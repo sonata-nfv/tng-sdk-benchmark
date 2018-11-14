@@ -37,7 +37,7 @@ import logging
 try:  # ensure Python2 compatibility
     import urllib.request
 except ImportError as e:
-    pass
+    del e
 
 LOG = logging.getLogger(__name__)
 
