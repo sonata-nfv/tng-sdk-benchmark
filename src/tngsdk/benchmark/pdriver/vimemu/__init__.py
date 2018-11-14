@@ -40,6 +40,13 @@ from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
 LOG = logging.getLogger(os.path.basename(__file__))
 
 
+# global configurations
+WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
+PATH_CMD_START_LOG = "/tngbench_share/cmd_start.log"
+PATH_CMD_STOP_LOG = "/tngbench_share/cmd_stop.log"
+
+
 class VimEmuDriver(object):
     # FIXME Public API of this class is the
     # prototype for the generic driver API.
@@ -101,12 +108,15 @@ class VimEmuDriver(object):
         # 3. mp_in_cmd_stop
         # 4. mp_out_cmd_stop
         # FIXME make this user-configurable and more flexible
-        self.emudocker.execute(mp_out_name, mp_out_cmd_start, "cmd_start.log")
-        self.emudocker.execute(mp_in_name, mp_in_cmd_start, "cmd_start.log")
+        self.emudocker.execute(mp_out_name, mp_out_cmd_start,
+                               PATH_CMD_START_LOG)
+        self.emudocker.execute(mp_in_name, mp_in_cmd_start,
+                               PATH_CMD_START_LOG)
         self._wait_experiment(ec)
-        self.emudocker.execute(mp_in_name, mp_in_cmd_stop, "cmd_stop.log")
-        self.emudocker.execute(mp_out_name, mp_out_cmd_stop, "cmd_stop.log")
-        WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+        self.emudocker.execute(mp_in_name, mp_in_cmd_stop,
+                               PATH_CMD_STOP_LOG)
+        self.emudocker.execute(mp_out_name, mp_out_cmd_stop,
+                               PATH_CMD_STOP_LOG)
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
         LOG.info("Finalized '{}'".format(ec))
@@ -121,7 +131,6 @@ class VimEmuDriver(object):
         pass
 
     def _wait_experiment(self, ec, text="Running experiment"):
-        WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
         time_limit = int(ec.parameter.get("header::all::time_limit", 0))
         if time_limit < 1:
             return  # we don't need to wait
