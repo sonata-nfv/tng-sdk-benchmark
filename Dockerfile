@@ -30,13 +30,13 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 FROM python:3.6-slim
-MAINTAINER 5GTANGO
 
 #
 # Installation
 #
 RUN apt-get update && apt-get install -y git build-essential
 RUN pip install flake8
+RUN pip install tavern  # fix (try to remove once the tavern installation is not broken anymore)
 ADD . /tng-sdk-benchmark
 WORKDIR /tng-sdk-benchmark
 RUN python setup.py install

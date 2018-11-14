@@ -57,7 +57,7 @@ class Executor(object):
     def _load_pdriver(self, t):
         if t.get("pdriver") == "vimemu":
             from tngsdk.benchmark.pdriver.vimemu import VimEmuDriver
-            return VimEmuDriver(t.get("pdriver_config"))
+            return VimEmuDriver(self.args, t.get("pdriver_config"))
         else:
             raise BaseException("Platform driver '{}' not supported."
                                 .format(t.get("pdriver")))

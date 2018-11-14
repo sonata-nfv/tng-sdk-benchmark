@@ -32,6 +32,7 @@
 import logging
 import os
 import docker
+import tarfile
 
 
 LOG = logging.getLogger(os.path.basename(__file__))
@@ -78,3 +79,27 @@ class EmuDockerClient(object):
         LOG.debug("Out (empty in detach mode): return code: {}; stdout: '{}'"
                   .format(rcode, rdata))
         LOG.debug("Top on '{}': {}".format(container_name, c.top()))
+
+    def list_emu_containers(self):
+        """
+        Return all containers with "mn." as name prefix.
+        """
+        return [c for c in self.client.containers.list() if "mn." in c.name]
+
+    def copy_folder(self, container_name, src_path, dst_path):
+        """
+        Copy all files from given folder (src_path) to
+        local folder (dst_path).
+        """
+        LOG.debug("COPY {}: {} -> {}".format(
+            container_name, src_path, dst_path))
+        c = self.client.containers.get(container_name)
+        strm, stat = c.get_archive(src_path)
+        # write to intermediate tar
+        PATH_TEMP_TAR = "/tmp/tng-bench/.tngbench_share.tar"
+        with open(PATH_TEMP_TAR, 'wb') as f:
+            for d in strm:
+                f.write(d)
+        tar = tarfile.TarFile(PATH_TEMP_TAR)
+        tar.extractall(dst_path)
+        os.remove(PATH_TEMP_TAR)

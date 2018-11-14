@@ -277,6 +277,15 @@ def parse_args(manual_args=None):
         dest="work_dir")
 
     parser.add_argument(
+        "-rd",
+        "--result-dir",
+        help="Dictionary for measured results,"
+        + " e.g., logfiles, monitoring data. Default: '(cwd)/results/'",
+        required=False,
+        default="results",
+        dest="result_dir")
+
+    parser.add_argument(
         "--no-generation",
         help="Skip profiling package generation step.",
         required=False,

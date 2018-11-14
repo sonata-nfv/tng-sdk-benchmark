@@ -40,11 +40,20 @@ from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
 LOG = logging.getLogger(os.path.basename(__file__))
 
 
+# global configurations
+WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
+PATH_SHARE = "/tngbench_share"
+PATH_CMD_START_LOG = "cmd_start.log"
+PATH_CMD_STOP_LOG = "cmd_stop.log"
+
+
 class VimEmuDriver(object):
     # FIXME Public API of this class is the
     # prototype for the generic driver API.
 
-    def __init__(self, config):
+    def __init__(self, args, config):
+        self.args = args
         self.config = config
         self.emusrv_url = ("http://{}:{}"
                            .format(config.get("host"),
@@ -101,14 +110,19 @@ class VimEmuDriver(object):
         # 3. mp_in_cmd_stop
         # 4. mp_out_cmd_stop
         # FIXME make this user-configurable and more flexible
-        self.emudocker.execute(mp_out_name, mp_out_cmd_start, "cmd_start.log")
-        self.emudocker.execute(mp_in_name, mp_in_cmd_start, "cmd_start.log")
+        self.emudocker.execute(mp_out_name, mp_out_cmd_start,
+                               os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
+        self.emudocker.execute(mp_in_name, mp_in_cmd_start,
+                               os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self._wait_experiment(ec)
-        self.emudocker.execute(mp_in_name, mp_in_cmd_stop, "cmd_stop.log")
-        self.emudocker.execute(mp_out_name, mp_out_cmd_stop, "cmd_stop.log")
-        WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+        self.emudocker.execute(mp_in_name, mp_in_cmd_stop,
+                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
+        self.emudocker.execute(mp_out_name, mp_out_cmd_stop,
+                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
+        # collect results
+        self._collect_experiment_results(ec)
         LOG.info("Finalized '{}'".format(ec))
         # TODO remove when deployment works
         print("Wait for user input...")
@@ -120,8 +134,17 @@ class VimEmuDriver(object):
     def teardown_platform(self):
         pass
 
+    def _collect_experiment_results(self, ec):
+        LOG.info("Collecting experiment results ...")
+        # generate result paths
+        dst_path = os.path.join(self.args.result_dir, ec.name)
+        # for each container collect files from containers
+        for c in self.emudocker.list_emu_containers():
+            c_dst_path = os.path.join(dst_path, c.name)
+            self.emudocker.copy_folder(c.name, PATH_SHARE, c_dst_path)
+        # TODO colelct continous monitoring data (per container, global?)
+
     def _wait_experiment(self, ec, text="Running experiment"):
-        WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
         time_limit = int(ec.parameter.get("header::all::time_limit", 0))
         if time_limit < 1:
             return  # we don't need to wait
