@@ -110,5 +110,6 @@ class EmuDockerClient(object):
         LOG.debug("Collect logs from docker {} -> {}".format(
             container_name, dst_path))
         c = self.client.containers.get(container_name)
-        del c
-        pass
+        with open(dst_path, "w") as f:
+            # seems to be emtpy since we do not use Docker's default CMD ep.
+            f.write(str(c.logs()))

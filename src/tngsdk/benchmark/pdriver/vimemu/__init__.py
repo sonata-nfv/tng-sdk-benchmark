@@ -46,6 +46,7 @@ WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
 PATH_CMD_STOP_LOG = "cmd_stop.log"
+PATH_CONTAINER_LOG = "clogs.log"
 
 
 class VimEmuDriver(object):
@@ -144,7 +145,9 @@ class VimEmuDriver(object):
             self.emudocker.copy_folder(c.name, PATH_SHARE, c_dst_path)
         # for each container collect log outputs and write to files
         for c in self.emudocker.list_emu_containers():
-            pass
+            c_dst_path = os.path.join(dst_path, c.name)
+            self.emudocker.store_logs(
+                c.name, os.path.join(c_dst_path, PATH_CONTAINER_LOG))
         # TODO colelct continous monitoring data (per container, global?)
 
     def _wait_experiment(self, ec, text="Running experiment"):
