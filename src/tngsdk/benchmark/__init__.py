@@ -37,18 +37,48 @@ import logging
 import coloredlogs
 import time
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
+from tngsdk.benchmark.generator.sonata \
+                import SonataServiceConfigurationGenerator
+from tngsdk.benchmark.generator.tango \
+                import TangoServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml
 from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
-# from tngsdk.benchmark.emulator import Emulator as Active_Emu_Profiler
+from tngsdk.benchmark.logger import TangoLogger
 
 
-LOG = logging.getLogger(os.path.basename(__file__))
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
-def logging_setup():
-    os.environ["COLOREDLOGS_LOG_FORMAT"] \
-        = "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+def setup_logging(args):
+    """
+    Configure logging.
+    """
+    log_level = logging.INFO
+    # get loglevel from environment or --loglevel
+    log_level_str = os.environ.get("LOGLEVEL", "INFO")
+    if args.log_level:  # overwrite if present
+        log_level_str = args.log_level
+    # parse
+    log_level_str = str(log_level_str).lower()
+    if log_level_str == "debug":
+        log_level = logging.DEBUG
+    elif log_level_str == "info":
+        log_level = logging.INFO
+    elif log_level_str == "warning":
+        log_level = logging.WARNING
+    elif log_level_str == "error":
+        log_level = logging.ERROR
+    else:
+        print("Loglevel '{}' unknown.".format(log_level_str))
+    # if "-v" is there set to debug
+    if args.verbose:
+        log_level = logging.DEBUG
+    # select logging mode
+    log_json = os.environ.get("LOGJSON", args.logjson)
+    # configure all TangoLoggers
+    TangoLogger.reconfigure_all_tango_loggers(
+        log_level=log_level, log_json=log_json)
 
 
 class ProfileManager(object):
@@ -57,6 +87,7 @@ class ProfileManager(object):
     """
 
     def __init__(self, args):
+        self.logger = TangoLogger.getLogger(__name__)
         self.start_time = time.time()
         self.service_experiments = list()
         self.function_experiments = list()
@@ -66,8 +97,8 @@ class ProfileManager(object):
         self.args.config = self._load_config(os.path.abspath(args.configfile))
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
-        LOG.info("5GTANGO benchmarking/profiling tool initialized")
-        LOG.debug("Arguments: %r" % self.args)
+        self.logger.info("5GTANGO benchmarking/profiling tool initialized")
+        self.logger.debug("Arguments: %r" % self.args)
 
     def run(self):
         """
@@ -96,20 +127,16 @@ class ProfileManager(object):
         # select and instantiate configuration generator
         cgen = None
         if self.args.service_generator == "sonata":
-            from tngsdk.benchmark.generator.sonata \
-                import SonataServiceConfigurationGenerator
             cgen = SonataServiceConfigurationGenerator(self.args)
         if self.args.service_generator == "eu.5gtango":
-            from tngsdk.benchmark.generator.tango \
-                import TangoServiceConfigurationGenerator
             cgen = TangoServiceConfigurationGenerator(self.args)
         else:
-            LOG.error(
+            self.logger.error(
                 "Unknown service configuration generator '{0}'. Exit 1."
                 .format(self.args.service_generator))
             exit(1)
         if cgen is None:
-            LOG.error("Service conf. generator instantiation failed.")
+            self.logger.error("Service conf. generator instantiation failed.")
             exit(1)
         return cgen
 
@@ -155,24 +182,23 @@ class ProfileManager(object):
         rp_list = list()
         rp_list.append(IetfBmwgResultProcessor(
             self.args, self.service_experiments))
-        LOG.info("Prepared {} result processor(s)".format(len(rp_list)))
+        self.logger.info("Prepared {} result processor(s)"
+                         .format(len(rp_list)))
         # process results
         for rp in rp_list:
-            LOG.info("Running result processor '{}'". format(rp))
+            self.logger.info("Running result processor '{}'". format(rp))
             rp.run()
 
-    @staticmethod
-    def _load_config(path):
+    def _load_config(self, path):
         try:
             return read_yaml(path)
         except BaseException as ex:
-            LOG.error("Couldn't read config file: '{}'. Abort."
-                      .format(path))
-            LOG.debug(ex)
+            self.logger.error("Couldn't read config file: '{}'. Abort."
+                              .format(path))
+            self.logger.debug(ex)
             exit(1)
 
-    @staticmethod
-    def _load_ped_file(ped_path):
+    def _load_ped_file(self, ped_path):
         """
         Loads the specified PED file.
         :param ped_path: path to file
@@ -184,16 +210,15 @@ class ProfileManager(object):
             if yml is None:
                 raise BaseException("PED file YAML error.")
         except BaseException:
-            LOG.error("Couldn't load PED file %r. Abort." % ped_path)
+            self.logger.error("Couldn't load PED file %r. Abort." % ped_path)
             exit(1)
         # add path annotation to ped file (simpler
         # handling of referenced artifacts)
         yml["ped_path"] = ped_path
-        LOG.info("Loaded PED file %r." % ped_path)
+        self.logger.info("Loaded PED file %r." % ped_path)
         return yml
 
-    @staticmethod
-    def _validate_ped_file(input_ped):
+    def _validate_ped_file(self, input_ped):
         """
         Semantic validation of PED file contents.
         Check for all things we need to have in PED file.
@@ -205,10 +230,9 @@ class ProfileManager(object):
                 raise BaseException("No service_package field found.")
             # TODO extend this with PED fields that are REQUIRED
         except BaseException:
-            LOG.exception("PED file verification error:")
+            self.logger.exception("PED file verification error:")
 
-    @staticmethod
-    def _generate_experiment_specifications(input_ped):
+    def _generate_experiment_specifications(self, input_ped):
         """
         Create experiment objects based on the contents of the PED file.
         :param input_ped: ped dictionary
@@ -249,6 +273,21 @@ def parse_args(manual_args=None):
         required=False,
         default=False,
         dest="verbose",
+        action="store_true")
+
+    parser.add_argument(
+        "--loglevel",
+        help="Directly specify loglevel. Default: INFO",
+        required=False,
+        default=None,
+        dest="log_level")
+
+    parser.add_argument(
+        "--logjson",
+        help="Use 5GTANGO JSON-based logging. Default: False",
+        required=False,
+        default=False,
+        dest="logjson",
         action="store_true")
 
     parser.add_argument(
@@ -340,13 +379,7 @@ def parse_args(manual_args=None):
 
 
 def main(args=None):
-    logging_setup()
     args = parse_args(args)
-    # TODO better log configuration (e.g. file-based logging)
-    if args.verbose:
-        coloredlogs.install(level="DEBUG")
-    else:
-        coloredlogs.install(level="INFO")
-    LOG.debug(args)
+    setup_logging(args)
     p = ProfileManager(args)
     p.run()

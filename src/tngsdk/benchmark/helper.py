@@ -33,13 +33,13 @@
 import itertools as it
 import yaml
 import os
-import logging
+from tngsdk.benchmark.logger import TangoLogger
 try:  # ensure Python2 compatibility
     import urllib.request
 except ImportError as e:
     del e
 
-LOG = logging.getLogger(__name__)
+LOG = TangoLogger.getLogger(__name__)
 
 
 def read_yaml(path):

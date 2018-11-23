@@ -36,7 +36,6 @@
 #
 
 import logging
-import os
 import sys
 import argparse
 import coloredlogs
@@ -50,7 +49,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from gevent.pywsgi import WSGIServer
 
 
-LOG = logging.getLogger(os.path.basename(__file__))
+LOG = logging.getLogger(__name__)
 
 
 def parse_args(input_args=None):
