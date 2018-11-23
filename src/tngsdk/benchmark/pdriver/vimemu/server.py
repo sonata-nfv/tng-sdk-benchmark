@@ -209,6 +209,7 @@ class EmulatorProfilingTopology(object):
 
     def start(self):
         LOG.info("Starting emulation ...")
+        # pylint: disable=E0401
         from mininet.log import setLogLevel
         from emuvim.dcemulator.net import DCNetwork
         from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
