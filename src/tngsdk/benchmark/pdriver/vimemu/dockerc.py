@@ -29,13 +29,12 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
-import logging
 import os
 import docker
 import tarfile
+from tngsdk.benchmark.logger import TangoLogger
 
-
-LOG = logging.getLogger(os.path.basename(__file__))
+LOG = TangoLogger.getLogger(__name__)
 
 
 class EmuDockerClient(object):
@@ -91,10 +90,10 @@ class EmuDockerClient(object):
         Copy all files from given folder (src_path) to
         local folder (dst_path).
         """
-        LOG.debug("COPY {}: {} -> {}".format(
+        LOG.debug("Collect files from docker {}: {} -> {}".format(
             container_name, src_path, dst_path))
         c = self.client.containers.get(container_name)
-        strm, stat = c.get_archive(src_path)
+        strm, _ = c.get_archive(src_path)
         # write to intermediate tar
         PATH_TEMP_TAR = "/tmp/tng-bench/.tngbench_share.tar"
         with open(PATH_TEMP_TAR, 'wb') as f:
@@ -103,3 +102,14 @@ class EmuDockerClient(object):
         tar = tarfile.TarFile(PATH_TEMP_TAR)
         tar.extractall(dst_path)
         os.remove(PATH_TEMP_TAR)
+
+    def store_logs(self, container_name, dst_path):
+        """
+        Get logs from given container and store them to dst_path.
+        """
+        LOG.debug("Collect logs from docker {} -> {}".format(
+            container_name, dst_path))
+        c = self.client.containers.get(container_name)
+        with open(dst_path, "w") as f:
+            # seems to be emtpy since we do not use Docker's default CMD ep.
+            f.write(str(c.logs()))

@@ -35,7 +35,6 @@ import zipfile
 import os
 import copy
 import time
-from termcolor import colored
 from tabulate import tabulate
 from tngsdk.benchmark.helper import read_yaml, write_yaml
 from tngsdk.benchmark.helper import relative_path, ensure_dir
@@ -368,7 +367,7 @@ class SonataServiceConfigurationGenerator(
     def print_generation_and_packaging_statistics(self):
 
         def b(txt):
-            return colored(txt, attrs=['bold'])
+            return txt
 
         def get_exname_list(slist):
             return set(s.metadata.get("exname") for s in slist)

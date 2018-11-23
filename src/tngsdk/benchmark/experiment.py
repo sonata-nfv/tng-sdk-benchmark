@@ -30,12 +30,12 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import logging
 from pprint import pformat
 from tngsdk.benchmark.macro import rewrite_parameter_macros_to_lists
 from tngsdk.benchmark.helper import compute_cartesian_product
+from tngsdk.benchmark.logger import TangoLogger
 
-LOG = logging.getLogger(__name__)
+LOG = TangoLogger.getLogger(__name__)
 
 
 class Experiment(object):

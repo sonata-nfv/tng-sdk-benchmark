@@ -29,14 +29,14 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
-import logging
 import os
 import yaml
 from tngsdk.benchmark.helper import ensure_dir, download_file
 from jinja2 import Environment, FileSystemLoader
+from tngsdk.benchmark.logger import TangoLogger
 
 
-LOG = logging.getLogger(__name__)
+LOG = TangoLogger.getLogger(__name__)
 
 
 # where to fetch the latest tempaltes:

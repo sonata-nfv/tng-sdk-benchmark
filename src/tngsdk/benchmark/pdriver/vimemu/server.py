@@ -36,7 +36,6 @@
 #
 
 import logging
-import os
 import sys
 import argparse
 import coloredlogs
@@ -50,7 +49,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from gevent.pywsgi import WSGIServer
 
 
-LOG = logging.getLogger(os.path.basename(__file__))
+LOG = logging.getLogger(__name__)
 
 
 def parse_args(input_args=None):
@@ -210,6 +209,7 @@ class EmulatorProfilingTopology(object):
 
     def start(self):
         LOG.info("Starting emulation ...")
+        # pylint: disable=E0401
         from mininet.log import setLogLevel
         from emuvim.dcemulator.net import DCNetwork
         from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint

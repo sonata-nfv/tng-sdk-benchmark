@@ -30,20 +30,15 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import logging
 import time
 import shutil
 import os
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
 from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
 import tngsdk.package as tngpkg
+from tngsdk.benchmark.logger import TangoLogger
 
-LOG = logging.getLogger(__name__)
-
-# overwrite packager log levels
-logging.getLogger("packager.py").setLevel(logging.WARNING)
-logging.getLogger("cli.py").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+LOG = TangoLogger.getLogger(__name__)
 
 
 BASE_PKG_PATH = "base_pkg/"
@@ -110,8 +105,12 @@ class TangoServiceConfigurationGenerator(
             "--output", proj_path,
             "--store-backend", "TangoProjectFilesystemBackend",
             "--quiet",
-            "-v"
+            "--loglevel"
         ]
+        if self.args.verbose:
+            args.append("info")
+        else:
+            args.append("warning")
         # call the package component
         r = tngpkg.run(args)
         if r.error is not None:
@@ -131,8 +130,12 @@ class TangoServiceConfigurationGenerator(
             "--output", pkg_path,
             "--store-backend", "TangoProjectFilesystemBackend",
             "--quiet",
-            "-v"
+            "--loglevel"
         ]
+        if self.args.verbose:
+            args.append("info")
+        else:
+            args.append("warning")
         # be sure that output dir is there
         ensure_dir(pkg_path)
         # call the package component

@@ -29,15 +29,15 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
-import logging
 import os
 import time
 from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
 from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
 from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
+from tngsdk.benchmark.logger import TangoLogger
 
 
-LOG = logging.getLogger(os.path.basename(__file__))
+LOG = TangoLogger.getLogger(__name__)
 
 
 # global configurations
@@ -46,6 +46,7 @@ WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
 PATH_CMD_STOP_LOG = "cmd_stop.log"
+PATH_CONTAINER_LOG = "clogs.log"
 
 
 class VimEmuDriver(object):
@@ -142,6 +143,11 @@ class VimEmuDriver(object):
         for c in self.emudocker.list_emu_containers():
             c_dst_path = os.path.join(dst_path, c.name)
             self.emudocker.copy_folder(c.name, PATH_SHARE, c_dst_path)
+        # for each container collect log outputs and write to files
+        for c in self.emudocker.list_emu_containers():
+            c_dst_path = os.path.join(dst_path, c.name)
+            self.emudocker.store_logs(
+                c.name, os.path.join(c_dst_path, PATH_CONTAINER_LOG))
         # TODO colelct continous monitoring data (per container, global?)
 
     def _wait_experiment(self, ec, text="Running experiment"):
