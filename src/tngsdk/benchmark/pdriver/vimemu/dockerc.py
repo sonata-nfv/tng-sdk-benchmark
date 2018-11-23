@@ -32,9 +32,14 @@
 import os
 import docker
 import tarfile
+import threading
+import time
 from tngsdk.benchmark.logger import TangoLogger
 
 LOG = TangoLogger.getLogger(__name__)
+
+
+MONITORING_RATE = .5  # monitoring records per second
 
 
 class EmuDockerClient(object):
@@ -48,6 +53,8 @@ class EmuDockerClient(object):
         self.client = None
         try:
             self.client = docker.DockerClient(
+                base_url=self.endpoint, timeout=5)
+            self.apiclient = docker.APIClient(
                 base_url=self.endpoint, timeout=5)
             self.client.containers.list()  # check connection
             LOG.debug("Initialized EmuDocker client for {}".format(endpoint))
@@ -113,3 +120,48 @@ class EmuDockerClient(object):
         with open(dst_path, "w") as f:
             # seems to be emtpy since we do not use Docker's default CMD ep.
             f.write(str(c.logs()))
+
+    def get_stats(self):
+        """
+        Fetches Docker stats for all containers in the system.
+        Returns dict: c.name -> stats_dict from Docker API
+        """
+        all_stats = dict()
+        for c in self.list_emu_containers():
+            s = self.apiclient.stats(c.name, stream=False, decode=True)
+            s["name"] = c.name
+            LOG.debug("Received Docker stats for {}: {}".format(c.name, s))
+            all_stats[c.name] = s
+        return all_stats
+
+
+class EmuDockerMonitor(threading.Thread):
+    """
+    Thread that periodically polls Docker statistics and
+    puts them into the list: self.recorded_stats to be used
+    later.
+    """
+
+    def __init__(self, client, wait_time):
+        self.client = client
+        self.wait_time = wait_time
+        self.recorded_stats = None
+        super().__init__()
+
+    def run(self):
+        # FIXME each call needs time, so data of containers is NOT aligned
+        # FIXME docker stats seems to be not very performat -> use low rates
+        time_start = time.time()
+        self.recorded_stats = list()
+        while(time.time() - time_start < self.wait_time):
+            # get docker stats and store as tuple (time, stats_dict_dict)
+            self.recorded_stats.append((time.time(),
+                                        self.client.get_stats()))
+            # wait
+            time.sleep(1.0/MONITORING_RATE)
+        LOG.debug("Recorded {} Docker stats records"
+                  .format(len(self.recorded_stats)))
+
+    def store_stats(self):
+        # TODO implement
+        pass

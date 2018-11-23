@@ -34,6 +34,7 @@ import time
 from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
 from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
 from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
+from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerMonitor
 from tngsdk.benchmark.logger import TangoLogger
 
 
@@ -85,12 +86,14 @@ class VimEmuDriver(object):
         ns_uuid = self.llcmc.upload_package(ec.package_path)
         # instantiate service
         nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
-        LOG.info("Instantiated servie: {}".format(nsi_uuid))
-        # wait for service beeing ready
-        # setup monitoring?
-        pass
+        LOG.info("Instantiated service: {}".format(nsi_uuid))
 
     def execute_experiment(self, ec):
+        # start container monitoring (dedicated thread)
+        self.emudocker_mon = EmuDockerMonitor(
+            self.emudocker, self._experiment_wait_time(ec))
+        self.emudocker_mon.daemon = True
+        self.emudocker_mon.start()
         # FIXME currently the keys for selecting the MPs are fixed
         # FIXME not nice, lots of hard coding, needs more flexability
         MP_IN_KEY = "mp::mp.input::"
@@ -122,6 +125,9 @@ class VimEmuDriver(object):
                                os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
+        # wait for monitoring thread to finalize
+        LOG.debug("Waiting for container monitoring thread ...")
+        self.emudocker_mon.join()
         # collect results
         self._collect_experiment_results(ec)
         LOG.info("Finalized '{}'".format(ec))
@@ -150,11 +156,17 @@ class VimEmuDriver(object):
                 c.name, os.path.join(c_dst_path, PATH_CONTAINER_LOG))
         # TODO colelct continous monitoring data (per container, global?)
 
-    def _wait_experiment(self, ec, text="Running experiment"):
+    def _experiment_wait_time(self, ec):
         time_limit = int(ec.parameter.get("header::all::time_limit", 0))
         if time_limit < 1:
-            return  # we don't need to wait
+            return time_limit
         time_limit += WAIT_PADDING_TIME
+        return time_limit
+
+    def _wait_experiment(self, ec, text="Running experiment"):
+        time_limit = self._experiment_wait_time(ec)
+        if time_limit < 1:
+            return  # we don't need to wait
         self._wait_time(time_limit, "{} '{}'".format(text, ec))
 
     def _wait_time(self, time_limit, text="Wait"):
