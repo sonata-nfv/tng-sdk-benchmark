@@ -48,6 +48,7 @@ PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
 PATH_CMD_STOP_LOG = "cmd_stop.log"
 PATH_CONTAINER_LOG = "clogs.log"
+PATH_CONTAINER_MON = "cmon.json"
 
 
 class VimEmuDriver(object):
@@ -154,7 +155,9 @@ class VimEmuDriver(object):
             c_dst_path = os.path.join(dst_path, c.name)
             self.emudocker.store_logs(
                 c.name, os.path.join(c_dst_path, PATH_CONTAINER_LOG))
-        # TODO colelct continous monitoring data (per container, global?)
+        # colelct and store continous monitoring data
+        self.emudocker_mon.store_stats(
+            os.path.join(dst_path, PATH_CONTAINER_MON))
 
     def _experiment_wait_time(self, ec):
         time_limit = int(ec.parameter.get("header::all::time_limit", 0))

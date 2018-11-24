@@ -34,12 +34,15 @@ import docker
 import tarfile
 import threading
 import time
+import json
 from tngsdk.benchmark.logger import TangoLogger
+from tngsdk.benchmark.helper import ensure_dir
 
 LOG = TangoLogger.getLogger(__name__)
 
 
 MONITORING_RATE = .5  # monitoring records per second
+PATH_TEMP_TAR = "/tmp/tng-bench/.tngbench_share.tar"
 
 
 class EmuDockerClient(object):
@@ -102,7 +105,7 @@ class EmuDockerClient(object):
         c = self.client.containers.get(container_name)
         strm, _ = c.get_archive(src_path)
         # write to intermediate tar
-        PATH_TEMP_TAR = "/tmp/tng-bench/.tngbench_share.tar"
+        ensure_dir(PATH_TEMP_TAR)
         with open(PATH_TEMP_TAR, 'wb') as f:
             for d in strm:
                 f.write(d)
@@ -130,7 +133,7 @@ class EmuDockerClient(object):
         for c in self.list_emu_containers():
             s = self.apiclient.stats(c.name, stream=False, decode=True)
             s["name"] = c.name
-            LOG.debug("Received Docker stats for {}: {}".format(c.name, s))
+            # LOG.debug("Received Docker stats for {}: {}".format(c.name, s))
             all_stats[c.name] = s
         return all_stats
 
@@ -162,6 +165,7 @@ class EmuDockerMonitor(threading.Thread):
         LOG.debug("Recorded {} Docker stats records"
                   .format(len(self.recorded_stats)))
 
-    def store_stats(self):
-        # TODO implement
-        pass
+    def store_stats(self, dst_path):
+        LOG.debug("Writing Docker stats: {}".format(dst_path))
+        with open(dst_path, "w") as f:
+            f.write(json.dumps(self.recorded_stats))
