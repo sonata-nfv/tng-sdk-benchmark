@@ -1,0 +1,18 @@
+---
+- hosts: vim-emu-nodes
+  remote_user: test  # TODO change to tngbench
+  tasks:
+    - name: "Install git"
+      become: yes  # sudo
+      apt:
+        name: git
+        state: present
+    - name: "Install ansible"
+      become: yes
+      apt:
+        name: ansible
+        state: present
+    - name: "Git clone vim-emu from ETSI OSM repositories"
+      git:
+        repo: "https://osm.etsi.org/gerrit/osm/vim-emu.git"
+        dest: "~/vim-emu"
