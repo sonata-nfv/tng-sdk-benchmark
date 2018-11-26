@@ -1,18 +1,64 @@
 ---
 - hosts: vim-emu-nodes
   remote_user: test  # TODO change to tngbench
+  vars:
+    install_base_path: "/home/test"  # TODO change to /home/tngbench
   tasks:
+    #
+    # Installation
+    #
     - name: "Install git"
       become: yes  # sudo
       apt:
         name: git
-        state: present
+        state: latest
     - name: "Install ansible"
       become: yes
       apt:
         name: ansible
-        state: present
+        state: latest
+    - name: "Git clone Containernet from GitHub"
+      git:
+        repo: "https://github.com/containernet/containernet.git"
+        dest: "{{ install_base_path }}/containernet"
     - name: "Git clone vim-emu from ETSI OSM repositories"
       git:
         repo: "https://osm.etsi.org/gerrit/osm/vim-emu.git"
-        dest: "~/vim-emu"
+        dest: "{{ install_base_path }}/vim-emu"
+    - name: "Install Containernet (takes ~30 minutes)"
+      become: yes
+      shell: "ansible-playbook -i 'localhost,' -c local install.yml"
+      args:
+        chdir: "{{ install_base_path }}/containernet/ansible"
+        creates: "/usr/local/bin/mn"  # skip if Containernet is there (FIXME will collide with Mininet installs)
+    - name: "Install vim-emu"
+      become: yes
+      shell: "ansible-playbook -i 'localhost,' -c local install.yml"
+      args:
+        chdir: "{{ install_base_path }}/vim-emu/ansible"
+        creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
+    - name: "vim-emu setup.py"
+      become: yes
+      shell: "python setup.py install"
+      args:
+        chdir: "{{ install_base_path }}/vim-emu"
+        creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
+    - name: "Git clone tng-sdk-benchmark (for emusrv component)"
+      git:
+        repo: "https://github.com/sonata-nfv/tng-sdk-benchmark.git"
+        dest: "{{ install_base_path }}/tng-sdk-benchmark"
+    - name: "tng-sdk-benchmark setup.py"
+      become: yes
+      shell: "python setup.py install"
+      args:
+        chdir: "{{ install_base_path }}/tng-sdk-benchmark"
+        # creates: "/usr/local/bin/tng-bench-emusrv"  # deatctivated: always use latest code from master
+    #
+    # Configurations
+    #
+    # TODO allow docker remote connections
+    # TODO configure ubuntu firewall
+    #
+    # Start the server
+    #
+    # TODO start server in screen session (what about logging?)
