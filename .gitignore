@@ -1,6 +1,9 @@
 # generated stuff
 results/
 
+# private configs
+*.private.yml
+
 # Ansible
 *.retry
 
