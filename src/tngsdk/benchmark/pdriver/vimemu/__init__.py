@@ -132,9 +132,6 @@ class VimEmuDriver(object):
         # collect results
         self._collect_experiment_results(ec)
         LOG.info("Finalized '{}'".format(ec))
-        # TODO remove when deployment works
-        print("Wait for user input...")
-        input()
 
     def teardown_experiment(self, ec):
         self.emusrvc.stop_emulation()
