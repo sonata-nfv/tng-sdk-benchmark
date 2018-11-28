@@ -58,6 +58,13 @@
       args:
         chdir: "{{ install_base_path }}/tng-sdk-benchmark"
         # creates: "/usr/local/bin/tng-bench-emusrv"  # deatctivated: always use latest code from master
+    - name: "Install: Pulling example Docker images"
+      become: yes
+      shell: |
+        docker pull mpeuster/tng-bench-mp
+        docker pull mpeuster/vnf-ids-suricata
+      args:
+        chdir: "{{ install_base_path }}/tng-sdk-benchmark"
     #
     # Configurations
     #
