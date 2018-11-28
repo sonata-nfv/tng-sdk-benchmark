@@ -7,47 +7,52 @@
     #
     # Installation
     #
-    - name: "Install git"
+    - name: "Install: Install git"
       become: yes  # sudo
       apt:
         name: git
         state: latest
-    - name: "Install ansible"
+    - name: "Install: Install screen"
+      become: yes  # sudo
+      apt:
+        name: screen
+        state: latest
+    - name: "Install: Install ansible"
       become: yes
       apt:
         name: ansible
         state: latest
-    - name: "Git clone Containernet from GitHub"
+    - name: "Install: Git clone Containernet from GitHub"
       git:
         repo: "https://github.com/containernet/containernet.git"
         dest: "{{ install_base_path }}/containernet"
-    - name: "Git clone vim-emu from ETSI OSM repositories"
+    - name: "Install: Git clone vim-emu from ETSI OSM repositories"
       git:
         repo: "https://osm.etsi.org/gerrit/osm/vim-emu.git"
         dest: "{{ install_base_path }}/vim-emu"
-    - name: "Install Containernet (takes ~30 minutes)"
+    - name: "Install: Install Containernet (takes ~30 minutes)"
       become: yes
       shell: "ansible-playbook -i 'localhost,' -c local install.yml"
       args:
         chdir: "{{ install_base_path }}/containernet/ansible"
         creates: "/usr/local/bin/mn"  # skip if Containernet is there (FIXME will collide with Mininet installs)
-    - name: "Install vim-emu"
+    - name: "Install: Install vim-emu"
       become: yes
       shell: "ansible-playbook -i 'localhost,' -c local install.yml"
       args:
         chdir: "{{ install_base_path }}/vim-emu/ansible"
         creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
-    - name: "vim-emu setup.py"
+    - name: "Install: vim-emu setup.py"
       become: yes
       shell: "python setup.py install"
       args:
         chdir: "{{ install_base_path }}/vim-emu"
         creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
-    - name: "Git clone tng-sdk-benchmark (for emusrv component)"
+    - name: "Install: Git clone tng-sdk-benchmark (for emusrv component)"
       git:
         repo: "https://github.com/sonata-nfv/tng-sdk-benchmark.git"
         dest: "{{ install_base_path }}/tng-sdk-benchmark"
-    - name: "tng-sdk-benchmark setup.py"
+    - name: "Install: tng-sdk-benchmark setup.py"
       become: yes
       shell: "python setup.py install"
       args:
@@ -56,9 +61,41 @@
     #
     # Configurations
     #
-    # TODO allow docker remote connections
-    # TODO configure ubuntu firewall
+    # allow docker remote connections
+    - name: "Config: Allow remote connections to Docker service"
+      become: yes
+      lineinfile: 
+        dest: "/lib/systemd/system/docker.service"
+        regexp: "^(.*)ExecStart=/usr/bin/dockerd(.*)$"
+        line: "ExecStart=/usr/bin/dockerd -H unix:// -H tcp://0.0.0.0:4998"  # Attention: -H fd:// is used by some machines
+        backrefs: yes
+    - name: "Config: Restart Docker service"
+      become: yes
+      shell: |
+        systemctl daemon-reload
+        service docker restart
+    # configure ubuntu firewall to allow connections from outside
+    - name: "Config: Enable UFW and deny everything"
+      become: yes
+      ufw:
+        state: enabled
+        policy: deny
+    - name: "Config: Allow SSH"
+      become: yes
+      ufw:
+        rule: allow
+        name: OpenSSH
+    - name: "Config: Allow port range 4998-5001"
+      become: yes
+      ufw:
+        rule: allow
+        port: 4998:5001
+        proto: tcp    
     #
     # Start the server
     #
-    # TODO start server in screen session (what about logging?)
+    - name: "Start: Start tng-bench-emusrv server process in screen detached session"
+      become: yes
+      shell: "screen -d -m tng-bench-emusrv"
+      args:
+        chdir: "{{ install_base_path }}"
