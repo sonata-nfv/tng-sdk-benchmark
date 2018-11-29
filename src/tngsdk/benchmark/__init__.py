@@ -176,7 +176,7 @@ class ProfileManager(object):
 
     def process_results(self):
         if self.args.no_result:
-            print("Skipping results: --no-result")
+            self.logger.info("Skipping results: --no-result")
             return
         # create result prcessor
         rp_list = list()
