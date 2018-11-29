@@ -41,10 +41,10 @@ LOG = TangoLogger.getLogger(__name__)
 
 # where to fetch the latest tempaltes:
 BD_TEMPLATE_URL = ("https://raw.githubusercontent.com/mpeuster/"
-                   + "vnf-bench-model/dev/experiments/vnf-br/templates/"
+                   + "vnf-bench-model/dev/vnf-br/templates/"
                    + "vnf-bd.yaml")
 # BD_TEMPLATE_URL = "file://{}".format(os.path.abspath(
-#    "../vnf-bench-model/experiments/vnf-br/templates/vnf-bd.yaml"))
+#    "../vnf-bench-model/vnf-br/templates/vnf-bd.yaml"))
 # local template storage
 TEMPLATE_PATH = "/tmp/tng-bench/templates"
 BD_TEMPLATE = "vnf-bd.yaml"
@@ -54,6 +54,9 @@ class IetfBmwgResultProcessor(object):
 
     def __init__(self, args, service_experiments):
         self.args = args
+        if self.args.ibbd_dir is None:
+            LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
+            return
         self.service_experiments = service_experiments
         # fetch BD template from GitHub
         if not download_file(BD_TEMPLATE_URL,
@@ -70,7 +73,6 @@ class IetfBmwgResultProcessor(object):
     def run(self):
         # check inputs and possibly skip
         if self.args.ibbd_dir is None:
-            LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
             return
         # generate IETF BMWG BD, PP, BR
         for ex in self.service_experiments:
