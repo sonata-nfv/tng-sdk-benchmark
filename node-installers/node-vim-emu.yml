@@ -1,8 +1,8 @@
 ---
 - hosts: vim-emu-nodes
-  remote_user: test  # TODO change to tngbench
+  remote_user: tngbench
   vars:
-    install_base_path: "/home/test"  # TODO change to /home/tngbench
+    install_base_path: "/home/tngbench"
   tasks:
     #
     # Installation
