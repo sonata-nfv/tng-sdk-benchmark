@@ -8,6 +8,17 @@ This repository contains the `tng-sdk-benchmark` component that is part of the E
 
 The seed code of this component is based on the `son-cli` toolbox, specifically the `son-profile` tool, which was developed as part of the European H2020 project [SONATA](http://sonata-nfv.eu).
 
+## Cite this Work
+
+If you use this tool for your research, publications, or NFV projects, please consider to cite the following paper(s):
+
+* M. Peuster and H. Karl: [Profile Your Chains, Not Functions: Automated Network Service Profiling in DevOps Environments](http://ieeexplore.ieee.org/document/8169826/). IEEE Conference on Network Function Virtualization and Software Defined Networks (NFV-SDN), Berlin, Germany. (2017)
+
+* M. Peuster, H. Karl: [Understand Your Chains: Towards Performance Profile-based Network Service Management](http://ieeexplore.ieee.org/document/7956044/). Fifth European Workshop on Software Defined Networks (EWSDN). IEEE. (2016)
+
+* M. Peuster, H. Karl, and S. v. Rossem: [MeDICINE: Rapid Prototyping of Production-Ready Network Services in Multi-PoP Environments](http://ieeexplore.ieee.org/document/7919490/). IEEE Conference on Network Function Virtualization and Software Defined Networks (NFV-SDN), Palo Alto, CA, USA, pp. 148-153. doi: 10.1109/NFV-SDN.2016.7919490. (2016)
+
+
 ## Installation
 
 ```bash
