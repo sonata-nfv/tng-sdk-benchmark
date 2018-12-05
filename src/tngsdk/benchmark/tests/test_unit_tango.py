@@ -125,9 +125,12 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 # check config. params. of ec are in VNFD
                 vnfd = read_yaml(
                     os.path.join(prj_p, "sources/Definitions/myvnfd.yaml"))
-                rl = vnfd.get(
-                    "virtual_deployment_units")[0].get(
-                        "resource_requirements")
+                vdu = vnfd.get(
+                    "virtual_deployment_units")[0]
+                # TODO check only only in non-MPs
+                self.assertIn("vm_cmd_start", vdu)
+                self.assertIn("vm_cmd_stop", vdu)
+                rl = vdu.get("resource_requirements")
                 self.assertIsNotNone(rl)
                 self.assertIn("cpu", rl)
                 self.assertIn("memory", rl)

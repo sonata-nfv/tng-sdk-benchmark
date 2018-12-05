@@ -313,8 +313,16 @@ class TangoServiceConfigurationGenerator(
         """
         # Apply configuration to corresponding VNFD field
         # TODO only a single VDU per VNF is supported right now
-        rr = vnfd.get(
-            "virtual_deployment_units")[0].get("resource_requirements")
+        vdu = vnfd.get(
+            "virtual_deployment_units")[0]
+        # apply command fields (to non-MP VNFDs)
+        if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
+            print(vnfd.get("name"))
+            vdu["vm_cmd_start"] = str(value)
+        if field_name == "cmd_stop" and "mp." not in vnfd.get("name"):
+            vdu["vm_cmd_stop"] = str(value)
+        # apply resource requirements
+        rr = vdu.get("resource_requirements")
         # cpu cores
         if field_name == "cpu_cores":
             rr.get("cpu")["vcpus"] = int(float(value))
