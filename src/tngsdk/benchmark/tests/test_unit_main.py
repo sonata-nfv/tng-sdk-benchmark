@@ -79,7 +79,7 @@ class UnitProfileTests(unittest.TestCase):
         self.assertEqual(len(se), 1)
         self.assertEqual(len(fe), 0)
         # test number of generated configurations
-        self.assertEqual(len(se[0].experiment_configurations), 64)
+        self.assertEqual(len(se[0].experiment_configurations), 32)
         # self.assertEqual(len(fe[0].experiment_configurations), 6)
         # self.assertEqual(len(fe[1].experiment_configurations), 2)
         # test contents of the experiment configurations
@@ -91,44 +91,24 @@ class UnitProfileTests(unittest.TestCase):
                 self.assertIn(
                     "ep::mp::mp.output::container",
                     c.parameter)
-                if ex.name != "func_vtc_throughput":
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf1.0.1"
-                        + "::mem_swap_max",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf1.0.1"
-                        + "::mem_max",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf1.0.1"
-                        + "::cpu_cores",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf1.0.1::io_bw",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf1.0.1::cpu_bw",
-                        c.parameter)
-                if ex.name != "func_fw_throughput":
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf2.0.1::cpu_bw",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf2.0.1"
-                        + "::mem_max",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf2.0.1::io_bw",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf2.0.1"
-                        + "::cpu_cores",
-                        c.parameter)
-                    self.assertIn(
-                        "ep::function::eu.5gtango.vnf2.0.1"
-                        + "::mem_swap_max",
-                        c.parameter)
+                self.assertIn(
+                    "ep::function::eu.5gtango.myvnf.0.1"
+                    + "::mem_swap_max",
+                    c.parameter)
+                self.assertIn(
+                    "ep::function::eu.5gtango.myvnf.0.1"
+                    + "::mem_max",
+                    c.parameter)
+                self.assertIn(
+                    "ep::function::eu.5gtango.myvnf.0.1"
+                    + "::cpu_cores",
+                    c.parameter)
+                self.assertIn(
+                    "ep::function::eu.5gtango.myvnf.0.1::io_bw",
+                    c.parameter)
+                self.assertIn(
+                    "ep::function::eu.5gtango.myvnf.0.1::cpu_bw",
+                    c.parameter)
                 self.assertIn(
                     "ep::function::mp.output::cpu_bw", c.parameter)
                 self.assertIn(
