@@ -395,8 +395,9 @@ def parse_conf_parameter_name(name):
     Returns: (function_id, parameter_name)
     """
     try:
+        # format: 'ep::category::func_id::parameter'
         p = name.split("::")
-        return p[1], p[2]
+        return p[2], p[3]
     except BaseException:
         LOG.error("Couldn't parse parameter key {}"
                   .format(name))

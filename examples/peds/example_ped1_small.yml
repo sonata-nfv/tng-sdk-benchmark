@@ -31,15 +31,11 @@ service_experiments:
       - name: "mp.output"
         connection_point: "ns:serviceout"
         container: "mpeuster/p2-mp"
-        cmd_start: ["iperf -s"]
-        cmd_stop: null
       - name: "mp.input"
         connection_point: "ns:servicein"
         container: "mpeuster/p2-mp"
-        cmd_start: "iperf -c 1.1.1.1 -t 120"
-        cmd_stop: null
-    # resource configurations to be tested during profiling run (defined per VNF)
-    resource_limitations:
+    # experiment parameters to be tested during profiling run
+    experiment_parameters:
       - function: "eu.5gtango.vnf1.0.1"
         cpu_bw: {min: 0.05, max: 0.15, step: 0.05}       
         cpu_cores: 1
@@ -53,12 +49,16 @@ service_experiments:
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
+        cmd_start: "iperf -c 1.1.1.1 -t 120"
+        cmd_stop: null
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512
         mem_swap_max: null
         io_bw: null
       - function: "mp.output"
+        cmd_start: ["iperf -s"]
+        cmd_stop: null
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512

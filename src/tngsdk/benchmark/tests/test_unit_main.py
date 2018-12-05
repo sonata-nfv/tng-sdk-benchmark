@@ -86,79 +86,79 @@ class UnitProfileTests(unittest.TestCase):
         for ex in (se + fe):
             for c in ex.experiment_configurations:
                 self.assertIn(
-                    "mp::mp.input::container",
+                    "ep::mp::mp.input::container",
                     c.parameter)
                 self.assertIn(
-                    "mp::mp.output::container",
+                    "ep::mp::mp.output::container",
                     c.parameter)
                 if ex.name != "func_vtc_throughput":
                     self.assertIn(
-                        "rl::eu.5gtango.vnf1.0.1"
+                        "ep::function::eu.5gtango.vnf1.0.1"
                         + "::mem_swap_max",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf1.0.1"
+                        "ep::function::eu.5gtango.vnf1.0.1"
                         + "::mem_max",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf1.0.1"
+                        "ep::function::eu.5gtango.vnf1.0.1"
                         + "::cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf1.0.1::io_bw",
+                        "ep::function::eu.5gtango.vnf1.0.1::io_bw",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf1.0.1::cpu_bw",
+                        "ep::function::eu.5gtango.vnf1.0.1::cpu_bw",
                         c.parameter)
                 if ex.name != "func_fw_throughput":
                     self.assertIn(
-                        "rl::eu.5gtango.vnf2.0.1::cpu_bw",
+                        "ep::function::eu.5gtango.vnf2.0.1::cpu_bw",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf2.0.1"
+                        "ep::function::eu.5gtango.vnf2.0.1"
                         + "::mem_max",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf2.0.1::io_bw",
+                        "ep::function::eu.5gtango.vnf2.0.1::io_bw",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf2.0.1"
+                        "ep::function::eu.5gtango.vnf2.0.1"
                         + "::cpu_cores",
                         c.parameter)
                     self.assertIn(
-                        "rl::eu.5gtango.vnf2.0.1"
+                        "ep::function::eu.5gtango.vnf2.0.1"
                         + "::mem_swap_max",
                         c.parameter)
                 self.assertIn(
-                    "rl::mp.output::cpu_bw", c.parameter)
+                    "ep::function::mp.output::cpu_bw", c.parameter)
                 self.assertIn(
-                    "mp::mp.input::cmd_start", c.parameter)
+                    "ep::function::mp.input::cmd_start", c.parameter)
                 self.assertIn(
-                    "rl::mp.output::mem_swap_max", c.parameter)
+                    "ep::function::mp.output::mem_swap_max", c.parameter)
                 self.assertIn(
-                    "rl::mp.output::io_bw", c.parameter)
+                    "ep::function::mp.output::io_bw", c.parameter)
                 self.assertIn(
-                    "rl::mp.output::mem_max", c.parameter)
+                    "ep::function::mp.output::mem_max", c.parameter)
                 self.assertIn(
-                    "rl::mp.input::cpu_bw", c.parameter)
+                    "ep::function::mp.input::cpu_bw", c.parameter)
                 self.assertIn(
-                    "rl::mp.output::cpu_cores", c.parameter)
+                    "ep::function::mp.output::cpu_cores", c.parameter)
                 self.assertIn(
-                    "rl::mp.input::io_bw", c.parameter)
+                    "ep::function::mp.input::io_bw", c.parameter)
                 self.assertIn(
-                    "mp::mp.input::cmd_stop", c.parameter)
+                    "ep::function::mp.input::cmd_stop", c.parameter)
                 self.assertIn(
-                    "mp::mp.output::cmd_start", c.parameter)
+                    "ep::function::mp.output::cmd_start", c.parameter)
                 self.assertIn(
-                    "rl::mp.input::mem_swap_max", c.parameter)
+                    "ep::function::mp.input::mem_swap_max", c.parameter)
                 self.assertIn(
-                    "rl::mp.input::mem_max", c.parameter)
+                    "ep::function::mp.input::mem_max", c.parameter)
                 self.assertIn(
-                    "mp::mp.output::cmd_stop", c.parameter)
+                    "ep::function::mp.output::cmd_stop", c.parameter)
                 self.assertIn(
-                    "rl::mp.input::cpu_cores", c.parameter)
+                    "ep::function::mp.input::cpu_cores", c.parameter)
                 self.assertIn(
-                    "header::all::repetition", c.parameter)
+                    "ep::header::all::repetition", c.parameter)
 
 
 class UnitHelperTests(unittest.TestCase):
