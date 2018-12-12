@@ -39,7 +39,7 @@ service_experiments:
     # experiment parameters to be tested during profiling run
     experiment_parameters:
       - function: "de.upb.ids-suricata.0.1"
-        cmd_start: "./start.sh"
+        cmd_start: ["./start.sh"]
         cmd_stop: null
         cpu_bw: 0.5 #{min: 0.05, max: 0.15, step: 0.05}       
         cpu_cores: 1
@@ -47,7 +47,7 @@ service_experiments:
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
-        cmd_start: ["iperf -c 20.0.0.254 -t 3", "ping -c1 20.0.0.254"]
+        cmd_start: ["iperf -c 20.0.0.254 -t 3", "ping -c10 -i0.1 20.0.0.254"]
         cmd_stop: "uptime"
         cpu_bw: 0.2
         cpu_cores: 1
