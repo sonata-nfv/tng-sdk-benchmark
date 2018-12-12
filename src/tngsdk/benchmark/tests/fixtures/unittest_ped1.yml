@@ -28,34 +28,31 @@ service_experiments:
       - name: "mp.output"
         connection_point: "ns:serviceout"
         container: "mpeuster/p2-mp"
-        cmd_start: ["iperf -s", "iperf -s -u"]
-        cmd_stop: null
+        address: "20.0.0.254/24"  # address of the data interface of the MP
       - name: "mp.input"
         connection_point: "ns:servicein"
         container: "mpeuster/p2-mp"
-        cmd_start: "iperf -c 1.1.1.1 -t 120"
-        cmd_stop: null
-    # resource configurations to be tested during profiling run (defined per VNF)
-    resource_limitations:
-      - function: "eu.5gtango.vnf1.0.1"
+    # experiment parameters to be tested during profiling run
+    experiment_parameters:
+      - function: "eu.5gtango.myvnf.0.1"
+        cmd_start: ["test_cmd_start_myvnf", "test_cmd_start_myvnf_b"]
+        cmd_stop: "test_cmd_stop_myvnf"
         cpu_bw: {min: 0.05, max: 0.2, step: 0.05}       
         cpu_cores: 1
         mem_max: [64, 128]
         mem_swap_max: null
         io_bw: null
-      - function: "eu.5gtango.vnf2.0.1"
-        cpu_bw: {min: 0.05, max: 0.1, step: 0.05}
-        cpu_cores: 1
-        mem_max: [256, 512]
-        mem_swap_max: null
-        io_bw: null
       - function: "mp.input"
+        cmd_start: "test_cmd_start_mp.input"
+        cmd_stop: "test_cmd_stop_mp.input"
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512
         mem_swap_max: null
         io_bw: null
       - function: "mp.output"
+        cmd_start: ["test_cmd_start_mp.output_a", "test_cmd_start_mp.output_b"]
+        cmd_stop: "test_cmd_stop_mp.output"
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512

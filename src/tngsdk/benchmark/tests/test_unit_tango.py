@@ -85,12 +85,12 @@ class UnitTangoGeneratorTests(unittest.TestCase):
         Test the generation of experiment projects / packages using
         the give base package / project and test experiments.
         """
-        args = parse_args(["-p", TEST_PED_FILE])
+        args = parse_args(["-p", TEST_PED_FILE, "-v"])
         # generate test experiments based on PED
         ex_list = self._generate_experiments_from_ped(args)
         self.assertEqual(1, len(ex_list))
         for ex in ex_list:
-            self.assertEqual(64, len(ex.experiment_configurations))
+            self.assertEqual(32, len(ex.experiment_configurations))
         # run the generator with test experiments
         g = TangoServiceConfigurationGenerator(args)
         g.generate(TEST_TNG_PKG, None, ex_list)
@@ -125,9 +125,16 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 # check config. params. of ec are in VNFD
                 vnfd = read_yaml(
                     os.path.join(prj_p, "sources/Definitions/myvnfd.yaml"))
-                rl = vnfd.get(
-                    "virtual_deployment_units")[0].get(
-                        "resource_requirements")
+                vdu = vnfd.get(
+                    "virtual_deployment_units")[0]
+
+                self.assertIn("vm_cmd_start", vdu)
+                self.assertIn("vm_cmd_stop", vdu)
+                self.assertIn("cmd_start", vdu.get("vm_cmd_start"))
+                self.assertIn("cmd_stop", vdu.get("vm_cmd_stop"))
+                self.assertIn(vnfd.get("name"), vdu.get("vm_cmd_start"))
+                self.assertIn(vnfd.get("name"), vdu.get("vm_cmd_stop"))
+                rl = vdu.get("resource_requirements")
                 self.assertIsNotNone(rl)
                 self.assertIn("cpu", rl)
                 self.assertIn("memory", rl)
