@@ -42,7 +42,7 @@ LOG = TangoLogger.getLogger(__name__)
 
 
 # global configurations
-WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+WAIT_SHUTDOWN_TIME = 5  # FIXME give experiment some cooldown time
 WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
@@ -121,7 +121,8 @@ class VimEmuDriver(object):
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self._wait_experiment(ec)
         # hold execution for manual debugging:
-        # input("Press Enter to continue...")
+        if self.args.hold_and_wait_for_user:
+            input("Press Enter to continue...")
         self.emudocker.execute(mp_in_name, mp_in_cmd_stop,
                                os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
         self.emudocker.execute(mp_out_name, mp_out_cmd_stop,
