@@ -86,8 +86,8 @@ class VimEmuDriver(object):
         # upload package
         ns_uuid = self.llcmc.upload_package(ec.package_path)
         # instantiate service
-        nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
-        LOG.info("Instantiated service: {}".format(nsi_uuid))
+        self.nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
+        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
 
     def execute_experiment(self, ec):
         # start container monitoring (dedicated thread)
@@ -137,6 +137,9 @@ class VimEmuDriver(object):
         LOG.info("Finalized '{}'".format(ec))
 
     def teardown_experiment(self, ec):
+        # tearminate the test service
+        self.llcmc.terminate_service(self.nsi_uuid)
+        # stop the emulation
         self.emusrvc.stop_emulation()
 
     def teardown_platform(self):

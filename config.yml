@@ -40,7 +40,7 @@ targets:
     description: "vim-emu on fgcn-tango-1"
     pdriver: vimemu  # type of target (vimemu, osm)
     pdriver_config:  # structure can be pdriver specific
-      host: fgcn-tango-1.cs.upb.de
+      host: fgcn-peuster.cs.upb.de #fgcn-tango-1.cs.upb.de
       emusrv_port: 4999
       llcm_port: 5000
       docker_port: 4998

@@ -117,3 +117,12 @@ class LLCMClient(object):
         if r.status_code == 201:
             return json.loads(r.text).get("service_instance_uuid")
         raise BaseException("Error during NS instantiation.")
+
+    def terminate_service(self, uuid):
+        LOG.info("Terminating NS: {}".format(uuid))
+        data = {"service_instance_uuid": uuid}
+        r = requests.delete(
+            self.nsi_endpoint, json=data)
+        if r.status_code == 200:
+            return r.text
+        raise BaseException("Error during NS termination.")
