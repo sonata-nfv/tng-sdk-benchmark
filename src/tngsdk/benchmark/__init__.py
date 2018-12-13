@@ -349,6 +349,15 @@ def parse_args(manual_args=None):
         action="store_true")
 
     parser.add_argument(
+        "--hold",
+        help=("Stop when experiment is started and" +
+              " wait for user input (helps debugging)."),
+        required=False,
+        default=False,
+        dest="hold_and_wait_for_user",
+        action="store_true")
+
+    parser.add_argument(
         "--no-display",
         help="Disable additional outputs.",
         required=False,

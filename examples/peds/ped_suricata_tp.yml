@@ -31,17 +31,13 @@ service_experiments:
       - name: "mp.output"
         connection_point: "ns:output"
         container: "mpeuster/tng-bench-mp"
-        cmd_start: ["iperf -s"]
-        cmd_stop: null
         address: "20.0.0.254/24"  # address of the data interface of the MP
       - name: "mp.input"
         connection_point: "ns:input"
         container: "mpeuster/tng-bench-mp"
-        cmd_start: "iperf -c 20.0.0.254 -t 120"
-        cmd_stop: null
         address: "20.0.0.1/24"  # address of the data interface of the MP
-    # resource configurations to be tested during profiling run (defined per VNF)
-    resource_limitations:
+    # experiment parameters to be tested during profiling run
+    experiment_parameters:
       - function: "de.upb.ids-suricata.0.1"
         cpu_bw: {min: 0.2, max: 0.6, step: 0.4}       
         cpu_cores: 1
@@ -49,12 +45,16 @@ service_experiments:
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
+        cmd_start: "iperf -c 20.0.0.254 -t 120"
+        cmd_stop: null
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512
         mem_swap_max: null
         io_bw: null
       - function: "mp.output"
+        cmd_start: ["iperf -s"]
+        cmd_stop: null
         cpu_bw: 0.2
         cpu_cores: 1
         mem_max: 512

@@ -42,7 +42,7 @@ LOG = TangoLogger.getLogger(__name__)
 
 
 # global configurations
-WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+WAIT_SHUTDOWN_TIME = 5  # FIXME give experiment some cooldown time
 WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
@@ -97,18 +97,18 @@ class VimEmuDriver(object):
         self.emudocker_mon.start()
         # FIXME currently the keys for selecting the MPs are fixed
         # FIXME not nice, lots of hard coding, needs more flexability
-        MP_IN_KEY = "mp::mp.input::"
-        MP_OUT_KEY = "mp::mp.output::"
+        MP_IN_KEY = "ep::function::mp.input::"
+        MP_OUT_KEY = "ep::function::mp.output::"
         # collect names of MPs
-        mp_in_name = ec.parameter.get("{}name".format(MP_IN_KEY))
-        mp_out_name = ec.parameter.get("{}name".format(MP_OUT_KEY))
+        mp_in_name = "mp.input"
+        mp_out_name = "mp.output"
         # collect commands for MPs
         mp_in_cmd_start = ec.parameter.get("{}cmd_start".format(MP_IN_KEY))
         mp_in_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_IN_KEY))
         mp_out_cmd_start = ec.parameter.get("{}cmd_start".format(MP_OUT_KEY))
         mp_out_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_OUT_KEY))
-        # trigger MP commands: we always execute the commands in the following
-        # order:
+        # trigger MP/function commands: we always execute the commands in the
+        # following order:
         # 1. mp_out_cmd_start
         # 2. mp_in_cmd_start
         # - run the experiment -
@@ -120,6 +120,9 @@ class VimEmuDriver(object):
         self.emudocker.execute(mp_in_name, mp_in_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self._wait_experiment(ec)
+        # hold execution for manual debugging:
+        if self.args.hold_and_wait_for_user:
+            input("Press Enter to continue...")
         self.emudocker.execute(mp_in_name, mp_in_cmd_stop,
                                os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
         self.emudocker.execute(mp_out_name, mp_out_cmd_stop,
@@ -157,7 +160,7 @@ class VimEmuDriver(object):
             os.path.join(dst_path, PATH_CONTAINER_MON))
 
     def _experiment_wait_time(self, ec):
-        time_limit = int(ec.parameter.get("header::all::time_limit", 0))
+        time_limit = int(ec.parameter.get("ep::header::all::time_limit", 0))
         if time_limit < 1:
             return time_limit
         time_limit += WAIT_PADDING_TIME

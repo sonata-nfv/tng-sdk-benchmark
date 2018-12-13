@@ -42,8 +42,7 @@ class Experiment(object):
 
     def __init__(self, definition):
         self.name = None
-        self.resource_limitations = dict()
-        self.profile_calculations = list()
+        self.experiment_parameters = dict()
         self.measurement_points = list()
         self.repetitions = 0
         self.time_limit = 0
@@ -51,10 +50,9 @@ class Experiment(object):
         self.__dict__.update(definition)
         # attributes
         self.experiment_configurations = list()
-        self.pre_configuration = dict()
         self.configuration_space_list = list()
         self.overload_vnf_list = list()
-        # store original experiment definition for late use
+        # store original experiment definition for later use
         self.original_definition = definition.copy()
 
     def __repr__(self):
@@ -67,26 +65,21 @@ class Experiment(object):
         to be tested.
         """
         # convert parameter macros from PED file to plain lists
-        for rl in self.resource_limitations:
-            rewrite_parameter_macros_to_lists(rl)
-        # convert measurment points from PED file to plain lists
-        for mp in self.measurement_points:
-            rewrite_parameter_macros_to_lists(mp)
+        for ep in self.experiment_parameters:
+            rewrite_parameter_macros_to_lists(ep)
 
-        # gather all configuration commands per VNF that
-        # need to be executed once before all tests start
-        self.pre_configuration = self._get_pre_configuration_as_dict()
-
-        # UPB
         # generate a single flat dict containing all the
         # parameter study lists defined in the PED
         # this includes: header parameters (repetitions),
-        # measurement point commands (all), and
-        # function resource limitations
+        # and experiment configurations parameters
+        # (incl. resources and commands for functions)
         configuration_dict = dict()
-        configuration_dict.update(self._get_experiment_header_space_as_dict())
-        configuration_dict.update(self._get_function_resource_space_as_dict())
-        configuration_dict.update(self._get_mp_space_as_dict())
+        configuration_dict.update(
+            self._get_header_configuration_space_as_dict())
+        configuration_dict.update(
+            self._get_mp_configuration_space_as_dict())
+        configuration_dict.update(
+            self._get_experiment_configuration_space_as_dict())
         LOG.debug("configuration space:{0}".format(configuration_dict))
         # explore entire parameter space by calculating the
         # Cartesian product over the given dict
@@ -102,79 +95,90 @@ class Experiment(object):
                  .format(self.name, len(self.experiment_configurations))
                  + "configurations to be executed.")
 
-    def _get_pre_configuration_as_dict(self):
-        """
-        Create a dict that lists all commands that need to be executed per VNF,
-        one-time execution as configuration before the tests start.
-        :return: dict
-        {"vnf_name1": [cmd1, cmd2, ...],
-         "vnf_nameN": [cmd, ...],
-        }
-        """
-        config_dict = dict()
-        for mp in self.measurement_points:
-            vnf_name = mp.get("name")
-            vnf_config = mp.get("configuration")
-            if vnf_config:
-                if not isinstance(vnf_config, list):
-                    vnf_config = [vnf_config]
-                config_dict[vnf_name] = vnf_config
-
-        LOG.debug('pre-configuration commands:{}'.format(config_dict))
-        return config_dict
-
-    def _get_experiment_header_space_as_dict(self):
+    def _get_header_configuration_space_as_dict(self):
         """
         {"repetition" : [0, 1, ...]}
         """
         r = dict()
-        r["header::all::repetition"] = list(range(0, self.repetitions))
-        r["header::all::time_limit"] = [self.time_limit]
+        r["ep::header::all::repetition"] = list(range(0, self.repetitions))
+        r["ep::header::all::time_limit"] = [self.time_limit]
         return r
 
-    def _get_function_resource_space_as_dict(self):
+    def _get_experiment_configuration_space_as_dict(self):
         """
         Create a flat dictionary with configuration lists to be tested
-        # for each configuration parameter.
+        for each experiment parameter.
         Output: dict
-        {"rl::funname1::parameter1" : [0.1, 0.2, ...],
-         "rl::funname1::parameterN" : [0.1, ...],
-         "rl::funname2::parameter1" : [0.1],
-         "rl::funname2::parameterN" : [0.1, 0.2, ...],
-        ... }
+        {"ep::function::funname1::parameter1" : [0.1, 0.2, ...],
+         "ep::function::funname1::parameterN" : ["ping", "iperf -s", ...],
+         "ep::function::funname2::parameter1" : [0.1],
+         "ep::function::funname2::parameterN" : ["ping", "iperf -s", ...],
+        }
         """
+        # generate flat dict:
         r = dict()
-        for rl in self.resource_limitations:
-            name = rl.get("function")
-            for k, v in rl.items():
-                if k == "function":
+        for ep in self.experiment_parameters:
+            ep_type, name = self._get_ep_type_name(ep)
+            for k, v in ep.items():
+                if k == ep_type:  # skip ep_type field
                     continue
                 if not isinstance(v, list):
                     v = [v]
-                r["rl::%s::%s" % (name, k)] = v
+                r["ep::{}::{}::{}".format(ep_type, name, k)] = v
         return r
 
-    def _get_mp_space_as_dict(self):
+    def _get_mp_configuration_space_as_dict(self):
         """
         Create a flat dictionary with configuration lists to
         # be tested for each configuration parameter.
         Output: dict
-        {"mp::mpname1::parameter1" : [0.1, 0.2, ...],
-         "mp::mpname1::parameterN" : [0.1, ...],
-         "mp::mpname2::parameter1" : [0.1],
-         "mp::mpname2::parameterN" : [0.1, 0.2, ...],
+        {"ep::mp::mpname1::parameter1" : [0.1, 0.2, ...],
+         "ep::mp::mpname1::parameterN" : [0.1, ...],
+         "ep::mp::mpname2::parameter1" : [0.1],
+         "ep::mp::mpname2::parameterN" : [0.1, 0.2, ...],
          ...}
         """
         r = dict()
-        for rl in self.measurement_points:
-            name = rl.get("name")
-            for k, v in rl.items():
+        for mp in self.measurement_points:
+            name = mp.get("name")
+            for k, v in mp.items():
                 # if (k == "name"
                 #        or k == "configuration"):  # skip some fields
                 #    continue
                 if not isinstance(v, list):
                     v = [v]
-                r["mp::%s::%s" % (name, k)] = v
+                r["ep::mp::%s::%s" % (name, k)] = v
+        return r
+
+    def _get_ep_type_name(self, ep):
+            """
+            Helper to get type and name of ep.
+            Supportet types so far:
+            - function
+            - service
+            """
+            ep_type = None
+            if "function" in ep:
+                ep_type = "function"
+            elif "service" in ep:
+                ep_type = "service"
+            if not ep_type:
+                raise BaseException(
+                    "Couldn't parse 'experiment_parameter':{}"
+                    .format(ep))
+            return ep_type, ep.get(ep_type)
+
+    def get_function_ep_names(self, without=None):
+        """
+        Return list of function names that have experiment parameters
+        assigned.
+        """
+        r = list()
+        for ep in self.experiment_parameters:
+            ep_type, name = self._get_ep_type_name(ep)
+            if ep_type == "function":
+                if without is None or without not in name:
+                    r.append(name)
         return r
 
 
@@ -215,3 +219,23 @@ class ExperimentConfiguration(object):
 
     def pprint(self):
         return "{}\n{}".format(self, pformat(self.parameter))
+
+    def parse_parameter_key(self, name):
+        """
+        Parse experiment parameter keys and return dict with the parts.
+        Format: 'ep::type::function_name::parameter_name'
+        Fields of return dict:
+            - type
+            - function_name
+            - parameter_name
+        """
+        try:
+            p = name.split("::")
+            return {"type": p[2],
+                    "function_name": p[3],
+                    "parameter_name": p[4]
+                    }
+        except BaseException:
+            LOG.error("Couldn't parse parameter key {}"
+                      .format(name))
+        return dict()

@@ -297,14 +297,21 @@ class TangoServiceConfigurationGenerator(
                   .format(mp.get("name"), nsd.get("name")))
 
     def _apply_parameters_to_vnfds(self, ec, vnfd):
+        applied = False
+        vnfd_uid = "{}.{}.{}".format(
+            vnfd.get("vendor"), vnfd.get("name"), vnfd.get("version"))
         # iterate over all parameters to be applied
         for pname, pvalue in ec.parameter.items():
-            vnf_uid, field_name = parse_conf_parameter_name(pname)
-            if vnf_uid != "{}.{}.{}".format(
-                    vnfd.get("vendor"), vnfd.get("name"),
-                    vnfd.get("version")):
-                # parameter should be applied to given VNF
-                self._apply_parameter_to_vnfd(field_name, pvalue, vnfd)
+            ep_uid, field_name = parse_conf_parameter_name(pname)
+            if ep_uid not in vnfd_uid:
+                continue  # not the right VNFD -> skip
+            # parameter should be applied to given VNF
+            self._apply_parameter_to_vnfd(field_name, pvalue, vnfd)
+            applied = True
+        if not applied:
+            raise BaseException(
+                "Couln't find any experiment parameters for VNFD: {}"
+                .format(vnfd_uid))
 
     def _apply_parameter_to_vnfd(self, field_name, value, vnfd):
         """
@@ -313,8 +320,19 @@ class TangoServiceConfigurationGenerator(
         """
         # Apply configuration to corresponding VNFD field
         # TODO only a single VDU per VNF is supported right now
-        rr = vnfd.get(
-            "virtual_deployment_units")[0].get("resource_requirements")
+        vdu = vnfd.get(
+            "virtual_deployment_units")[0]
+        # apply command fields (to non-MP VNFDs)
+        if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
+            # print("--- VNFD: {} --> cmd_start: {}"
+            #       .format(vnfd.get("name"), value))
+            vdu["vm_cmd_start"] = str(value)
+        if field_name == "cmd_stop" and "mp." not in vnfd.get("name"):
+            # print("--- VNFD: {} --> cmd_stop: {}"
+            #       .format(vnfd.get("name"), value))
+            vdu["vm_cmd_stop"] = str(value)
+        # apply resource requirements
+        rr = vdu.get("resource_requirements")
         # cpu cores
         if field_name == "cpu_cores":
             rr.get("cpu")["vcpus"] = int(float(value))
@@ -395,8 +413,9 @@ def parse_conf_parameter_name(name):
     Returns: (function_id, parameter_name)
     """
     try:
+        # format: 'ep::category::func_id::parameter'
         p = name.split("::")
-        return p[1], p[2]
+        return p[2], p[3]
     except BaseException:
         LOG.error("Couldn't parse parameter key {}"
                   .format(name))

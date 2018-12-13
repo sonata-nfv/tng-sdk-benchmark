@@ -7,6 +7,11 @@
     #
     # Installation
     #
+    - name: "Add sources: Universe repository"
+      become: yes
+      shell: |
+        add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+        apt-get update
     - name: "Install: Install git"
       become: yes  # sudo
       apt:
@@ -38,7 +43,7 @@
         creates: "/usr/local/bin/mn"  # skip if Containernet is there (FIXME will collide with Mininet installs)
     - name: "Install: Install vim-emu"
       become: yes
-      shell: "ansible-playbook -i 'localhost,' -c local install.yml"
+      shell: "ansible-playbook -i 'localhost,' -c local --skip-tags 'nopull' install.yml"
       args:
         chdir: "{{ install_base_path }}/vim-emu/ansible"
         creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
@@ -63,6 +68,7 @@
       shell: |
         docker pull mpeuster/tng-bench-mp
         docker pull mpeuster/vnf-ids-suricata
+        docker pull ubuntu:trusty
       args:
         chdir: "{{ install_base_path }}/tng-sdk-benchmark"
     #
