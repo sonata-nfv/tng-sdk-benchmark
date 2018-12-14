@@ -43,7 +43,7 @@ LOG = TangoLogger.getLogger(__name__)
 
 
 # global configurations
-WAIT_SHUTDOWN_TIME = 5  # FIXME give experiment some cooldown time
+WAIT_SHUTDOWN_TIME = 2  # FIXME give experiment some cooldown time
 WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
@@ -120,6 +120,7 @@ class VimEmuDriver(object):
         # 5. mp_out_cmd_stop
         # 6. vnf_cmd_stop
         # FIXME make this user-configurable and more flexible
+        LOG.debug("Executing start commands inside containers ...")
         for vnf_cname, cmd in vnf_cmd_start_dict.items():
             self.emudocker.execute(vnf_cname, cmd,
                                    os.path.join(PATH_SHARE,
@@ -132,14 +133,17 @@ class VimEmuDriver(object):
         # hold execution for manual debugging:
         if self.args.hold_and_wait_for_user:
             input("Press Enter to continue...")
+        LOG.debug("Executing stop commands inside containers ...")
         self.emudocker.execute(MP_IN_NAME, mp_in_cmd_stop,
-                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
+                               os.path.join(PATH_SHARE,
+                                            PATH_CMD_STOP_LOG), block=True)
         self.emudocker.execute(MP_OUT_NAME, mp_out_cmd_stop,
-                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
+                               os.path.join(PATH_SHARE,
+                                            PATH_CMD_STOP_LOG), block=True)
         for vnf_cname, cmd in vnf_cmd_stop_dict.items():
             self.emudocker.execute(vnf_cname, cmd,
                                    os.path.join(PATH_SHARE,
-                                                PATH_CMD_STOP_LOG))
+                                                PATH_CMD_STOP_LOG), block=True)
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
         # wait for monitoring thread to finalize
