@@ -353,11 +353,14 @@ class TangoServiceConfigurationGenerator(
         rr = vdu.get("resource_requirements")
         # cpu cores
         if field_name == "cpu_cores":
-            rr.get("cpu")["vcpus"] = int(float(value))
+            rr.get("cpu")["vcpus"] = (int(float(value))
+                                      if value is not None else 1)
         elif field_name == "cpu_bw":
-            rr.get("cpu")["cpu_bw"] = float(value)
+            rr.get("cpu")["cpu_bw"] = (float(value)
+                                       if value is not None else 1.0)
         elif field_name == "mem_max":
-            rr.get("memory")["size"] = int(float(value))
+            rr.get("memory")["size"] = (int(float(value))
+                                        if value is not None else 1024)
             rr.get("memory")["size_unit"] = "MB"
         elif field_name == "disk_max":
             rr.get("storage")["size"] = int(float(value))
