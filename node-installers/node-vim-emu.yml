@@ -103,7 +103,13 @@
       ufw:
         rule: allow
         port: 4998:5001
-        proto: tcp    
+        proto: tcp
+    - name: "Config: Allow port 2123"
+      become: yes
+      ufw:
+        rule: allow
+        port: 2123
+        proto: tcp
     #
     # Start the server
     #

@@ -135,7 +135,7 @@ class EmuDockerClient(object):
         """
         all_stats = dict()
         for c in self.list_emu_containers():
-            s = self.apiclient.stats(c.name, stream=False, decode=True)
+            s = self.apiclient.stats(c.name, stream=False, decode=False)
             s["name"] = c.name
             # LOG.debug("Received Docker stats for {}: {}".format(c.name, s))
             all_stats[c.name] = s
