@@ -243,13 +243,13 @@ class ProfileManager(object):
 
         # service experiments
         for e in input_ped.get("service_experiments", []):
-            e_obj = ServiceExperiment(e)
+            e_obj = ServiceExperiment(self.args, e)
             e_obj.populate()
             service_experiments.append(e_obj)
 
         # function experiments
         for e in input_ped.get("function_experiments", []):
-            e_obj = FunctionExperiment(e)
+            e_obj = FunctionExperiment(self.args, e)
             e_obj.populate()
             function_experiments.append(e_obj)
 
@@ -351,11 +351,19 @@ def parse_args(manual_args=None):
     parser.add_argument(
         "--hold",
         help=("Stop when experiment is started and" +
-              " wait for user input (helps debugging)."),
+              " wait for user input (helps for debugging)."),
         required=False,
         default=False,
         dest="hold_and_wait_for_user",
         action="store_true")
+
+    parser.add_argument(
+        "--max-experiments",
+        help=("Maximum number of experiments to generate" +
+              " irrespective of PED def. (helps for debugging)."),
+        required=False,
+        default=None,
+        dest="max_experiments")
 
     parser.add_argument(
         "--no-display",

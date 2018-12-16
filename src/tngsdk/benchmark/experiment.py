@@ -41,8 +41,9 @@ LOG = TangoLogger.getLogger(__name__)
 
 class Experiment(object):
 
-    def __init__(self, definition):
+    def __init__(self, args, definition):
         self.name = None
+        self.args = args
         self.experiment_parameters = dict()
         self.measurement_points = list()
         self.repetitions = 0
@@ -91,6 +92,10 @@ class Experiment(object):
         for c in configuration_space_list:
             rc = ExperimentConfiguration(self, c)
             self.experiment_configurations.append(rc)
+        if self.args.max_experiments is not None:
+            # reduce the number of experiments
+            self.experiment_configurations = self.experiment_configurations[
+                :int(self.args.max_experiments)]
         LOG.info("Populated experiment specification: '{}' with {} "
                  .format(self.name, len(self.experiment_configurations))
                  + "configurations to be executed.")
@@ -184,15 +189,15 @@ class Experiment(object):
 
 class ServiceExperiment(Experiment):
 
-    def __init__(self, definition):
-        super().__init__(definition)
+    def __init__(self, args, definition):
+        super().__init__(args, definition)
         LOG.debug("Created service experiment specification %r" % self.name)
 
 
 class FunctionExperiment(Experiment):
 
-    def __init__(self, definition):
-        super().__init__(definition)
+    def __init__(self, args, definition):
+        super().__init__(args, definition)
         LOG.debug("Created function experiment specification: %r" % self.name)
 
 
