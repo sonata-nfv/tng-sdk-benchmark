@@ -111,3 +111,24 @@ def compute_cartesian_product(p_dict):
         zip(p_names, prod))
             for prod in it.product(
                     *(p_dict[n] for n in p_names))]
+
+
+def parse_ec_parameter_key(name):
+        """
+        Parse experiment parameter keys and return dict with the parts.
+        Format: 'ep::type::function_name::parameter_name'
+        Fields of return dict:
+            - type
+            - function_name
+            - parameter_name
+        """
+        try:
+            p = name.split("::")
+            return {"type": p[1],
+                    "function_name": p[2],
+                    "parameter_name": p[3]
+                    }
+        except BaseException:
+            LOG.exception("Couldn't parse parameter key {}"
+                          .format(name))
+        return dict()

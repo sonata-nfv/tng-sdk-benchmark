@@ -35,6 +35,7 @@ import shutil
 import os
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
 from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
+from tngsdk.benchmark.helper import parse_ec_parameter_key
 import tngsdk.package as tngpkg
 from tngsdk.benchmark.logger import TangoLogger
 
@@ -156,13 +157,15 @@ class TangoServiceConfigurationGenerator(
         for ec in ex.experiment_configurations:
             # 1. create project by copying base_proj
             self._copy_project(base_proj_path, ec)
-            # 2. add MPs to project
+            # 2. gather additional project infos
+            self._gather_project_infos(ec)
+            # 3. add MPs to project
             self._add_mps_to_project(ec)
-            # 3. apply configuration parameters to project
+            # 4. apply configuration parameters to project
             self._add_params_to_project(ec)
-            # 4. package project
+            # 5. package project
             self._package_project(ec)
-            # 5. status output
+            # 6. status output
             n_done += 1
             LOG.info("Generated project ({}/{}): {}"
                      .format(n_done,
@@ -175,6 +178,19 @@ class TangoServiceConfigurationGenerator(
             self.args.work_dir, GEN_PROJECT_PATH, ec.name)
         LOG.debug("Created project: {}".format(ec.project_path))
         shutil.copytree(base_proj_path, ec.project_path)
+
+    def _gather_project_infos(self, ec):
+        """
+        Collect additional infors about project and store to ec.
+        e.g. mapping between VNF IDs and names
+        """
+        # VNF names to ID mapping based on NSD
+        nsd = read_yaml(self._get_nsd_path(ec))
+        for nf in nsd.get("network_functions"):
+            k = "{}.{}.{}".format(nf.get("vnf_vendor"),
+                                  nf.get("vnf_name"),
+                                  nf.get("vnf_version"))
+            ec.function_ids[k] = nf.get("vnf_id")
 
     def _add_mps_to_project(self, ec):
         """
@@ -302,7 +318,8 @@ class TangoServiceConfigurationGenerator(
             vnfd.get("vendor"), vnfd.get("name"), vnfd.get("version"))
         # iterate over all parameters to be applied
         for pname, pvalue in ec.parameter.items():
-            ep_uid, field_name = parse_conf_parameter_name(pname)
+            ep_uid = parse_ec_parameter_key(pname).get("function_name")
+            field_name = parse_ec_parameter_key(pname).get("parameter_name")
             if ep_uid not in vnfd_uid:
                 continue  # not the right VNFD -> skip
             # parameter should be applied to given VNF
@@ -323,23 +340,27 @@ class TangoServiceConfigurationGenerator(
         vdu = vnfd.get(
             "virtual_deployment_units")[0]
         # apply command fields (to non-MP VNFDs)
-        if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
-            # print("--- VNFD: {} --> cmd_start: {}"
-            #       .format(vnfd.get("name"), value))
-            vdu["vm_cmd_start"] = str(value)
-        if field_name == "cmd_stop" and "mp." not in vnfd.get("name"):
-            # print("--- VNFD: {} --> cmd_stop: {}"
-            #       .format(vnfd.get("name"), value))
-            vdu["vm_cmd_stop"] = str(value)
+        if False:  # disabled (tng-bench directly injects commands for now)
+            if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
+                # print("--- VNFD: {} --> cmd_start: {}"
+                #       .format(vnfd.get("name"), value))
+                vdu["vm_cmd_start"] = str(value)
+            if field_name == "cmd_stop" and "mp." not in vnfd.get("name"):
+                # print("--- VNFD: {} --> cmd_stop: {}"
+                #       .format(vnfd.get("name"), value))
+                vdu["vm_cmd_stop"] = str(value)
         # apply resource requirements
         rr = vdu.get("resource_requirements")
         # cpu cores
         if field_name == "cpu_cores":
-            rr.get("cpu")["vcpus"] = int(float(value))
+            rr.get("cpu")["vcpus"] = (int(float(value))
+                                      if value is not None else 1)
         elif field_name == "cpu_bw":
-            rr.get("cpu")["cpu_bw"] = float(value)
+            rr.get("cpu")["cpu_bw"] = (float(value)
+                                       if value is not None else 1.0)
         elif field_name == "mem_max":
-            rr.get("memory")["size"] = int(float(value))
+            rr.get("memory")["size"] = (int(float(value))
+                                        if value is not None else 1024)
             rr.get("memory")["size_unit"] = "MB"
         elif field_name == "disk_max":
             rr.get("storage")["size"] = int(float(value))
@@ -405,18 +426,3 @@ class TangoServiceConfigurationGenerator(
               .format(self.stat_n_ex, self.stat_n_ec))
         print("Total time: %s" % "%.4f" % (time.time() - self.start_time))
         print("-" * 80)
-
-
-def parse_conf_parameter_name(name):
-    """
-    Parses RL parameter names.
-    Returns: (function_id, parameter_name)
-    """
-    try:
-        # format: 'ep::category::func_id::parameter'
-        p = name.split("::")
-        return p[2], p[3]
-    except BaseException:
-        LOG.error("Couldn't parse parameter key {}"
-                  .format(name))
-    return None, None

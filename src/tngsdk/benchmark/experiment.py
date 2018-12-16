@@ -35,13 +35,15 @@ from tngsdk.benchmark.macro import rewrite_parameter_macros_to_lists
 from tngsdk.benchmark.helper import compute_cartesian_product
 from tngsdk.benchmark.logger import TangoLogger
 
+
 LOG = TangoLogger.getLogger(__name__)
 
 
 class Experiment(object):
 
-    def __init__(self, definition):
+    def __init__(self, args, definition):
         self.name = None
+        self.args = args
         self.experiment_parameters = dict()
         self.measurement_points = list()
         self.repetitions = 0
@@ -51,7 +53,6 @@ class Experiment(object):
         # attributes
         self.experiment_configurations = list()
         self.configuration_space_list = list()
-        self.overload_vnf_list = list()
         # store original experiment definition for later use
         self.original_definition = definition.copy()
 
@@ -91,6 +92,10 @@ class Experiment(object):
         for c in configuration_space_list:
             rc = ExperimentConfiguration(self, c)
             self.experiment_configurations.append(rc)
+        if self.args.max_experiments is not None:
+            # reduce the number of experiments
+            self.experiment_configurations = self.experiment_configurations[
+                :int(self.args.max_experiments)]
         LOG.info("Populated experiment specification: '{}' with {} "
                  .format(self.name, len(self.experiment_configurations))
                  + "configurations to be executed.")
@@ -184,15 +189,15 @@ class Experiment(object):
 
 class ServiceExperiment(Experiment):
 
-    def __init__(self, definition):
-        super().__init__(definition)
+    def __init__(self, args, definition):
+        super().__init__(args, definition)
         LOG.debug("Created service experiment specification %r" % self.name)
 
 
 class FunctionExperiment(Experiment):
 
-    def __init__(self, definition):
-        super().__init__(definition)
+    def __init__(self, args, definition):
+        super().__init__(args, definition)
         LOG.debug("Created function experiment specification: %r" % self.name)
 
 
@@ -212,6 +217,8 @@ class ExperimentConfiguration(object):
         self.project_path = None  # path of generated project
         self.package_path = None  # path of generated package
         self.name = "{}_{:05d}".format(experiment.name, self.run_id)
+        # additional information
+        self.function_ids = dict()  # mapping between VNF names and IDs
         LOG.debug("Created: {}".format(self))
 
     def __repr__(self):
@@ -220,22 +227,9 @@ class ExperimentConfiguration(object):
     def pprint(self):
         return "{}\n{}".format(self, pformat(self.parameter))
 
-    def parse_parameter_key(self, name):
+    def get_vnf_id_by_name(self, vnf_name):
         """
-        Parse experiment parameter keys and return dict with the parts.
-        Format: 'ep::type::function_name::parameter_name'
-        Fields of return dict:
-            - type
-            - function_name
-            - parameter_name
+        Given the full vnf_name, the method returns the vnf_id from the NSD.
+        If not found, the vnf_name is returned
         """
-        try:
-            p = name.split("::")
-            return {"type": p[2],
-                    "function_name": p[3],
-                    "parameter_name": p[4]
-                    }
-        except BaseException:
-            LOG.error("Couldn't parse parameter key {}"
-                      .format(name))
-        return dict()
+        return self.function_ids.get(vnf_name, vnf_name)

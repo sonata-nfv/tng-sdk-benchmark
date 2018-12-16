@@ -35,6 +35,7 @@ from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
 from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
 from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
 from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerMonitor
+from tngsdk.benchmark.helper import parse_ec_parameter_key
 from tngsdk.benchmark.logger import TangoLogger
 
 
@@ -42,13 +43,20 @@ LOG = TangoLogger.getLogger(__name__)
 
 
 # global configurations
-WAIT_SHUTDOWN_TIME = 4  # FIXME give experiment some cooldown time
+WAIT_SHUTDOWN_TIME = 2  # FIXME give experiment some cooldown time
 WAIT_PADDING_TIME = 3  # FIXME extra time to wait (to have some buffer)
 PATH_SHARE = "/tngbench_share"
 PATH_CMD_START_LOG = "cmd_start.log"
 PATH_CMD_STOP_LOG = "cmd_stop.log"
 PATH_CONTAINER_LOG = "clogs.log"
 PATH_CONTAINER_MON = "cmon.json"
+
+# FIXME not nice, lots of hard coding, needs more flexability
+MP_IN_KEY = "ep::function::mp.input::"
+MP_OUT_KEY = "ep::function::mp.output::"
+# FIXME currently the keys for selecting the MPs are fixed
+MP_IN_NAME = "mp.input"
+MP_OUT_NAME = "mp.output"
 
 
 class VimEmuDriver(object):
@@ -86,8 +94,8 @@ class VimEmuDriver(object):
         # upload package
         ns_uuid = self.llcmc.upload_package(ec.package_path)
         # instantiate service
-        nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
-        LOG.info("Instantiated service: {}".format(nsi_uuid))
+        self.nsi_uuid = self.llcmc.instantiate_service(ns_uuid)
+        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
 
     def execute_experiment(self, ec):
         # start container monitoring (dedicated thread)
@@ -95,37 +103,47 @@ class VimEmuDriver(object):
             self.emudocker, self._experiment_wait_time(ec))
         self.emudocker_mon.daemon = True
         self.emudocker_mon.start()
-        # FIXME currently the keys for selecting the MPs are fixed
-        # FIXME not nice, lots of hard coding, needs more flexability
-        MP_IN_KEY = "ep::function::mp.input::"
-        MP_OUT_KEY = "ep::function::mp.output::"
-        # collect names of MPs
-        mp_in_name = "mp.input"
-        mp_out_name = "mp.output"
         # collect commands for MPs
         mp_in_cmd_start = ec.parameter.get("{}cmd_start".format(MP_IN_KEY))
         mp_in_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_IN_KEY))
         mp_out_cmd_start = ec.parameter.get("{}cmd_start".format(MP_OUT_KEY))
         mp_out_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_OUT_KEY))
+        # collect commands for VNFs
+        vnf_cmd_start_dict, vnf_cmd_stop_dict = self._collect_vnf_commands(ec)
         # trigger MP/function commands: we always execute the commands in the
         # following order:
-        # 1. mp_out_cmd_start
-        # 2. mp_in_cmd_start
+        # 1. vnf_cmd_start
+        # 2. mp_out_cmd_start
+        # 3. mp_in_cmd_start
         # - run the experiment -
-        # 3. mp_in_cmd_stop
-        # 4. mp_out_cmd_stop
+        # 4. mp_in_cmd_stop
+        # 5. mp_out_cmd_stop
+        # 6. vnf_cmd_stop
         # FIXME make this user-configurable and more flexible
-        self.emudocker.execute(mp_out_name, mp_out_cmd_start,
+        LOG.debug("Executing start commands inside containers ...")
+        for vnf_cname, cmd in vnf_cmd_start_dict.items():
+            self.emudocker.execute(vnf_cname, cmd,
+                                   os.path.join(PATH_SHARE,
+                                                PATH_CMD_START_LOG))
+        self.emudocker.execute(MP_OUT_NAME, mp_out_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
-        self.emudocker.execute(mp_in_name, mp_in_cmd_start,
+        self.emudocker.execute(MP_IN_NAME, mp_in_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self._wait_experiment(ec)
         # hold execution for manual debugging:
-        # input("Press Enter to continue...")
-        self.emudocker.execute(mp_in_name, mp_in_cmd_stop,
-                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
-        self.emudocker.execute(mp_out_name, mp_out_cmd_stop,
-                               os.path.join(PATH_SHARE, PATH_CMD_STOP_LOG))
+        if self.args.hold_and_wait_for_user:
+            input("Press Enter to continue...")
+        LOG.debug("Executing stop commands inside containers ...")
+        self.emudocker.execute(MP_IN_NAME, mp_in_cmd_stop,
+                               os.path.join(PATH_SHARE,
+                                            PATH_CMD_STOP_LOG), block=True)
+        self.emudocker.execute(MP_OUT_NAME, mp_out_cmd_stop,
+                               os.path.join(PATH_SHARE,
+                                            PATH_CMD_STOP_LOG), block=True)
+        for vnf_cname, cmd in vnf_cmd_stop_dict.items():
+            self.emudocker.execute(vnf_cname, cmd,
+                                   os.path.join(PATH_SHARE,
+                                                PATH_CMD_STOP_LOG), block=True)
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
         # wait for monitoring thread to finalize
@@ -136,6 +154,9 @@ class VimEmuDriver(object):
         LOG.info("Finalized '{}'".format(ec))
 
     def teardown_experiment(self, ec):
+        # tearminate the test service
+        # self.llcmc.terminate_service(self.nsi_uuid)  # disabled for now
+        # stop the emulation
         self.emusrvc.stop_emulation()
 
     def teardown_platform(self):
@@ -157,6 +178,33 @@ class VimEmuDriver(object):
         # colelct and store continous monitoring data
         self.emudocker_mon.store_stats(
             os.path.join(dst_path, PATH_CONTAINER_MON))
+
+    def _collect_vnf_commands(self, ec):
+        """
+        Get the start/stop commands for all VNFs.
+        Returns: {"vnf0": "./start.sh"}, {"vnf0": "./stop.sh"}
+        """
+        vnf_cmd_start_dict = dict()
+        vnf_cmd_stop_dict = dict()
+        for k, v in ec.parameter.items():
+            if MP_IN_KEY in k or MP_OUT_KEY in k:
+                continue  # skip MPs
+            kd = parse_ec_parameter_key(k)
+            if kd.get("type") != "function":
+                continue  # skip non functions
+            if kd.get("parameter_name") == "cmd_start":
+                # add to dict
+                vnf_cmd_start_dict[ec.get_vnf_id_by_name(
+                    kd.get("function_name"))] = v
+            elif kd.get("parameter_name") == "cmd_stop":
+                # add to dict
+                vnf_cmd_stop_dict[ec.get_vnf_id_by_name(
+                    kd.get("function_name"))] = v
+        LOG.debug("Collected VNF start commands: {}"
+                  .format(vnf_cmd_start_dict))
+        LOG.debug("Collected VNF stop commands: {}"
+                  .format(vnf_cmd_stop_dict))
+        return vnf_cmd_start_dict, vnf_cmd_stop_dict
 
     def _experiment_wait_time(self, ec):
         time_limit = int(ec.parameter.get("ep::header::all::time_limit", 0))

@@ -67,7 +67,7 @@ class EmuDockerClient(object):
             LOG.error("Stopping.")
             exit(1)
 
-    def execute(self, container_name, cmd, logfile):
+    def execute(self, container_name, cmd, logfile, block=False):
         """
         Run command on container.
         Non blocking.
@@ -82,9 +82,13 @@ class EmuDockerClient(object):
         c = self.client.containers.get(container_name)
         assert(c is not None)
         # build full cmd
-        cmd = "bash -c 'nohup {} > {} 2>&1 &'".format(cmd, logfile)
+        postfix = ""
+        if not block:
+            postfix = " &"
+        cmd = "bash -c 'nohup {} > {} 2>&1{}'".format(cmd, logfile, postfix)
         # execute command in target container (blocks if detach=False)
-        rcode, rdata = c.exec_run(cmd, stdin=False, stdout=False, detach=False)
+        rcode, rdata = c.exec_run(
+            cmd, stdin=False, stdout=False, detach=(not block))
         LOG.debug("Out (empty in detach mode): return code: {}; stdout: '{}'"
                   .format(rcode, rdata))
         LOG.debug("Top on '{}': {}".format(container_name, c.top()))
@@ -131,7 +135,7 @@ class EmuDockerClient(object):
         """
         all_stats = dict()
         for c in self.list_emu_containers():
-            s = self.apiclient.stats(c.name, stream=False, decode=True)
+            s = self.apiclient.stats(c.name, stream=False, decode=False)
             s["name"] = c.name
             # LOG.debug("Received Docker stats for {}: {}".format(c.name, s))
             all_stats[c.name] = s
