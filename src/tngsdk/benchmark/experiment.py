@@ -41,9 +41,10 @@ LOG = TangoLogger.getLogger(__name__)
 
 class Experiment(object):
 
-    def __init__(self, args, definition):
+    def __init__(self, args, definition, sut_package):
         self.name = None
         self.args = args
+        self.sut_package = sut_package
         self.experiment_parameters = dict()
         self.measurement_points = list()
         self.repetitions = 0
@@ -189,15 +190,15 @@ class Experiment(object):
 
 class ServiceExperiment(Experiment):
 
-    def __init__(self, args, definition):
-        super().__init__(args, definition)
+    def __init__(self, args, definition, sut_package):
+        super().__init__(args, definition, sut_package)
         LOG.debug("Created service experiment specification %r" % self.name)
 
 
 class FunctionExperiment(Experiment):
 
-    def __init__(self, args, definition):
-        super().__init__(args, definition)
+    def __init__(self, args, definition, sut_package):
+        super().__init__(args, definition, sut_package)
         LOG.debug("Created function experiment specification: %r" % self.name)
 
 
