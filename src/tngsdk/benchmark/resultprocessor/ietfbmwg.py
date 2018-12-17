@@ -104,7 +104,7 @@ class IetfBmwgResultProcessor(object):
         bd_in["sut_author"] = bd_in["sut_vendor"]
         bd_in["sut_description"] = ec.experiment.description
         bd_in["sut_type"] = "5gtango"  # 5GTANGO SUTs only
-        bd_in["sut_5gtango_pkgpath"] = ec.package_path
+        bd_in["sut_5gtango_pkgpath"] = ec.experiment.sut_package
         # SUT connections (TODO MP order matters, bad design)
         bd_in["sut_input_port_id"] = (ec.experiment.measurement_points[1]
                                       .get("connection_point"))
@@ -130,24 +130,24 @@ class IetfBmwgResultProcessor(object):
         # Links (TODO MP order matters, bad design)
         bd_in["network_type"] = "E-LINE"
         # Resource limits (TODO RL order matters, bad design)
-        sut_func_name = ec.experiment.resource_limitations[0].get("function")
-        bd_in["sut_resource_cpu_cores"] = self._get_rl_from_ec(
+        sut_func_name = ec.experiment.experiment_parameters[0].get("function")
+        bd_in["sut_resource_cpu_cores"] = self._get_ep_from_ec(
             ec, sut_func_name, "cpu_cores")
-        bd_in["sut_resource_cpu_bw"] = self._get_rl_from_ec(
+        bd_in["sut_resource_cpu_bw"] = self._get_ep_from_ec(
             ec, sut_func_name, "cpu_bw")
-        bd_in["sut_resource_mem"] = self._get_rl_from_ec(
+        bd_in["sut_resource_mem"] = self._get_ep_from_ec(
             ec, sut_func_name, "mem_max")
-        bd_in["agent_1_resource_cpu_cores"] = self._get_rl_from_ec(
+        bd_in["agent_1_resource_cpu_cores"] = self._get_ep_from_ec(
             ec, bd_in["agent_1_id"], "cpu_cores")
-        bd_in["agent_1_resource_cpu_bw"] = self._get_rl_from_ec(
+        bd_in["agent_1_resource_cpu_bw"] = self._get_ep_from_ec(
             ec, bd_in["agent_1_id"], "cpu_bw")
-        bd_in["agent_1_resource_mem"] = self._get_rl_from_ec(
+        bd_in["agent_1_resource_mem"] = self._get_ep_from_ec(
             ec, bd_in["agent_1_id"], "mem_max")
-        bd_in["agent_2_resource_cpu_cores"] = self._get_rl_from_ec(
+        bd_in["agent_2_resource_cpu_cores"] = self._get_ep_from_ec(
             ec, bd_in["agent_2_id"], "cpu_cores")
-        bd_in["agent_2_resource_cpu_bw"] = self._get_rl_from_ec(
+        bd_in["agent_2_resource_cpu_bw"] = self._get_ep_from_ec(
             ec, bd_in["agent_2_id"], "cpu_bw")
-        bd_in["agent_2_resource_mem"] = self._get_rl_from_ec(
+        bd_in["agent_2_resource_mem"] = self._get_ep_from_ec(
             ec, bd_in["agent_2_id"], "mem_max")
 
         # render BD using template
@@ -170,14 +170,14 @@ class IetfBmwgResultProcessor(object):
         t = self.render_env.get_template(template)
         return t.render(data)
 
-    def _get_rl_from_ec(self, ec, node, rl_name):
+    def _get_ep_from_ec(self, ec, node, ep_name):
         """
         Helper that get resource limit from flat
         parameter list of an EC.
         """
         for k in ec.parameter.keys():
             # fuzzy matchin using "in" statement
-            if node in k and rl_name in k:
+            if node in k and ep_name in k:
                 return ec.parameter.get(k)
         LOG.warning("Could not find resource limit for node: {}"
                     .format(node))

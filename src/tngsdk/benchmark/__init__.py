@@ -243,13 +243,15 @@ class ProfileManager(object):
 
         # service experiments
         for e in input_ped.get("service_experiments", []):
-            e_obj = ServiceExperiment(self.args, e)
+            e_obj = ServiceExperiment(
+                self.args, e, input_ped.get("service_package"))
             e_obj.populate()
             service_experiments.append(e_obj)
 
         # function experiments
         for e in input_ped.get("function_experiments", []):
-            e_obj = FunctionExperiment(self.args, e)
+            e_obj = FunctionExperiment(
+                self.args, e, input_ped.get("service_package"))
             e_obj.populate()
             function_experiments.append(e_obj)
 
