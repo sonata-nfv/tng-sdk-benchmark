@@ -103,8 +103,10 @@ class LLCMClient(object):
         LOG.info("On-boarding to LLCM: {}".format(pkg_path))
         with open(pkg_path, "rb") as f:
             data = {"package": f.read()}
+            t_start = time.time()
             r = requests.post(
                 self.pkg_endpoint, files=data)
+            self._t_onboarding = time.time() - t_start
             if r.status_code == 201:
                 return json.loads(r.text).get("service_uuid")
             raise BaseException("Error during on-boarding.")
@@ -112,8 +114,10 @@ class LLCMClient(object):
     def instantiate_service(self, uuid):
         LOG.info("Instantiating NS: {}".format(uuid))
         data = {"service_uuid": uuid}
+        t_start = time.time()
         r = requests.post(
             self.nsi_endpoint, json=data)
+        self._t_instantiation = time.time() - t_start
         if r.status_code == 201:
             return json.loads(r.text).get("service_instance_uuid")
         raise BaseException("Error during NS instantiation.")
@@ -126,3 +130,15 @@ class LLCMClient(object):
         if r.status_code == 200:
             return r.text
         raise BaseException("Error during NS termination.")
+
+    def store_stats(self, path):
+        """
+        Store collected statistics as JSON.
+        """
+        stats = {
+            "t_onboarding": self._t_onboarding,
+            "t_instantiation": self._t_instantiation
+        }
+        LOG.debug("Writing LLCM stats: {}".format(path))
+        with open(path, 'w') as f:
+            json.dump(stats, f)
