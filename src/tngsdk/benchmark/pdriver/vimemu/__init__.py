@@ -50,6 +50,7 @@ PATH_CMD_START_LOG = "cmd_start.log"
 PATH_CMD_STOP_LOG = "cmd_stop.log"
 PATH_CONTAINER_LOG = "clogs.log"
 PATH_CONTAINER_MON = "cmon.json"
+PATH_LLCM_STATS = "llcm_stats.json"
 
 # FIXME not nice, lots of hard coding, needs more flexability
 MP_IN_KEY = "ep::function::mp.input::"
@@ -178,6 +179,9 @@ class VimEmuDriver(object):
         # colelct and store continous monitoring data
         self.emudocker_mon.store_stats(
             os.path.join(dst_path, PATH_CONTAINER_MON))
+        # collect and store vim-emu metrics (e.g. instantiation times)
+        self.llcmc.store_stats(
+            os.path.join(dst_path, PATH_LLCM_STATS))
 
     def _collect_vnf_commands(self, ec):
         """

@@ -29,10 +29,16 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+import os
+import json
 from tngsdk.benchmark.logger import TangoLogger
+from tngsdk.benchmark.helper import ensure_dir
 from tngsdk.benchmark.pdriver.vimemu import VimEmuDriver
 
 LOG = TangoLogger.getLogger(__name__)
+
+
+PATH_EC_FILE = "ex_config.json"
 
 
 class Executor(object):
@@ -61,6 +67,24 @@ class Executor(object):
                                 .format(t.get("pdriver")))
         return None
 
+    def _write_experiment_configuration(self, ec):
+        """
+        Write the used experiment configuration to disk.
+        """
+        dst_path = os.path.join(self.args.result_dir, ec.name)
+        dst_path = os.path.join(dst_path, PATH_EC_FILE)
+        ensure_dir(dst_path)
+        LOG.debug("Writing ex. configuration: {}".format(dst_path))
+        data = {
+            "name": ec.name,
+            "run_id": ec.run_id,
+            "parameter": ec.parameter,
+            "project_path": ec.project_path,
+            "package_path": ec.package_path
+        }
+        with open(dst_path, "w") as f:
+            json.dump(data, f)
+
     def setup(self):
         """
         Prepare the target platform.
@@ -78,6 +102,7 @@ class Executor(object):
         # iterate over experiments/configs and execute
         for ex in self.ex_list:
             for ec in ex.experiment_configurations:
+                self._write_experiment_configuration(ec)
                 LOG.info("Setting up '{}'".format(ec))
                 t_pd.setup_experiment(ec)
                 LOG.info("Executing '{}'".format(ec))
