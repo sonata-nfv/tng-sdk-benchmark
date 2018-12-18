@@ -72,8 +72,8 @@ class Executor(object):
         Write the used experiment configuration to disk.
         """
         dst_path = os.path.join(self.args.result_dir, ec.name)
-        ensure_dir(dst_path)
         dst_path = os.path.join(dst_path, PATH_EC_FILE)
+        ensure_dir(dst_path)
         LOG.debug("Writing ex. configuration: {}".format(dst_path))
         data = {
             "name": ec.name,
