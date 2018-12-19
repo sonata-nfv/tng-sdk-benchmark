@@ -55,7 +55,6 @@ class IetfBmwgResultProcessor(object):
     def __init__(self, args, service_experiments):
         self.args = args
         if self.args.ibbd_dir is None:
-            LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
             return
         self.service_experiments = service_experiments
         # fetch BD template from GitHub
@@ -73,6 +72,7 @@ class IetfBmwgResultProcessor(object):
     def run(self):
         # check inputs and possibly skip
         if self.args.ibbd_dir is None:
+            LOG.info("IETF BMWG BD dir not specified (--ibbd). Skipping.")
             return
         # generate IETF BMWG BD, PP, BR
         for ex in self.service_experiments:
