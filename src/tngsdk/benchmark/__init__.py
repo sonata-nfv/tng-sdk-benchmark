@@ -44,6 +44,7 @@ from tngsdk.benchmark.generator.tango \
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml
 from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
+from tngsdk.benchmark.resultprocessor.vimemu import VimemuResultProcessor
 from tngsdk.benchmark.logger import TangoLogger
 
 
@@ -121,9 +122,6 @@ class ProfileManager(object):
         self.process_results()
 
     def load_generator(self):
-        if self.args.no_generation:
-            print("Skipping generation: --no-generation")
-            return None
         # select and instantiate configuration generator
         cgen = None
         if self.args.service_generator == "sonata":
@@ -141,6 +139,9 @@ class ProfileManager(object):
         return cgen
 
     def generate_experiments(self):
+        if self.args.no_generation:
+            print("Skipping generation: --no-generation")
+            return
         if self.cgen is None:
             raise BaseException("No generator loaded.")
         # generate one service configuration for each experiment based
@@ -182,11 +183,13 @@ class ProfileManager(object):
         rp_list = list()
         rp_list.append(IetfBmwgResultProcessor(
             self.args, self.service_experiments))
+        rp_list.append(VimemuResultProcessor(
+            self.args, self.service_experiments))
         self.logger.info("Prepared {} result processor(s)"
                          .format(len(rp_list)))
         # process results
         for rp in rp_list:
-            self.logger.info("Running result processor '{}'". format(rp))
+            self.logger.info("Running result processor '{}'".format(rp))
             rp.run()
 
     def _load_config(self, path):
