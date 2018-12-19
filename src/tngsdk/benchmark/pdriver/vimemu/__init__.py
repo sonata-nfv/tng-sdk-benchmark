@@ -56,8 +56,8 @@ PATH_LLCM_STATS = "llcm_stats.json"
 MP_IN_KEY = "ep::function::mp.input::"
 MP_OUT_KEY = "ep::function::mp.output::"
 # FIXME currently the keys for selecting the MPs are fixed
-MP_IN_NAME = "mp.input"
-MP_OUT_NAME = "mp.output"
+MP_IN_NAME = "mp.input.vdu01"
+MP_OUT_NAME = "mp.output.vdu01"
 
 
 class VimEmuDriver(object):
@@ -198,17 +198,31 @@ class VimEmuDriver(object):
                 continue  # skip non functions
             if kd.get("parameter_name") == "cmd_start":
                 # add to dict
-                vnf_cmd_start_dict[ec.get_vnf_id_by_name(
-                    kd.get("function_name"))] = v
+                vnf_cmd_start_dict[self.get_cname_by_parameter(
+                    ec, kd.get("function_name"), kd.get("unit_name"))] = v
             elif kd.get("parameter_name") == "cmd_stop":
                 # add to dict
-                vnf_cmd_stop_dict[ec.get_vnf_id_by_name(
-                    kd.get("function_name"))] = v
+                vnf_cmd_stop_dict[self.get_cname_by_parameter(
+                    ec, kd.get("function_name"), kd.get("unit_name"))] = v
         LOG.debug("Collected VNF start commands: {}"
                   .format(vnf_cmd_start_dict))
         LOG.debug("Collected VNF stop commands: {}"
                   .format(vnf_cmd_stop_dict))
         return vnf_cmd_start_dict, vnf_cmd_stop_dict
+
+    def get_cname_by_parameter(self, ec, param_func_name, param_unit_name):
+        """
+        Given the full VNF (and maybe VDU) string from the experiment
+        parameters, return the name of the container (vnf_id.vdu_id).
+        Parameter function strings can be:
+        (a) param_unit_name is None         -> return "vdu01"
+        (b) else                            -> return given VDU
+        """
+        if param_unit_name is None:  # case (a)
+            param_unit_name = "vdu01"  # FIXME thus we use "vdu01" as default
+        return "{}.{}".format(
+                ec.function_ids.get(
+                    param_func_name, param_func_name), param_unit_name)
 
     def _experiment_wait_time(self, ec):
         time_limit = int(ec.parameter.get("ep::header::all::time_limit", 0))

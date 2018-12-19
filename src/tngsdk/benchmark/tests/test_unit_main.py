@@ -92,22 +92,22 @@ class UnitProfileTests(unittest.TestCase):
                     "ep::mp::mp.output::container",
                     c.parameter)
                 self.assertIn(
-                    "ep::function::eu.5gtango.myvnf.0.1"
+                    "ep::function::eu.5gtango.myvnf.0.1/vdu01"
                     + "::mem_swap_max",
                     c.parameter)
                 self.assertIn(
-                    "ep::function::eu.5gtango.myvnf.0.1"
+                    "ep::function::eu.5gtango.myvnf.0.1/vdu01"
                     + "::mem_max",
                     c.parameter)
                 self.assertIn(
-                    "ep::function::eu.5gtango.myvnf.0.1"
+                    "ep::function::eu.5gtango.myvnf.0.1/vdu01"
                     + "::cpu_cores",
                     c.parameter)
                 self.assertIn(
-                    "ep::function::eu.5gtango.myvnf.0.1::io_bw",
+                    "ep::function::eu.5gtango.myvnf.0.1/vdu01::io_bw",
                     c.parameter)
                 self.assertIn(
-                    "ep::function::eu.5gtango.myvnf.0.1::cpu_bw",
+                    "ep::function::eu.5gtango.myvnf.0.1/vdu01::cpu_bw",
                     c.parameter)
                 self.assertIn(
                     "ep::function::mp.output::cpu_bw", c.parameter)

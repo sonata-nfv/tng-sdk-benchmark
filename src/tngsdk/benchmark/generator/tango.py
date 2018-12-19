@@ -319,26 +319,37 @@ class TangoServiceConfigurationGenerator(
         # iterate over all parameters to be applied
         for pname, pvalue in ec.parameter.items():
             ep_uid = parse_ec_parameter_key(pname).get("function_name")
+            unit_name = parse_ec_parameter_key(pname).get("unit_name")
             field_name = parse_ec_parameter_key(pname).get("parameter_name")
             if ep_uid not in vnfd_uid:
                 continue  # not the right VNFD -> skip
             # parameter should be applied to given VNF
-            self._apply_parameter_to_vnfd(field_name, pvalue, vnfd)
+            self._apply_parameter_to_vnfd(field_name, unit_name, pvalue, vnfd)
             applied = True
         if not applied:
             raise BaseException(
                 "Couln't find any experiment parameters for VNFD: {}"
                 .format(vnfd_uid))
 
-    def _apply_parameter_to_vnfd(self, field_name, value, vnfd):
+    def _apply_parameter_to_vnfd(self, field_name, unit_name, value, vnfd):
         """
         Applies a single parameter (given by field name)
         to the given VNFD.
         """
         # Apply configuration to corresponding VNFD field
-        # TODO only a single VDU per VNF is supported right now
-        vdu = vnfd.get(
-            "virtual_deployment_units")[0]
+        # Two cases: VDU (unit_name) specified or not
+        vdu = None
+        if unit_name is None:  # use first VDU in VNFD
+            vdu = vnfd.get(  # FIXME allow cloud native functions
+                "virtual_deployment_units")[0]
+        else:  # search for VDU to use
+            # FIXME allow cloud native functions
+            for u in vnfd.get("virtual_deployment_units"):
+                if str(u.get("id")) == str(unit_name):
+                    vdu = u
+                    break
+        if vdu is None:
+            raise BaseException("Couldn't find deployment unit to manipulate.")
         # apply command fields (to non-MP VNFDs)
         if False:  # disabled (tng-bench directly injects commands for now)
             if field_name == "cmd_start" and "mp." not in vnfd.get("name"):

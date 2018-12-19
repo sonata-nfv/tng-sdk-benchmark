@@ -220,6 +220,7 @@ class ExperimentConfiguration(object):
         self.name = "{}_{:05d}".format(experiment.name, self.run_id)
         # additional information
         self.function_ids = dict()  # mapping between VNF names and IDs
+        self.function_units = dict()  # mapping between VNF names and VDUs
         LOG.debug("Created: {}".format(self))
 
     def __repr__(self):
@@ -227,10 +228,3 @@ class ExperimentConfiguration(object):
 
     def pprint(self):
         return "{}\n{}".format(self, pformat(self.parameter))
-
-    def get_vnf_id_by_name(self, vnf_name):
-        """
-        Given the full vnf_name, the method returns the vnf_id from the NSD.
-        If not found, the vnf_name is returned
-        """
-        return self.function_ids.get(vnf_name, vnf_name)
