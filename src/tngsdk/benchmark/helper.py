@@ -124,9 +124,17 @@ def parse_ec_parameter_key(name):
         """
         try:
             p = name.split("::")
+            # special case: function_name might contain VDU info
+            p.append(None)  # dummy element 4
+            assert(len(p) == 5)
+            if "/" in p[2]:
+                p2 = p[2].split("/")
+                p[2] = p2[0]
+                p[4] = p2[1]
             return {"type": p[1],
                     "function_name": p[2],
-                    "parameter_name": p[3]
+                    "parameter_name": p[3],
+                    "unit_name": p[4]
                     }
         except BaseException:
             LOG.exception("Couldn't parse parameter key {}"

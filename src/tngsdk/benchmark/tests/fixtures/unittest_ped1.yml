@@ -34,7 +34,7 @@ service_experiments:
         container: "mpeuster/p2-mp"
     # experiment parameters to be tested during profiling run
     experiment_parameters:
-      - function: "eu.5gtango.myvnf.0.1"
+      - function: "eu.5gtango.myvnf.0.1/vdu01"
         cmd_start: ["test_cmd_start_myvnf", "test_cmd_start_myvnf_b"]
         cmd_stop: "test_cmd_stop_myvnf"
         cpu_bw: {min: 0.05, max: 0.2, step: 0.05}       
