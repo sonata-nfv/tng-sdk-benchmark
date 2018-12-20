@@ -31,15 +31,21 @@
 # partner consortium (www.5gtango.eu).
 import os
 import pandas as pd
+from flatten_dict import flatten
 from tngsdk.benchmark.logger import TangoLogger
 from tngsdk.benchmark.helper import read_json, read_yaml
+from tngsdk.benchmark.helper import dubunderscore_reducer
 
 
 LOG = TangoLogger.getLogger(__name__)
 
 
 PATH_EX_CONFIG = "ex_config.json"
+PATH_CONTAINER_MONITORING = "cmon.json"
 PATH_CONTAINER_RESULT = "tngbench_share/result.yml"
+
+PATH_OUTPUT_EC_METRICS = "result_ec_metrics.csv"
+PATH_OUTPUT_TS_METRICS = "result_ts_metrics.csv"
 
 
 class VimemuResultProcessor(object):
@@ -63,9 +69,11 @@ class VimemuResultProcessor(object):
         df_em = self.read_experiment_metrics(rdlist)
         # read timeseries metrics
         df_tm = self.read_timeseries_metrics(rdlist)
-        # TODO: do something with the data frames
-        df_em.info(verbose=True)
-        df_tm.info(verbose=True)
+        df_em.info()
+        df_tm.info()
+        # store the data frames
+        df_em.to_csv(os.path.join(self.result_dir, PATH_OUTPUT_EC_METRICS))
+        df_tm.to_csv(os.path.join(self.result_dir, PATH_OUTPUT_TS_METRICS))
 
     def read_experiment_metrics(self, rdlist):
         """
@@ -73,8 +81,8 @@ class VimemuResultProcessor(object):
         """
         rows = list()
         for idx, rd in enumerate(rdlist):
-            LOG.debug("Reading experiment result {}/{}"
-                      .format(idx + 1, len(rdlist)))
+            LOG.info("Processing experiment metrics {}/{}"
+                     .format(idx + 1, len(rdlist)))
             row = dict()
             # collect data from different sources
             row.update(self._collect_ecs(rd))
@@ -88,11 +96,10 @@ class VimemuResultProcessor(object):
         return pandas
         """
         rows = list()
-        for rd in rdlist:
-            row = dict()
-            # TODO: implement
-            del rd
-            rows.append(row)
+        for idx, rd in enumerate(rdlist):
+            LOG.info("Processing timeseries metrics {}/{}"
+                     .format(idx + 1, len(rdlist)))
+            rows.extend(self._collect_ts_container_monitoring(rd))
         # to Pandas
         return pd.DataFrame(rows)
 
@@ -127,6 +134,22 @@ class VimemuResultProcessor(object):
                 r[k] = v
         return r
 
+    def _collect_ts_container_monitoring(self, rd):
+        """
+        Collect time series data from 'PATH_CONTAINER_MONITORING'
+        Data: list of tuples(timestamp, dict(docker stats))
+        Returns list of rows
+        """
+        samples = read_json(os.path.join(rd, PATH_CONTAINER_MONITORING))
+        rows = list()
+        min_time = min([ts for (ts, smpl) in samples])
+        for (ts, smpl) in samples:
+            row = dict()
+            row["timestamp"] = ts - min_time
+            row.update(self._flat_sample(smpl))
+            rows.append(row)
+        return rows
+
     def _get_container_from_rd(self, rd):
         return sorted([cd for cd in os.listdir(rd)
                        if os.path.isdir(os.path.join(rd, cd))
@@ -134,3 +157,13 @@ class VimemuResultProcessor(object):
 
     def _get_clean_cname(self, name):
         return name.replace("mn.", "").strip(".-/_ ")
+
+    def _flat_sample(self, smpl):
+        """
+        Make a flat dict from given multi-dim smpl dict.
+        """
+        r = dict()
+        for cname, data in smpl.items():
+            r["cname"] = cname
+            r.update(flatten(data, reducer=dubunderscore_reducer))
+        return r

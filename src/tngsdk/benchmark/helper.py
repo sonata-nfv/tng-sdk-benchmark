@@ -152,3 +152,13 @@ def parse_ec_parameter_key(name):
             LOG.exception("Couldn't parse parameter key {}"
                           .format(name))
         return dict()
+
+
+def dubunderscore_reducer(k1, k2):
+    """
+    for use with flatten-dict
+    """
+    if k1 is None:
+        return k2
+    else:
+        return k1 + "__" + k2
