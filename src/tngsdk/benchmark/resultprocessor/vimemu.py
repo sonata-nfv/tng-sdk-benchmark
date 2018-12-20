@@ -30,10 +30,16 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 import os
+import pandas as pd
 from tngsdk.benchmark.logger import TangoLogger
+from tngsdk.benchmark.helper import read_json, read_yaml
 
 
 LOG = TangoLogger.getLogger(__name__)
+
+
+PATH_EX_CONFIG = "ex_config.json"
+PATH_CONTAINER_RESULT = "tngbench_share/result.yml"
 
 
 class VimemuResultProcessor(object):
@@ -48,4 +54,83 @@ class VimemuResultProcessor(object):
             LOG.info("Result dir '{}' does not exist. Skipping"
                      .format(self.result_dir))
             return
-        LOG.warning("vim-emu result processor not yet implemented.")
+        # FIXME support multipe experiments in a single result folder
+        # gen. list of result folder per experiment run
+        rdlist = sorted([os.path.join(self.result_dir, rd)
+                        for rd in os.listdir(self.result_dir)
+                        if os.path.isdir(os.path.join(self.result_dir, rd))])
+        # read experiment metrics
+        df_em = self.read_experiment_metrics(rdlist)
+        # read timeseries metrics
+        df_tm = self.read_timeseries_metrics(rdlist)
+        # TODO: do something with the data frames
+        df_em.info(verbose=True)
+        df_tm.info(verbose=True)
+
+    def read_experiment_metrics(self, rdlist):
+        """
+        return pandas
+        """
+        rows = list()
+        for idx, rd in enumerate(rdlist):
+            LOG.debug("Reading experiment result {}/{}"
+                      .format(idx + 1, len(rdlist)))
+            row = dict()
+            # collect data from different sources
+            row.update(self._collect_ecs(rd))
+            row.update(self._collect_container_results(rd))
+            rows.append(row)
+        # to Pandas
+        return pd.DataFrame(rows)
+
+    def read_timeseries_metrics(self, rdlist):
+        """
+        return pandas
+        """
+        rows = list()
+        for rd in rdlist:
+            row = dict()
+            # TODO: implement
+            del rd
+            rows.append(row)
+        # to Pandas
+        return pd.DataFrame(rows)
+
+    def _collect_ecs(self, rd):
+        """
+        Collect ECs from 'PATH_EX_CONFIG'
+        """
+        r = dict()
+        jo = read_json(os.path.join(rd, PATH_EX_CONFIG))
+        r["run_id"] = jo.get("run_id", -1)
+        r["experiment_name"] = jo.get("name")
+        if "parameter" in jo:
+            for k, v in jo.get("parameter").items():
+                # clean up the parameter keys
+                k = k.replace("ep::", "param::")
+                k = k.replace("function", "func")
+                k = k.replace("::", "__")
+                r[k] = v
+        return r
+
+    def _collect_container_results(self, rd):
+        """
+        Collect ECs from '<container_name>/PATH_CONTAINER_RESULT'
+        """
+        r = dict()
+        # iterate over all container directories
+        for cd in self._get_container_from_rd(rd):
+            yml = read_yaml(os.path.join(rd, cd, PATH_CONTAINER_RESULT))
+            for k, v in yml.items():
+                # add container name as key prefix
+                k = "metric__{}__{}".format(self._get_clean_cname(cd), k)
+                r[k] = v
+        return r
+
+    def _get_container_from_rd(self, rd):
+        return sorted([cd for cd in os.listdir(rd)
+                       if os.path.isdir(os.path.join(rd, cd))
+                       and "mn." in cd])
+
+    def _get_clean_cname(self, name):
+        return name.replace("mn.", "").strip(".-/_ ")
