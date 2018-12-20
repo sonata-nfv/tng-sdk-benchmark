@@ -32,6 +32,7 @@
 
 import itertools as it
 import yaml
+import json
 import os
 from tngsdk.benchmark.logger import TangoLogger
 try:  # ensure Python2 compatibility
@@ -51,6 +52,17 @@ def read_yaml(path):
                 LOG.exception("YAML error while reading %r." % path)
                 LOG.debug(ex)
     return yml
+
+
+def read_json(path):
+    jo = None
+    with open(path, "r") as f:
+            try:
+                jo = json.load(f)
+            except BaseException as ex:
+                LOG.exception("JSON error while reading %r." % path)
+                LOG.debug(ex)
+    return jo
 
 
 def write_yaml(path, data):
@@ -140,3 +152,13 @@ def parse_ec_parameter_key(name):
             LOG.exception("Couldn't parse parameter key {}"
                           .format(name))
         return dict()
+
+
+def dubunderscore_reducer(k1, k2):
+    """
+    for use with flatten-dict
+    """
+    if k1 is None:
+        return k2
+    else:
+        return k1 + "__" + k2
