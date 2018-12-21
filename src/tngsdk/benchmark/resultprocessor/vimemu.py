@@ -84,9 +84,12 @@ class VimemuResultProcessor(object):
             LOG.info("Processing experiment metrics {}/{}"
                      .format(idx + 1, len(rdlist)))
             row = dict()
-            # collect data from different sources
-            row.update(self._collect_ecs(rd))
-            row.update(self._collect_container_results(rd))
+            try:
+                # collect data from different sources
+                row.update(self._collect_ecs(rd))
+                row.update(self._collect_container_results(rd))
+            except FileNotFoundError as ex:
+                LOG.error("Result corrupted: {}".format(ex))
             rows.append(row)
         # to Pandas
         return pd.DataFrame(rows)
@@ -99,7 +102,10 @@ class VimemuResultProcessor(object):
         for idx, rd in enumerate(rdlist):
             LOG.info("Processing timeseries metrics {}/{}"
                      .format(idx + 1, len(rdlist)))
-            rows.extend(self._collect_ts_container_monitoring(rd))
+            try:
+                rows.extend(self._collect_ts_container_monitoring(rd))
+            except FileNotFoundError as ex:
+                LOG.error("Result corrupted: {}".format(ex))
         # to Pandas
         return pd.DataFrame(rows)
 

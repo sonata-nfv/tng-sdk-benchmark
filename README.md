@@ -21,21 +21,25 @@ If you use this tool for your research, publications, or NFV projects, please co
 
 ## Installation
 
-```bash
-$ python setup.py install
-```
+Please follow [this guide](https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/Setup-execution-platform-(vim-emu)) to install and setup tng-sdk-benchmark and a corresponding execution environment.
 
 ## Usage
 
-```
-TODO show help
+### Run a benchmarking experiment
+
+```sh
+tng-bench -p examples/peds/ped_suricata_tp_small.yml --rd results
 ```
 
-## Examples
+### Manually re-run the result processing
 
+Runs the result processing module using existing results. This step is also automatically performed once at the end of an experiment execution.
+
+```sh
+# manually trigger result processing of generated results (to create *.csv files)
+tng-bench-result -rd results/  
 ```
-tng-bench -p examples/peds/example_ped1.yml
-```
+
 
 ## Development
 
@@ -47,7 +51,7 @@ To contribute to the development of this 5GTANGO component, you may use the very
 $ python setup.py develop
 ```
 
-### VSCode Debugging
+#### VSCode Debugging
 
 ```json
 {
