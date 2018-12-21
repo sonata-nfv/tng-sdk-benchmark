@@ -106,13 +106,7 @@ class ProfileManager(object):
         Run son-profile
         :return:
         """
-        # try to load PED file
-        self.ped = self._load_ped_file(self.args.ped)
-        self._validate_ped_file(self.ped)
-        # load and populate experiment specifications
-        (self.service_experiments,
-         self.function_experiments) = (
-             self._generate_experiment_specifications(self.ped))
+        self.populate_experiments()
         # trigger experiment execution
         self.cgen = self.load_generator()
         if self.cgen is None:
@@ -120,6 +114,18 @@ class ProfileManager(object):
         self.generate_experiments()
         self.execute_experiments()
         self.process_results()
+
+    def populate_experiments(self):
+        if self.args.no_population:
+            print("Skipping population: --no-population")
+            return
+        # try to load PED file
+        self.ped = self._load_ped_file(self.args.ped)
+        self._validate_ped_file(self.ped)
+        # load and populate experiment specifications
+        (self.service_experiments,
+         self.function_experiments) = (
+             self._generate_experiment_specifications(self.ped))
 
     def load_generator(self):
         # select and instantiate configuration generator
@@ -261,7 +267,9 @@ class ProfileManager(object):
         return service_experiments, function_experiments
 
 
-def parse_args(manual_args=None):
+def parse_args(manual_args=None,
+               ped_mandatory=True,
+               result_dir_mandatory=False):
     """
     CLI interface definition.
     :return:
@@ -299,7 +307,8 @@ def parse_args(manual_args=None):
         "-p",
         "--ped",
         help="PED file to be used for profiling run",
-        required=True,
+        required=ped_mandatory,
+        default="",
         dest="ped")
 
     parser.add_argument(
@@ -325,7 +334,7 @@ def parse_args(manual_args=None):
         "--result-dir",
         help="Dictionary for measured results,"
         + " e.g., logfiles, monitoring data. Default: '(cwd)/results/'",
-        required=False,
+        required=result_dir_mandatory,
         default="results",
         dest="result_dir")
 
@@ -335,6 +344,14 @@ def parse_args(manual_args=None):
         required=False,
         default=False,
         dest="no_generation",
+        action="store_true")
+
+    parser.add_argument(
+        "--no-population",
+        help="Skip experiment population step.",
+        required=False,
+        default=False,
+        dest="no_population",
         action="store_true")
 
     parser.add_argument(
@@ -401,7 +418,26 @@ def parse_args(manual_args=None):
 
 
 def main(args=None):
+    """
+    Main entry point.
+    """
     args = parse_args(args)
+    setup_logging(args)
+    p = ProfileManager(args)
+    p.run()
+
+
+def main_result_processor(args=None):
+    """
+    Additional entry to process existing results.
+    """
+    args = parse_args(args,
+                      ped_mandatory=False,
+                      result_dir_mandatory=True)
+    # ensure that we skip generation and execution
+    args.no_generation = True
+    args.no_execution = True
+    args.no_population = True
     setup_logging(args)
     p = ProfileManager(args)
     p.run()

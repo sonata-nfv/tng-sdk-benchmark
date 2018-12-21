@@ -85,9 +85,13 @@ setup(name='tngsdk.benchmark',
       zip_safe=False,
       entry_points={
           'console_scripts': [
+              # default benchmarker entry points
               'tng-sdk-benchmark=tngsdk.benchmark:main',
               'tng-benchmark=tngsdk.benchmark:main',
               'tng-bench=tngsdk.benchmark:main',
+              # processing of existing results
+              'tng-bench-result=tngsdk.benchmark:main_result_processor',
+              # vim-emu server component (python2!)
               'tng-bench-emusrv=tngsdk.benchmark.pdriver.vimemu.server:main'
           ],
       },
