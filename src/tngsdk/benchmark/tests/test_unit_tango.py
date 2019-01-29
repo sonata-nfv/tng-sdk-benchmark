@@ -144,7 +144,7 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 self.assertIn("size", rl.get("memory"))
                 self.assertIn("size", rl.get("storage"))
                 self.assertIsInstance(rl.get("cpu").get("cpu_bw"), float)
-                self.assertIsInstance(rl.get("cpu").get("vcpus"), int)
+                self.assertIsInstance(rl.get("cpu").get("vcpus"), str)
                 self.assertIsInstance(rl.get("memory").get("size"), int)
                 self.assertIsInstance(rl.get("storage").get("size"), int)
                 # TODO check if values are the same as in ec

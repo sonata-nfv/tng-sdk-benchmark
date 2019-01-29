@@ -12,13 +12,13 @@ virtual_deployment_units:
     vm_image_format: docker
     resource_requirements:
       cpu:
-        vcpus: 1
+        vcpus: null
       memory:
-        size: 1
-        size_unit: GB
+        size: null
+        size_unit: MB
       storage:
-        size: 10
-        size_unit: GB
+        size: null
+        size_unit: MB
     connection_points:
       - id: mgmt
         interface: ipv4

@@ -1,4 +1,5 @@
 ---
+# PED documentation: https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/PED
 #
 # This is an example for a profiling experiment descriptor (PED) that
 # defines a profiling (benchmarking) experiment for a Suricata VNF
@@ -44,25 +45,25 @@ service_experiments:
                     "./start.sh big_ruleset",
                     "./start.sh empty"]
         cmd_stop: "./stop.sh"
-        cpu_bw: 0.8
-        cpu_cores: [1, 2, 4]  # Gym: [2,8,16] # this is actually "cpu_set" if vim-emu is used
-        mem_max: [2048, 4096]  # Gym: [2048, 4096, 8192]
+        cpu_bw: 0.8  # float: fraction of CPU time in vim-emu
+        cpu_cores: ["0, 1", "0, 1, 2, 3, 4, 5, 6, 7"]  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
+        mem_max: [2048, 4096]  # int: Memory in MByte
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
         cmd_start: ["tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/smallFlows.pcap",
                     "tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/bigFlows.pcap"]
         cmd_stop: "./stop.sh"
-        cpu_bw: null
-        cpu_cores: 1 # this is actually "cpu_set" if vim-emu is used
-        mem_max: 1024
+        cpu_bw: null  # float: fraction of CPU time in vim-emu
+        cpu_cores: "14"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
+        mem_max: 1024  # int: Memory in MByte
         mem_swap_max: null
         io_bw: null
       - function: "mp.output"
         cmd_start: null
         cmd_stop: "./stop.sh"  # dump packet counters to logs
-        cpu_bw: null
-        cpu_cores: 1 # this is actually "cpu_set" if vim-emu is used
-        mem_max: 1024
+        cpu_bw: null  # float: fraction of CPU time in vim-emu
+        cpu_cores: "15"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
+        mem_max: 1024  # int: Memory in MByte
         mem_swap_max: null
         io_bw: null
