@@ -4,7 +4,7 @@ vendor: de.upb
 name: ns-1vnf-ids-suricata
 version: '0.1'
 author: Manuel Peuster
-description: Test service for benchmarking experiments.
+description: Test service for benchmarking experiments, containing a single VNF.
 network_functions:
   - vnf_id: vnf0
     vnf_vendor: de.upb

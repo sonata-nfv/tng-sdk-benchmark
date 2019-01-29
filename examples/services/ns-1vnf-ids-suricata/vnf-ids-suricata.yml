@@ -6,7 +6,7 @@ version: '0.1'
 author: Manuel Peuster
 description: A VNF based on mpeuster/vnf-ids-suricata
 virtual_deployment_units:
-  - id: myvdu01
+  - id: vdu01
     # https://github.com/mpeuster/vnf-bench-model/tree/master/docker-vnfs/suricata-ids
     vm_image: mpeuster/vnf-ids-suricata
     vm_image_format: docker
