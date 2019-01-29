@@ -79,6 +79,11 @@ class TangoServiceConfigurationGenerator(
         self.start_time = time.time()
         LOG.info("Generating {} service experiments using {}"
                  .format(len(service_ex), in_pkg_path))
+        # Step -1: Check if path exists
+        if not os.path.exists(in_pkg_path):
+            LOG.error("Could not load service referenced in PED: {}"
+                      .format(in_pkg_path))
+            exit(1)
         # Step 0 (optional): Support 5GTANGO projects
         if self._is_tango_project(in_pkg_path):
             # package the project first to temp

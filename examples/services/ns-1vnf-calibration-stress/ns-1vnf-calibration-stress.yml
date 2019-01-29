@@ -1,15 +1,15 @@
 descriptor_schema: >-
   https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml
 vendor: de.upb
-name: ns-1vnf-ids-suricata
-version: '0.1'
+name: ns-1vnf-calibration-stress
+version: '1.0'
 author: Manuel Peuster
-description: Test service for benchmarking experiments, containing a single VNF.
+description: "tng-sdk-benchmark calibaration service"
 network_functions:
   - vnf_id: vnf0
     vnf_vendor: de.upb
-    vnf_name: ids-suricata
-    vnf_version: '0.1'
+    vnf_name: calibration-stress
+    vnf_version: '1.0'
 connection_points:
   - id: "ns:mgmt"
     interface: ipv4

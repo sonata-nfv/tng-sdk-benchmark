@@ -1,14 +1,13 @@
 descriptor_schema: >-
   https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml
 vendor: de.upb
-name: ids-suricata
-version: '0.1'
+name: calibration-stress
+version: '1.0'
 author: Manuel Peuster
-description: A VNF based on mpeuster/vnf-ids-suricata
+description: A CPU stressing VNF based on mpeuster/vnf-calibration-stress
 virtual_deployment_units:
   - id: vdu01
-    # https://github.com/mpeuster/vnf-bench-model/tree/master/docker-vnfs/suricata-ids
-    vm_image: mpeuster/vnf-ids-suricata
+    vm_image: mpeuster/vnf-calibration-stress
     vm_image_format: docker
     resource_requirements:
       cpu:

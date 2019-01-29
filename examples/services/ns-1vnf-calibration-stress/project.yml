@@ -1,0 +1,17 @@
+descriptor_extension: yml
+version: '0.5'
+files:
+  - path: ns-1vnf-calibration-stress.yml
+    type: application/vnd.5gtango.nsd
+    tags:
+      - eu.5gtango
+  - path: vnf-calibration-stress.yml
+    type: application/vnd.5gtango.vnfd
+    tags:
+      - eu.5gtango
+package:
+  name: ns-1vnf-calibration-stress
+  version: '1.0'
+  maintainer: Manuel Peuster
+  vendor: de.upb
+  description: "tng-sdk-benchmark calibaration service"
