@@ -371,18 +371,17 @@ class TangoServiceConfigurationGenerator(
         if field_name == "cpu_cores":
             # cpu cores:
             # actually cpu_sets e.g. "1, 4, 12" to use 3 specific cores
-            # TODO change an make more robust
-            rr.get("cpu")["vcpus"] = (value
-                                      if value is not None else [])
+            rr.get("cpu")["vcpus"] = (str(value)
+                                      if value is not None else None)
         elif field_name == "cpu_bw":
             rr.get("cpu")["cpu_bw"] = (float(value)
-                                       if value is not None else 1.0)
+                                       if value is not None else None)
         elif field_name == "mem_max":
-            rr.get("memory")["size"] = (int(float(value))
-                                        if value is not None else 1024)
+            rr.get("memory")["size"] = (int(value)
+                                        if value is not None else None)
             rr.get("memory")["size_unit"] = "MB"
         elif field_name == "disk_max":
-            rr.get("storage")["size"] = int(float(value))
+            rr.get("storage")["size"] = int(value)
             rr.get("storage")["size_unit"] = "GB"
             # TODO extend this with io_bw etc?
         # LOG.debug("Updated '{}' in VNFD '{}' to: {}"

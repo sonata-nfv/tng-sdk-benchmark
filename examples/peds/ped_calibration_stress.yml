@@ -1,4 +1,5 @@
 ---
+# PED documentation: https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/PED
 descriptor_version: 0.2  # 5GTANGO: 0.2, SONATA 0.1
 vendor: "eu.5gtango"
 name: "calibration_experiment"
@@ -13,8 +14,9 @@ service_package: "../services/ns-1vnf-calibration-stress"
 # Firs type of experiments: Service level experiments
 #
 service_experiments:
-  - name: "cpu_time_limitation"
+  - name: "cpu_limitation"
     description: "Tests if CPU time limitations are correctly apllied."
+    disabled: false
     repetitions: 1
     time_limit: 10  # seconds per experiment
     # NSD to be used (vendor.name.version reference)
@@ -27,35 +29,58 @@ service_experiments:
       - name: "mp.output"
         connection_point: "ns:output"
         container: "mpeuster/tng-bench-mp"
-        address: "20.0.0.254/24"  # address of the data interface of the MP
       - name: "mp.input"
         connection_point: "ns:input"
         container: "mpeuster/tng-bench-mp"
-        address: "20.0.0.1/24"  # address of the data interface of the MP
     # experiment parameters to be tested during the experiment
     experiment_parameters:
       - function: "de.upb.calibration-stress.1.0"
-        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
+        cmd_start: "stress -v -c 4 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"
-        cpu_bw: 0.3
-        cpu_cores: [[1]]  # [2,8,16] # this is actually "cpu_set" if vim-emu is used
-        mem_max: null
-        mem_swap_max: null
-        io_bw: null
+        cpu_bw: 0.2  # float: fraction of CPU time in vim-emu
+        cpu_cores: "3"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
       - function: "mp.input"
         # loop longer than experiment lasts
-        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
+        cmd_start: "stress -v -c 4 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"
-        cpu_bw: 0.2
-        cpu_cores: [[14, 15]] # this is actually "cpu_set" if vim-emu is used
-        mem_max: null
-        mem_swap_max: null
-        io_bw: null
+        cpu_bw: 0.3  # float: fraction of CPU time in vim-emu
+        cpu_cores: ["5, 6"]  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
       - function: "mp.output"
-        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
+        cmd_start: "stress -v -c 4 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"  # dump packet counters to logs
-        cpu_bw: 0.1
-        cpu_cores: [[16]] # this is actually "cpu_set" if vim-emu is used
-        mem_max: null
-        mem_swap_max: null
-        io_bw: null
+        cpu_bw: 0.4  # float: fraction of CPU time in vim-emu
+        cpu_cores: "15"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
+  
+  - name: "memory_limitation"
+    description: "Tests if memory limitations are correctly apllied."
+    disabled: false
+    repetitions: 1
+    time_limit: 10  # seconds per experiment
+    # NSD to be used (vendor.name.version reference)
+    target:
+      vendor: "de.upb"
+      name: "ns-1vnf-calibration-stress"
+      version: "1.0"
+    # additional containers for traffic generation/measurements (measurement points)
+    measurement_points:
+      - name: "mp.output"
+        connection_point: "ns:output"
+        container: "mpeuster/tng-bench-mp"
+      - name: "mp.input"
+        connection_point: "ns:input"
+        container: "mpeuster/tng-bench-mp"
+    # experiment parameters to be tested during the experiment
+    experiment_parameters:
+      - function: "de.upb.calibration-stress.1.0"
+        cmd_start: "stress -v -m 4 --vm-bytes 256M > /tngbench_share/stress.log"
+        cmd_stop: "./stop.sh"
+        mem_max: 256  # int: Memory in MByte
+      - function: "mp.input"
+        # loop longer than experiment lasts
+        cmd_start: "stress -v -m 4 --vm-bytes 256M > /tngbench_share/stress.log"
+        cmd_stop: "./stop.sh"
+        mem_max: 256  # int: Memory in MByte
+      - function: "mp.output"
+        cmd_start: "stress -v -m 4 --vm-bytes 256M > /tngbench_share/stress.log"
+        cmd_stop: "./stop.sh"  # dump packet counters to logs
+        mem_max: 256  # int: Memory in MByte

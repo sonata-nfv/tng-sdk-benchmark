@@ -252,6 +252,8 @@ class ProfileManager(object):
 
         # service experiments
         for e in input_ped.get("service_experiments", []):
+            if e.get("disabled"):
+                continue  # skip disabled experiments
             e_obj = ServiceExperiment(
                 self.args, e, input_ped.get("service_package"))
             e_obj.populate()
@@ -259,6 +261,8 @@ class ProfileManager(object):
 
         # function experiments
         for e in input_ped.get("function_experiments", []):
+            if e.get("disabled"):
+                continue  # skip disabled experiments
             e_obj = FunctionExperiment(
                 self.args, e, input_ped.get("service_package"))
             e_obj.populate()
