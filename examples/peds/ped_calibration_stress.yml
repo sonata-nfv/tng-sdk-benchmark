@@ -1,0 +1,61 @@
+---
+descriptor_version: 0.2  # 5GTANGO: 0.2, SONATA 0.1
+vendor: "eu.5gtango"
+name: "calibration_experiment"
+version: "0.1"
+author: "Manuel Peuster, Paderborn University, manuel.peuster@uni-paderborn.de"
+description: "This is an profiling experiment that can be used for calibration."
+
+# path to the package of the service we want to profile (relative from PED location)
+service_package: "../services/ns-1vnf-calibration-stress"
+
+#
+# Firs type of experiments: Service level experiments
+#
+service_experiments:
+  - name: "cpu_time_limitation"
+    description: "Tests if CPU time limitations are correctly apllied."
+    repetitions: 1
+    time_limit: 30  # seconds per experiment
+    # NSD to be used (vendor.name.version reference)
+    target:
+      vendor: "de.upb"
+      name: "ns-1vnf-calibration-stress"
+      version: "1.0"
+    # additional containers for traffic generation/measurements (measurement points)
+    measurement_points:
+      - name: "mp.output"
+        connection_point: "ns:output"
+        container: "mpeuster/tng-bench-mp"
+        address: "20.0.0.254/24"  # address of the data interface of the MP
+      - name: "mp.input"
+        connection_point: "ns:input"
+        container: "mpeuster/tng-bench-mp"
+        address: "20.0.0.1/24"  # address of the data interface of the MP
+    # experiment parameters to be tested during the experiment
+    experiment_parameters:
+      - function: "de.upb.calibration-stress.1.0"
+        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
+        cmd_stop: "./stop.sh"
+        cpu_bw: 0.3
+        cpu_cores: 1  # [2,8,16] # this is actually "cpu_set" if vim-emu is used
+        mem_max: null
+        mem_swap_max: null
+        io_bw: null
+      - function: "mp.input"
+        # loop longer than experiment lasts
+        cmd_start: null
+        cmd_stop: "./stop.sh"
+        cpu_bw: null
+        cpu_cores: 15 # this is actually "cpu_set" if vim-emu is used
+        mem_max: null
+        mem_swap_max: null
+        io_bw: null
+      - function: "mp.output"
+        cmd_start: null
+        cmd_stop: "./stop.sh"  # dump packet counters to logs
+        cpu_bw: null
+        cpu_cores: 16 # this is actually "cpu_set" if vim-emu is used
+        mem_max: null
+        mem_swap_max: null
+        io_bw: null
