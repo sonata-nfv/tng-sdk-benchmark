@@ -16,7 +16,7 @@ service_experiments:
   - name: "cpu_time_limitation"
     description: "Tests if CPU time limitations are correctly apllied."
     repetitions: 1
-    time_limit: 30  # seconds per experiment
+    time_limit: 10  # seconds per experiment
     # NSD to be used (vendor.name.version reference)
     target:
       vendor: "de.upb"
@@ -38,24 +38,24 @@ service_experiments:
         cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"
         cpu_bw: 0.3
-        cpu_cores: 1  # [2,8,16] # this is actually "cpu_set" if vim-emu is used
+        cpu_cores: [[1]]  # [2,8,16] # this is actually "cpu_set" if vim-emu is used
         mem_max: null
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
         # loop longer than experiment lasts
-        cmd_start: null
+        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"
-        cpu_bw: null
-        cpu_cores: 15 # this is actually "cpu_set" if vim-emu is used
+        cpu_bw: 0.2
+        cpu_cores: [[14, 15]] # this is actually "cpu_set" if vim-emu is used
         mem_max: null
         mem_swap_max: null
         io_bw: null
       - function: "mp.output"
-        cmd_start: null
+        cmd_start: "stress -v -c 16 > /tngbench_share/stress.log"
         cmd_stop: "./stop.sh"  # dump packet counters to logs
-        cpu_bw: null
-        cpu_cores: 16 # this is actually "cpu_set" if vim-emu is used
+        cpu_bw: 0.1
+        cpu_cores: [[16]] # this is actually "cpu_set" if vim-emu is used
         mem_max: null
         mem_swap_max: null
         io_bw: null

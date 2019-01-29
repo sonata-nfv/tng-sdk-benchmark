@@ -369,8 +369,11 @@ class TangoServiceConfigurationGenerator(
         rr = vdu.get("resource_requirements")
         # cpu cores
         if field_name == "cpu_cores":
-            rr.get("cpu")["vcpus"] = (int(float(value))
-                                      if value is not None else 1)
+            # cpu cores:
+            # actually cpu_sets e.g. "1, 4, 12" to use 3 specific cores
+            # TODO change an make more robust
+            rr.get("cpu")["vcpus"] = (value
+                                      if value is not None else [])
         elif field_name == "cpu_bw":
             rr.get("cpu")["cpu_bw"] = (float(value)
                                        if value is not None else 1.0)
