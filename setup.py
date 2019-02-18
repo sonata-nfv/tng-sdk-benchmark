@@ -68,7 +68,7 @@ pkgs, new_links = install_deps()
 
 setup(name='tngsdk.benchmark',
       license='Apache License, Version 2.0',
-      version='0.1',
+      version='4.1',
       url='https://github.com/sonata-nfv/tng-sdk-benchmark',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
@@ -76,10 +76,7 @@ setup(name='tngsdk.benchmark',
       package_dir={'': 'src'},
       packages=find_packages('src'),  # dependency resolution
       namespace_packages=['tngsdk', ],
-      include_package_data=True,
-      # package_data={
-      #    'tndsdk': ['project/samples/*']
-      # },
+      include_package_data=True,       # package data specified in MANIFEST.in
       install_requires=pkgs,
       dependency_links=new_links,
       zip_safe=False,

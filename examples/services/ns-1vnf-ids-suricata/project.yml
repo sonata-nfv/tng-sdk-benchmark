@@ -1,17 +1,18 @@
 descriptor_extension: yml
 version: '0.5'
 files:
-  - path: ns-1vnf-ids-suricata.yml
-    type: application/vnd.5gtango.nsd
-    tags:
-      - eu.5gtango
-  - path: vnf-ids-suricata.yml
-    type: application/vnd.5gtango.vnfd
-    tags:
-      - eu.5gtango
+- path: ns-1vnf-ids-suricata.yml
+  type: application/vnd.5gtango.nsd
+  tags:
+  - eu.5gtango
+- path: vnf-ids-suricata.yml
+  type: application/vnd.5gtango.vnfd
+  tags:
+  - eu.5gtango
 package:
   name: ns-1vnf-ids-suricata
   version: '0.1'
   maintainer: Manuel Peuster
   vendor: de.upb
   description: Test service for benchmarking experiments.
+uuid: f23a4b70-a35c-422a-9e26-dc9add36df1b
