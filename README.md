@@ -28,7 +28,7 @@ Please follow [this guide](https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/
 ### Run a benchmarking experiment
 
 ```sh
-tng-bench -p examples/peds/ped_suricata_tp_small.yml --rd results
+tng-bench -p examples/peds/ped_suricata_tp_small.yml -rd results
 ```
 
 ### Manually re-run the result processing
