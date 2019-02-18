@@ -43,15 +43,14 @@ service_experiments:
       - function: "de.upb.ids-suricata.0.1"
         cmd_start: "./start.sh small_ruleset"
         cmd_stop: "./stop.sh"
-        cpu_bw: 0.1  # float: fraction of CPU time in vim-emu
+        cpu_bw: [0.5]  # float: fraction of CPU time in vim-emu
         cpu_cores: "0"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
         mem_max: 2048  # int: Memory in MByte
         mem_swap_max: null
         io_bw: null
       - function: "mp.input"
         # loop longer than experiment lasts
-        cmd_start: ["tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/smallFlows.pcap",
-                    "tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/bigFlows.pcap"]
+        cmd_start: ["tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/smallFlows.pcap"]
         cmd_stop: "./stop.sh"
         cpu_bw: null  # float: fraction of CPU time in vim-emu
         cpu_cores: "14"  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
