@@ -63,9 +63,10 @@ virtual_deployment_units:
       #  interface: "ipv4"
       #  type: "internal" 
       # Data interface
-      - id: "vdu01:eth1"
+      - id: "data"
         interface: "ipv4"
         type: "internal"
+        address: "{{ data_address }}"  # TODO this is emulator specifc, won't work on normal SP!
 
 ##
 ## The VNF connection points to the 
@@ -94,6 +95,6 @@ virtual_links:
   - id: "data"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vdu01:eth1"
+      - "vdu01:data"
       - "data"
     dhcp: False

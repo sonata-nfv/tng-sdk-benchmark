@@ -253,6 +253,10 @@ class TangoServiceConfigurationGenerator(
             for cp in vnfd["connection_points"]:
                 if cp.get("id") == "data":
                     cp["address"] = mp.get("address")
+            for vdu in vnfd["virtual_deployment_units"]:
+                for cp in vdu["connection_points"]:
+                    if cp.get("id") == "data":
+                        cp["address"] = mp.get("address")
         # write vnfd to project
         vname = "{}.yaml".format(mp.get("name"))
         write_yaml(os.path.join(ec.project_path, vname), vnfd)
