@@ -110,13 +110,18 @@ class TangoServiceConfigurationGenerator(
             "--unpackage", pkg_path,
             "--output", proj_path,
             "--store-backend", "TangoProjectFilesystemBackend",
+            "--format", "eu.5gtango",
             "--quiet",
+            "--offline",
             "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
+            # args.append("-v")
         else:
-            args.append("warning")
+            args.append("error")
+        if self.args.skip_validation:
+            args.append("--skip-validation")
         # call the package component
         r = tngpkg.run(args)
         if r.error is not None:
@@ -135,16 +140,22 @@ class TangoServiceConfigurationGenerator(
             "--package", proj_path,
             "--output", pkg_path,
             "--store-backend", "TangoProjectFilesystemBackend",
+            "--format", "eu.5gtango",
             "--quiet",
+            "--offline",
             "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
+            # args.append("-v")
         else:
-            args.append("warning")
+            args.append("error")
+        if self.args.skip_validation:
+            args.append("--skip-validation")
         # be sure that output dir is there
         ensure_dir(pkg_path)
         # call the package component
+        LOG.debug("Calling package with args: {}".format(args))
         r = tngpkg.run(args)
         if r.error is not None:
             raise BaseException("Can't create package {}: {}"

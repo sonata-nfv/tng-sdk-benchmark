@@ -375,6 +375,14 @@ def parse_args(manual_args=None,
         action="store_true")
 
     parser.add_argument(
+        "--skip-validation",
+        help="Skip all package validation steps.",
+        required=False,
+        default=False,
+        dest="skip_validation",
+        action="store_true")
+
+    parser.add_argument(
         "--hold",
         help=("Stop when experiment is started and" +
               " wait for user input (helps for debugging)."),
