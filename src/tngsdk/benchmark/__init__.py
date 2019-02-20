@@ -36,6 +36,7 @@ import argparse
 import logging
 import coloredlogs
 import time
+import shutil
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.generator.sonata \
                 import SonataServiceConfigurationGenerator
@@ -106,6 +107,7 @@ class ProfileManager(object):
         Run son-profile
         :return:
         """
+        self.check_rd_existence()
         self.populate_experiments()
         # trigger experiment execution
         self.cgen = self.load_generator()
@@ -114,6 +116,22 @@ class ProfileManager(object):
         self.generate_experiments()
         self.execute_experiments()
         self.process_results()
+
+    def check_rd_existence(self):
+        if os.path.exists(self.args.result_dir):
+            self.logger.info("Found old results: {}"
+                             .format(self.args.result_dir))
+            # ask for overwrite (if not -y/--force-yes)
+            if not self.args.force_yes:
+                # ask user
+                ui = input("Do you want to overwrite '{}'? (y/n/default: y)"
+                           .format(self.args.result_dir))
+                if "n" in ui or "N" in ui:
+                    return
+            # delte old results
+            self.logger.info("Overwriting old results: {}"
+                             .format(self.args.result_dir))
+            shutil.rmtree(self.args.result_dir)
 
     def populate_experiments(self):
         if self.args.no_population:
@@ -423,6 +441,15 @@ def parse_args(manual_args=None,
         required=False,
         default=None,
         dest="ibbd_dir")
+
+    parser.add_argument(
+        "-y",
+        "--force-yes",
+        help="Answer all user questions that might appear with: yes.",
+        required=False,
+        default=False,
+        dest="force_yes",
+        action="store_true")
 
     if manual_args is not None:
         return parser.parse_args(manual_args)

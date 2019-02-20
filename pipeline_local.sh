@@ -5,7 +5,8 @@ set -e
 
 # check style early
 flake8 --exclude .eggs --exclude venv --exclude build
-
+# local test
+pytest -v
 # build container
 pipeline/build/build.sh
 # run tests
