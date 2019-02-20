@@ -139,12 +139,15 @@ class TangoServiceConfigurationGenerator(
             "--output", pkg_path,
             "--store-backend", "TangoProjectFilesystemBackend",
             "--quiet",
+            "--offline",
             "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
         else:
             args.append("warning")
+        if self.args.skip_validation:
+            args.append("--skip-validation")
         # be sure that output dir is there
         ensure_dir(pkg_path)
         # call the package component
