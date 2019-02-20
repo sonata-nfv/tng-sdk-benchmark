@@ -112,12 +112,14 @@ class TangoServiceConfigurationGenerator(
             "--store-backend", "TangoProjectFilesystemBackend",
             "--quiet",
             "--offline",
-            "--loglevel" 
+            "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
         else:
             args.append("warning")
+        if self.args.skip_validation:
+            args.append("--skip-validation")
         # call the package component
         r = tngpkg.run(args)
         if r.error is not None:
