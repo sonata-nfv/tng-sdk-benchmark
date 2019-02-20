@@ -111,7 +111,8 @@ class TangoServiceConfigurationGenerator(
             "--output", proj_path,
             "--store-backend", "TangoProjectFilesystemBackend",
             "--quiet",
-            "--loglevel"
+            "--offline",
+            "--loglevel" 
         ]
         if self.args.verbose:
             args.append("info")
