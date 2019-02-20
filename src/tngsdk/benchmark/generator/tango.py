@@ -110,14 +110,16 @@ class TangoServiceConfigurationGenerator(
             "--unpackage", pkg_path,
             "--output", proj_path,
             "--store-backend", "TangoProjectFilesystemBackend",
+            "--format", "eu.5gtango",
             "--quiet",
             "--offline",
             "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
+            # args.append("-v")
         else:
-            args.append("warning")
+            args.append("error")
         if self.args.skip_validation:
             args.append("--skip-validation")
         # call the package component
@@ -138,14 +140,16 @@ class TangoServiceConfigurationGenerator(
             "--package", proj_path,
             "--output", pkg_path,
             "--store-backend", "TangoProjectFilesystemBackend",
+            "--format", "eu.5gtango",
             "--quiet",
             "--offline",
             "--loglevel"
         ]
         if self.args.verbose:
             args.append("info")
+            # args.append("-v")
         else:
-            args.append("warning")
+            args.append("error")
         if self.args.skip_validation:
             args.append("--skip-validation")
         # be sure that output dir is there
