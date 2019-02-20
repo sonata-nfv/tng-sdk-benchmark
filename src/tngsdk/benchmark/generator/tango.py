@@ -151,6 +151,7 @@ class TangoServiceConfigurationGenerator(
         # be sure that output dir is there
         ensure_dir(pkg_path)
         # call the package component
+        LOG.debug("Calling package with args: {}".format(args))
         r = tngpkg.run(args)
         if r.error is not None:
             raise BaseException("Can't create package {}: {}"
