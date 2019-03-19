@@ -34,7 +34,6 @@
 # Attention: This module requires Python2.7 because of its dependencies
 # to vim-emu.
 #
-
 import logging
 import sys
 import argparse
@@ -43,10 +42,19 @@ import multiprocessing as mp
 import time
 import signal
 import datetime
+import platform
+from ctypes import c_bool
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
 from gevent.pywsgi import WSGIServer
+# Hotfix:
+if "2.7" in str(platform.python_version()):
+    # pylint: disable=E0402
+    from emuvim.dcemulator.net import DCNetwork
+    from mininet.log import setLogLevel
+    from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
+    from emuvim.api.tango import TangoLLCMEndpoint
 
 
 LOG = logging.getLogger(__name__)
@@ -107,8 +115,8 @@ def serve_forever(args, debug=True):
     global http_server
     app.cliargs = args
     # app.run(host=args.service_address,
-    #        port=args.service_port,
-    #        debug=debug)
+    #       port=args.service_port,
+    #       debug=debug)
     http_server = WSGIServer(
         (args.service_address, args.service_port), app)
     http_server.serve_forever()
@@ -118,7 +126,6 @@ def stop_serve(signum, frame):
     """
     Stop REST API and emulation.
     """
-    LOG.info("Received SIGNAL {}. Stopping.".format(signum))
     stop_emulation()
     http_server.close()
 
@@ -155,9 +162,11 @@ class EmulationEndpoint(Resource):
         # see: https://docs.python.org/2.7/library/multiprocessing.html
         # ctx = multiprocessing.get_context('spawn')
         app.emulation_process_queue = mp.Queue()
+        app.emulation_process_running = mp.Value(c_bool, True)
         app.emulation_process = mp.Process(
             target=start_emulation,
-            args=(app.emulation_process_queue, ))  # (arg1,)
+            args=(app.emulation_process_queue,
+                  app.emulation_process_running, ))  # (arg1,)
         app.emulation_process.start()
         return True, 201
 
@@ -179,7 +188,7 @@ class EmulationEndpoint(Resource):
         return app.emulation_process is not None, 200
 
 
-def start_emulation(ipc_queue):
+def start_emulation(ipc_queue, ipc_running):
     t = EmulatorProfilingTopology()
     t.start()
     print("{} Emulation running ..."
@@ -193,11 +202,17 @@ def start_emulation(ipc_queue):
                 print("Emulation process received: 'stop'")
                 break
     t.stop()
+    ipc_running.value = False
+    LOG.debug("Set emulation_process_running = False")
 
 
 def stop_emulation():
     if app.emulation_process is not None:
         app.emulation_process_queue.put("stop")
+        LOG.debug("Sent stop signal to emulation process")
+        while app.emulation_process_running.value:
+            LOG.info("Waiting for emulation to stop ...")
+            time.sleep(1)
         app.emulation_process.join()
         app.emulation_process = None
 
@@ -209,27 +224,24 @@ class EmulatorProfilingTopology(object):
 
     def start(self):
         LOG.info("Starting emulation ...")
-        # pylint: disable=E0401
-        from mininet.log import setLogLevel
-        from emuvim.dcemulator.net import DCNetwork
-        from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
-        from emuvim.api.tango import TangoLLCMEndpoint
         setLogLevel('info')  # set Mininet loglevel
         # create topology
         self.net = DCNetwork(monitor=False, enable_learning=False)
         # we only need one DC for benchmarking
         dc = self.net.addDatacenter("dc1")
         # add the command line interface endpoint to each DC (REST API)
-        rapi1 = RestApiEndpoint("0.0.0.0", 5001)
-        rapi1.connectDCNetwork(self.net)
-        rapi1.connectDatacenter(dc)
-        rapi1.start()
+        self.rapi1 = RestApiEndpoint("0.0.0.0", 5001)
+        self.rapi1.connectDCNetwork(self.net)
+        self.rapi1.connectDatacenter(dc)
+        self.rapi1.start()
         # add the 5GTANGO lightweight life cycle manager (LLCM) to the topology
-        llcm1 = TangoLLCMEndpoint("0.0.0.0", 5000, deploy_sap=False)
-        llcm1.connectDatacenter(dc)
-        llcm1.start()
+        self.llcm1 = TangoLLCMEndpoint("0.0.0.0", 5000, deploy_sap=False)
+        self.llcm1.connectDatacenter(dc)
+        self.llcm1.start()
         self.net.start()
 
     def stop(self):
         LOG.info("Stopping emulation ...")
+        self.rapi1.stop()
+        self.llcm1.stop()
         self.net.stop()
