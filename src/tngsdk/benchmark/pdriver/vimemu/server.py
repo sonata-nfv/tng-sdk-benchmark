@@ -34,7 +34,7 @@
 # Attention: This module requires Python2.7 because of its dependencies
 # to vim-emu.
 #
-
+from emuvim.dcemulator.net import DCNetwork
 import logging
 import sys
 import argparse
@@ -107,8 +107,8 @@ def serve_forever(args, debug=True):
     global http_server
     app.cliargs = args
     # app.run(host=args.service_address,
-    #        port=args.service_port,
-    #        debug=debug)
+    #       port=args.service_port,
+    #       debug=debug)
     http_server = WSGIServer(
         (args.service_address, args.service_port), app)
     http_server.serve_forever()
@@ -118,7 +118,6 @@ def stop_serve(signum, frame):
     """
     Stop REST API and emulation.
     """
-    LOG.info("Received SIGNAL {}. Stopping.".format(signum))
     stop_emulation()
     http_server.close()
 
