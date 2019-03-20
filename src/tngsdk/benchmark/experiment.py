@@ -157,22 +157,22 @@ class Experiment(object):
         return r
 
     def _get_ep_type_name(self, ep):
-            """
-            Helper to get type and name of ep.
-            Supportet types so far:
-            - function
-            - service
-            """
-            ep_type = None
-            if "function" in ep:
-                ep_type = "function"
-            elif "service" in ep:
-                ep_type = "service"
-            if not ep_type:
-                raise BaseException(
-                    "Couldn't parse 'experiment_parameter':{}"
-                    .format(ep))
-            return ep_type, ep.get(ep_type)
+        """
+        Helper to get type and name of ep.
+        Supportet types so far:
+        - function
+        - service
+        """
+        ep_type = None
+        if "function" in ep:
+            ep_type = "function"
+        elif "service" in ep:
+            ep_type = "service"
+        if not ep_type:
+            raise BaseException(
+                "Couldn't parse 'experiment_parameter':{}"
+                .format(ep))
+        return ep_type, ep.get(ep_type)
 
     def get_function_ep_names(self, without=None):
         """

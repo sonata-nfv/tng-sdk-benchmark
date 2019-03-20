@@ -35,9 +35,9 @@
 ## tng-sdk-benchmark measurement point VNFD template
 ##
 descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml"
-vendor: "tango"
+vendor: "eu.5gtango.benchmark"
 name: "{{ name }}"
-version: "1"
+version: "1.0"
 author: "tng-sdk-benchmark"
 description: "Measurement point VNF"
 ##

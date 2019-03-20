@@ -150,7 +150,9 @@ class TangoServiceConfigurationGenerator(
             # args.append("-v")
         else:
             args.append("error")
-        if self.args.skip_validation:
+        # Hotfix: Always skip validateion here, because vim-emu treats
+        # some fields, like vcpus as type stirng not int etc.
+        if self.args.skip_validation or True:
             args.append("--skip-validation")
         # be sure that output dir is there
         ensure_dir(pkg_path)
