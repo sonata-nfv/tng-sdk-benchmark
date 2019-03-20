@@ -1,0 +1,13 @@
+descriptor_extension: yml
+version: '0.5'
+package:
+  vendor: eu.5gtango
+  name: ns-package-example
+  version: '0.1'
+  maintainer: Manuel Peuster, Paderborn University
+  description: This is an example 5GTANGO network service package.
+files:
+- path: mynsd.yaml
+  type: application/vnd.5gtango.nsd
+- path: myvnfd.yaml
+  type: application/vnd.5gtango.vnfd

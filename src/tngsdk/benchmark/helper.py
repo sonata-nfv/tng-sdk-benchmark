@@ -46,22 +46,22 @@ LOG = TangoLogger.getLogger(__name__)
 def read_yaml(path):
     yml = None
     with open(path, "r") as f:
-            try:
-                yml = yaml.load(f)
-            except yaml.YAMLError as ex:
-                LOG.exception("YAML error while reading %r." % path)
-                LOG.debug(ex)
+        try:
+            yml = yaml.load(f)
+        except yaml.YAMLError as ex:
+            LOG.exception("YAML error while reading %r." % path)
+            LOG.debug(ex)
     return yml
 
 
 def read_json(path):
     jo = None
     with open(path, "r") as f:
-            try:
-                jo = json.load(f)
-            except BaseException as ex:
-                LOG.exception("JSON error while reading %r." % path)
-                LOG.debug(ex)
+        try:
+            jo = json.load(f)
+        except BaseException as ex:
+            LOG.exception("JSON error while reading %r." % path)
+            LOG.debug(ex)
     return jo
 
 
@@ -126,32 +126,32 @@ def compute_cartesian_product(p_dict):
 
 
 def parse_ec_parameter_key(name):
-        """
-        Parse experiment parameter keys and return dict with the parts.
-        Format: 'ep::type::function_name::parameter_name'
-        Fields of return dict:
-            - type
-            - function_name
-            - parameter_name
-        """
-        try:
-            p = name.split("::")
-            # special case: function_name might contain VDU info
-            p.append(None)  # dummy element 4
-            assert(len(p) == 5)
-            if "/" in p[2]:
-                p2 = p[2].split("/")
-                p[2] = p2[0]
-                p[4] = p2[1]
-            return {"type": p[1],
-                    "function_name": p[2],
-                    "parameter_name": p[3],
-                    "unit_name": p[4]
-                    }
-        except BaseException:
-            LOG.exception("Couldn't parse parameter key {}"
-                          .format(name))
-        return dict()
+    """
+    Parse experiment parameter keys and return dict with the parts.
+    Format: 'ep::type::function_name::parameter_name'
+    Fields of return dict:
+        - type
+        - function_name
+        - parameter_name
+    """
+    try:
+        p = name.split("::")
+        # special case: function_name might contain VDU info
+        p.append(None)  # dummy element 4
+        assert(len(p) == 5)
+        if "/" in p[2]:
+            p2 = p[2].split("/")
+            p[2] = p2[0]
+            p[4] = p2[1]
+        return {"type": p[1],
+                "function_name": p[2],
+                "parameter_name": p[3],
+                "unit_name": p[4]
+                }
+    except BaseException:
+        LOG.exception("Couldn't parse parameter key {}"
+                      .format(name))
+    return dict()
 
 
 def dubunderscore_reducer(k1, k2):
