@@ -65,12 +65,23 @@ class EmuSrvClient(object):
                 "tng-bench-emusrv couldn't start emulation")
 
     def stop_emulation(self):
-        try:
-            r = requests.delete(self.emu_endpoint)
-        except BaseException as ex:
-            LOG.debug(ex)
-            raise BaseException("con't connect to tng-bench-emusrv ")
-        if r.status_code != 200:
+        """
+        Stops the emulation.
+        Contains an ugly re-try hack, because the tng-bench-emusrv somtimes
+        loses the connection during terminetion (gevent bug?)
+        """
+        stopped = False
+        for i in range(0, 5):
+            try:
+                r = requests.delete(self.emu_endpoint)
+                stopped = True
+                break
+            except BaseException as ex:
+                del ex
+                LOG.warning("Stop emulation failed ({}). Retry."
+                            .format(i))
+                time.sleep(1)
+        if r.status_code != 200 or not stopped:
             raise BaseException(
                 "tng-bench-emusrv couldn't stop emulation")
 
