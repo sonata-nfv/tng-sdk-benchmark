@@ -116,6 +116,7 @@ class ProfileManager(object):
         self.generate_experiments()
         self.execute_experiments()
         self.process_results()
+        self.copy_ped()
 
     def check_rd_existence(self):
         if os.path.exists(self.args.result_dir):
@@ -215,6 +216,21 @@ class ProfileManager(object):
         for rp in rp_list:
             self.logger.info("Running result processor '{}'".format(rp))
             rp.run()
+
+    def copy_ped(self):
+        """
+        Copy the used PED file to the result folder
+        to have a reference of the used experiment parameters.
+        """
+        src = self.args.ped
+        dst = os.path.join(self.args.result_dir, "original_ped.yml")
+        try:
+            self.logger.info("Copying PED ({}) to folder {}"
+                             .format(src, dst))
+            shutil.copyfile(src, dst)
+        except BaseException as ex:
+            self.logger.error("Couldn't copy used PED to result folder.")
+            self.logger.debug(ex)
 
     def _load_config(self, path):
         try:
