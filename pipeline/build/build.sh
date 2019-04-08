@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e
-docker build -t registry.sonata-nfv.eu:5000/tng-sdk-benchmark .
+docker build --no-cache -t registry.sonata-nfv.eu:5000/tng-sdk-benchmark .
