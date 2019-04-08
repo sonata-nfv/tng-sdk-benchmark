@@ -43,6 +43,7 @@ LOG = TangoLogger.getLogger(__name__)
 PATH_EX_CONFIG = "ex_config.json"
 PATH_CONTAINER_MONITORING = "cmon.json"
 PATH_CONTAINER_RESULT = "tngbench_share/result.yml"
+PATH_EXPERIMENT_TIMES = "experiment_times.json"
 
 PATH_OUTPUT_EC_METRICS = "result_ec_metrics.csv"
 PATH_OUTPUT_TS_METRICS = "result_ts_metrics.csv"
@@ -68,12 +69,12 @@ class VimemuResultProcessor(object):
         # read experiment metrics
         df_em = self.read_experiment_metrics(rdlist)
         # read timeseries metrics
-        df_tm = self.read_timeseries_metrics(rdlist)
+        # df_tm = self.read_timeseries_metrics(rdlist)
         df_em.info()
-        df_tm.info()
+        # df_tm.info()
         # store the data frames
         df_em.to_csv(os.path.join(self.result_dir, PATH_OUTPUT_EC_METRICS))
-        df_tm.to_csv(os.path.join(self.result_dir, PATH_OUTPUT_TS_METRICS))
+        # df_tm.to_csv(os.path.join(self.result_dir, PATH_OUTPUT_TS_METRICS))
 
     def read_experiment_metrics(self, rdlist):
         """
@@ -87,6 +88,7 @@ class VimemuResultProcessor(object):
             try:
                 # collect data from different sources
                 row.update(self._collect_ecs(rd))
+                row.update(self._collect_times(rd))
                 row.update(self._collect_container_results(rd))
             except FileNotFoundError as ex:
                 LOG.error("Result corrupted: {}".format(ex))
@@ -125,6 +127,12 @@ class VimemuResultProcessor(object):
                 k = k.replace("::", "__")
                 r[k] = v
         return r
+
+    def _collect_times(self, rd):
+        """
+        Collect experiment times from 'PATH_EXPERIMENT_TIMES'
+        """
+        return read_json(os.path.join(rd, PATH_EXPERIMENT_TIMES))
 
     def _collect_container_results(self, rd):
         """

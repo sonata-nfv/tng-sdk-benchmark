@@ -37,8 +37,8 @@
 
 version: '3.7'
 
-volumes:
-    prometheus_data: {}
+#volumes:
+#    prometheus_data: {}
 
 networks:
   tng-bench-mon:
@@ -49,10 +49,10 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus.yml/:/etc/prometheus/prometheus.yml
-      #- prometheus_data:/prometheus
+      - ./prometheus-data:/prometheus/storage
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      #- '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.path=/prometheus/storage'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:

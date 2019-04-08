@@ -1,5 +1,6 @@
 # generated stuff
 results/
+prometheus/prometheus-data/
 
 # private configs
 *.private.yml

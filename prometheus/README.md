@@ -28,7 +28,7 @@ cd node_exporter-*.*-amd64
 
 Aleternatively as Docker (some metrics might have problems):
 ```
-docker run -d \
+sudo docker run -d \
   --net="host" \
   --pid="host" \
   -v "/:/host:ro,rslave" \
@@ -38,6 +38,11 @@ docker run -d \
   --path.rootfs /host
   ```
   
+Example metric:
+
+```
+rate(node_cpu_seconds_total[1m])
+```
 
 #### Docker Collector (Docker daemon)
 
@@ -78,6 +83,22 @@ It gives very many metrics. Filter my a container name, e.g., `mn.vnf0.vdu01` wo
 rate(container_cpu_usage_seconds_total{name="mn.vnf0.vdu01"}[1m])
 ```
 
+#### VNF-specific collectors
 
+Only if VNFs support it. Expose ports vnf0: `9110`, vnf1: `9111`, ... etc.
 
-## ...
+See suricata example.
+
+Example metrics:
+
+```
+rate(suricata_stats_capture_kernel_packets[1m])
+```
+
+#### Probe-specific collectors
+
+Not yet implemented.
+
+## Data
+
+Prometheus data will be stored in folder  `prometheus-data` in this folder.

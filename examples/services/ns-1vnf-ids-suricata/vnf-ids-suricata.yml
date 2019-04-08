@@ -23,6 +23,8 @@ virtual_deployment_units:
       - id: mgmt
         interface: ipv4
         type: internal
+        port: 9089
+        publish: {9089: 9110}
       - id: input
         interface: ipv4
         type: internal
