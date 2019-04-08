@@ -99,4 +99,6 @@ rate(suricata_stats_capture_kernel_packets[1m])
 
 Not yet implemented.
 
-## ...
+## Data
+
+Prometheus data will be stored in folder  `prometheus-data` in this folder.
