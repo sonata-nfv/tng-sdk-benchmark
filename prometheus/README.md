@@ -102,3 +102,11 @@ Not yet implemented.
 ## Data
 
 Prometheus data will be stored in folder  `prometheus-data` in this folder.
+
+On permission error:
+
+```
+sudo addgroup nobody
+sudo usermod -aG nobody nobody
+sudo chown nobody:nobody prometheus-data
+```
