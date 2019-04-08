@@ -54,3 +54,12 @@ scrape_configs:
   - job_name: 'executor-cadvisor'
     static_configs:
       - targets: ['fgcn-peuster.cs.upb.de:9102']
+  - job_name: 'custom-vnf0'
+    static_configs:
+      - targets: ['fgcn-peuster.cs.upb.de:9110']
+  #- job_name: 'custom-vnf1'
+  #  static_configs:
+  #    - targets: ['fgcn-peuster.cs.upb.de:9111']
+  #- job_name: 'custom-vnf2'
+  #  static_configs:
+  #    - targets: ['fgcn-peuster.cs.upb.de:9112']

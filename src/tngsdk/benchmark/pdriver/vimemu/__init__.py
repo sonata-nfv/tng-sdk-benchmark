@@ -31,11 +31,12 @@
 # partner consortium (www.5gtango.eu).
 import os
 import time
+import datetime
 from tngsdk.benchmark.pdriver.vimemu.emuc import LLCMClient
 from tngsdk.benchmark.pdriver.vimemu.emuc import EmuSrvClient
 from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerClient
-from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerMonitor
-from tngsdk.benchmark.helper import parse_ec_parameter_key
+# from tngsdk.benchmark.pdriver.vimemu.dockerc import EmuDockerMonitor
+from tngsdk.benchmark.helper import parse_ec_parameter_key, write_json
 from tngsdk.benchmark.logger import TangoLogger
 
 
@@ -51,6 +52,7 @@ PATH_CMD_STOP_LOG = "cmd_stop.log"
 PATH_CONTAINER_LOG = "clogs.log"
 PATH_CONTAINER_MON = "cmon.json"
 PATH_LLCM_STATS = "llcm_stats.json"
+PATH_EXPERIMENT_TIMES = "experiment_times.json"
 
 # FIXME not nice, lots of hard coding, needs more flexability
 MP_IN_KEY = "ep::function::mp.input::"
@@ -76,6 +78,8 @@ class VimEmuDriver(object):
         self.docker_url = ("tcp://{}:{}"
                            .format(config.get("host"),
                                    config.get("docker_port")))
+        self.t_experiment_start = None
+        self.t_experiment_stop = None
         # initialize sub-driver
         self.emusrvc = EmuSrvClient(self.emusrv_url)
         self.llcmc = LLCMClient(self.llcm_url)
@@ -100,10 +104,11 @@ class VimEmuDriver(object):
 
     def execute_experiment(self, ec):
         # start container monitoring (dedicated thread)
-        self.emudocker_mon = EmuDockerMonitor(
-            self.emudocker, self._experiment_wait_time(ec))
-        self.emudocker_mon.daemon = True
-        self.emudocker_mon.start()
+        # depricated: we use prometheus + cadvisor now
+        # self.emudocker_mon = EmuDockerMonitor(
+        #    self.emudocker, self._experiment_wait_time(ec))
+        # self.emudocker_mon.daemon = True
+        # self.emudocker_mon.start()
         # collect commands for MPs
         mp_in_cmd_start = ec.parameter.get("{}cmd_start".format(MP_IN_KEY))
         mp_in_cmd_stop = ec.parameter.get("{}cmd_stop".format(MP_IN_KEY))
@@ -130,7 +135,9 @@ class VimEmuDriver(object):
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self.emudocker.execute(MP_IN_NAME, mp_in_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
+        self.t_experiment_start = datetime.datetime.now()
         self._wait_experiment(ec)
+        self.t_experiment_stop = datetime.datetime.now()
         # hold execution for manual debugging:
         if self.args.hold_and_wait_for_user:
             input("Press Enter to continue...")
@@ -148,8 +155,8 @@ class VimEmuDriver(object):
         self._wait_time(WAIT_SHUTDOWN_TIME,
                         "Finalizing experiment '{}'".format(ec))
         # wait for monitoring thread to finalize
-        LOG.debug("Waiting for container monitoring thread ...")
-        self.emudocker_mon.join()
+        # LOG.debug("Waiting for container monitoring thread ...")
+        # self.emudocker_mon.join()
         # collect results
         self._collect_experiment_results(ec)
         LOG.info("Finalized '{}'".format(ec))
@@ -177,11 +184,25 @@ class VimEmuDriver(object):
             self.emudocker.store_logs(
                 c.name, os.path.join(c_dst_path, PATH_CONTAINER_LOG))
         # colelct and store continous monitoring data
-        self.emudocker_mon.store_stats(
-            os.path.join(dst_path, PATH_CONTAINER_MON))
+        # self.emudocker_mon.store_stats(
+        #    os.path.join(dst_path, PATH_CONTAINER_MON))
         # collect and store vim-emu metrics (e.g. instantiation times)
         self.llcmc.store_stats(
             os.path.join(dst_path, PATH_LLCM_STATS))
+        # store experiment timestamps to do mapping to Prometheus data
+        self._store_times(
+            os.path.join(dst_path, PATH_EXPERIMENT_TIMES))
+
+    def _store_times(self, path):
+        data = {
+            "experiment_start": str(self.t_experiment_start),
+            "experiment_stop": str(self.t_experiment_stop)
+        }
+        try:
+            LOG.debug("Writing timing data to: {}".format(path))
+            write_json(path, data)
+        except BaseException as ex:
+            LOG.error("Could not write to {}: {}".format(path, ex))
 
     def _collect_vnf_commands(self, ec):
         """

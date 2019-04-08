@@ -47,7 +47,7 @@ def read_yaml(path):
     yml = None
     with open(path, "r") as f:
         try:
-            yml = yaml.load(f)
+            yml = yaml.load(f, Loader=yaml.FullLoader)
         except yaml.YAMLError as ex:
             LOG.exception("YAML error while reading %r." % path)
             LOG.debug(ex)
@@ -71,6 +71,15 @@ def write_yaml(path, data):
             yaml.dump(data, f, default_flow_style=False)
         except yaml.YAMLError as ex:
             LOG.exception("YAML error while writing %r" % path)
+            LOG.debug(ex)
+
+
+def write_json(path, data):
+    with open(path, "w") as f:
+        try:
+            json.dump(data, f)
+        except BaseException as ex:
+            LOG.exception("JSON error while writing %r" % path)
             LOG.debug(ex)
 
 
