@@ -35,7 +35,7 @@
 # tng-sdk-benchmark experiments.
 #
 
-version: '3.7'
+version: '3.3'
 
 #volumes:
 #    prometheus_data: {}

@@ -236,8 +236,8 @@ class ProfileManager(object):
         try:
             return read_yaml(path)
         except BaseException as ex:
-            self.logger.error("Couldn't read config file: '{}'. Abort."
-                              .format(path))
+            self.logger.exception("Couldn't read config file: '{}'. Abort."
+                                  .format(path))
             self.logger.debug(ex)
             exit(1)
 
@@ -409,12 +409,12 @@ def parse_args(manual_args=None,
         action="store_true")
 
     parser.add_argument(
-        "--skip-validation",
+        "--validation",
         help="Skip all package validation steps.",
         required=False,
-        default=False,
+        default=True,
         dest="skip_validation",
-        action="store_true")
+        action="store_false")
 
     parser.add_argument(
         "--hold",

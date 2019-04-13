@@ -47,19 +47,19 @@ scrape_configs:
   #    - targets: ['localhost:9090']
   - job_name: 'executor-node'
     static_configs:
-      - targets: ['fgcn-peuster.cs.upb.de:9100']
+      - targets: ['fgcn-tango-5.cs.upb.de:9100']
   #- job_name: 'executor-docker'
   #  static_configs:
   #    - targets: ['fgcn-peuster.cs.upb.de:9101']
   - job_name: 'executor-cadvisor'
     static_configs:
-      - targets: ['fgcn-peuster.cs.upb.de:9102']
+      - targets: ['fgcn-tango-5.cs.upb.de:9102']
   - job_name: 'custom-vnf0'
     static_configs:
-      - targets: ['fgcn-peuster.cs.upb.de:9110']
+      - targets: ['fgcn-tango-5.cs.upb.de:9110']
   #- job_name: 'custom-vnf1'
   #  static_configs:
-  #    - targets: ['fgcn-peuster.cs.upb.de:9111']
+  #    - targets: ['fgcn-tango-5.cs.upb.de:9111']
   #- job_name: 'custom-vnf2'
   #  static_configs:
-  #    - targets: ['fgcn-peuster.cs.upb.de:9112']
+  #    - targets: ['fgcn-tango-5.cs.upb.de:9112']
