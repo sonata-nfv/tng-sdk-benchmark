@@ -58,8 +58,8 @@ PATH_EXPERIMENT_TIMES = "experiment_times.json"
 MP_IN_KEY = "ep::function::mp.input::"
 MP_OUT_KEY = "ep::function::mp.output::"
 # FIXME currently the keys for selecting the MPs are fixed
-MP_IN_NAME = "mp.input.vdu01"
-MP_OUT_NAME = "mp.output.vdu01"
+MP_IN_NAME = "mp.input.vdu01.0"
+MP_OUT_NAME = "mp.output.vdu01.0"
 
 
 class VimEmuDriver(object):
@@ -241,7 +241,7 @@ class VimEmuDriver(object):
         """
         if param_unit_name is None:  # case (a)
             param_unit_name = "vdu01"  # FIXME thus we use "vdu01" as default
-        return "{}.{}".format(
+        return "{}.{}.0".format(  # FIXME assumes single service instance ".0"
                 ec.function_ids.get(
                     param_func_name, param_func_name), param_unit_name)
 
