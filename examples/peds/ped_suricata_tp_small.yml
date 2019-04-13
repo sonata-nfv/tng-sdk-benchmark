@@ -21,7 +21,7 @@ service_package: "../services/ns-1vnf-ids-suricata"
 service_experiments:
   - name: "suricata_performance"
     description: "Suricata performance benchmark using trafic traces."
-    repetitions: 1
+    repetitions: 2
     time_limit: 30 # seconds per experiment
     # NSD to be used (vendor.name.version reference)
     target:

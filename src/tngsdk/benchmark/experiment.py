@@ -29,7 +29,7 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
-
+import json
 from pprint import pformat
 from tngsdk.benchmark.macro import rewrite_parameter_macros_to_lists
 from tngsdk.benchmark.helper import compute_cartesian_product
@@ -87,7 +87,8 @@ class Experiment(object):
         # Cartesian product over the given dict
         configuration_space_list = compute_cartesian_product(
             configuration_dict)
-        self.configuration_space_list = configuration_space_list
+        self.configuration_space_list = self._add_config_ids(
+            configuration_space_list)
         # create a experiment configuration objects for each calculated
         # configuration to test
         for c in configuration_space_list:
@@ -100,6 +101,31 @@ class Experiment(object):
         LOG.info("Populated experiment specification: '{}' with {} "
                  .format(self.name, len(self.experiment_configurations))
                  + "configurations to be executed.")
+
+    def _add_config_ids(self, conf_list):
+        """
+        Add config_ids to the config list.
+        Needs to be that complex, because we do not loop
+        over the repetitions. So we have to diff the configs.
+        Ugly, but works.
+        """
+        # count every different config (but ignore repetition field)
+        cnt = 0
+        cnt_dict = dict()
+        for c in conf_list:
+            tmpc = c.copy()
+            del tmpc["ep::header::all::repetition"]
+            k = json.dumps(tmpc, sort_keys=True)
+            if k not in cnt_dict:
+                cnt_dict[k] = cnt
+                cnt += 1
+        # add results to configs
+        for c in conf_list:
+            tmpc = c.copy()
+            del tmpc["ep::header::all::repetition"]
+            k = json.dumps(tmpc, sort_keys=True)
+            c["ep::header::all::config_id"] = cnt_dict.get(k, 0)
+        return conf_list
 
     def _get_header_configuration_space_as_dict(self):
         """

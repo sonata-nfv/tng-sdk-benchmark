@@ -1,5 +1,6 @@
 setuptools
 pytest
+pyyaml>=5.1
 pyaml
 jsonschema
 coloredlogs
