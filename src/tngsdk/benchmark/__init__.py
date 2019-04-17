@@ -37,13 +37,14 @@ import logging
 import coloredlogs
 import time
 import shutil
+import subprocess
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.generator.sonata \
                 import SonataServiceConfigurationGenerator
 from tngsdk.benchmark.generator.tango \
                 import TangoServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
-from tngsdk.benchmark.helper import read_yaml
+from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
 from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
 from tngsdk.benchmark.resultprocessor.vimemu import VimemuResultProcessor
 from tngsdk.benchmark.logger import TangoLogger
@@ -114,9 +115,11 @@ class ProfileManager(object):
         if self.cgen is None:
             return
         self.generate_experiments()
+        self.start_prometheus_monitoring()
         self.execute_experiments()
         self.process_results()
         self.copy_ped()
+        self.stop_prometheus_monitoring()
 
     def check_rd_existence(self):
         if os.path.exists(self.args.result_dir):
@@ -133,6 +136,35 @@ class ProfileManager(object):
             self.logger.info("Overwriting old results: {}"
                              .format(self.args.result_dir))
             shutil.rmtree(self.args.result_dir)
+            # also clean prometheus data (if present, rquires sudo)
+            try:
+                pm_path = get_prometheus_path()
+                self.logger.info("Removing Prometheus data: {}"
+                                 .format(pm_path))
+                subprocess.call(["./clean.sh"], cwd=pm_path)
+            except BaseException as ex:
+                self.logger.warning("Couldn't remove Prometheus data: {}"
+                                    .format(ex))
+
+    def start_prometheus_monitoring(self):
+        try:
+            pm_path = get_prometheus_path()
+            self.logger.info("Starting Prometheus 'docker-compose up in:' {}"
+                             .format(pm_path))
+            subprocess.call(["docker-compose", "up", "-d"], cwd=pm_path)
+        except BaseException as ex:
+            self.logger.warning("Couldn't start Prometheus. Skipping it. ({})"
+                                .format(ex))
+
+    def stop_prometheus_monitoring(self):
+        try:
+            pm_path = get_prometheus_path()
+            self.logger.info("Stopping Prometheus 'docker-compose down in:' {}"
+                             .format(pm_path))
+            subprocess.call(["docker-compose", "down"], cwd=pm_path)
+        except BaseException as ex:
+            self.logger.warning("Couldn't stop Prometheus. Skipping it. ({})"
+                                .format(ex))
 
     def populate_experiments(self):
         if self.args.no_population:

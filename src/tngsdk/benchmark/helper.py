@@ -171,3 +171,20 @@ def dubunderscore_reducer(k1, k2):
         return k2
     else:
         return k1 + "__" + k2
+
+
+def get_prometheus_path():
+    """
+    Returns the absolute path to the
+    Prometheus fodler of the used tng-bench
+    installation.
+    """
+    try:
+        p = os.path.dirname(os.path.abspath(__file__))
+        p = os.path.join(p, "../../../prometheus")
+        if os.path.exists(p):
+            return os.path.abspath(p)
+        raise BaseException("Prometheus path {} not found".format(p))
+    except BaseException as ex:
+        LOG.warning("Couldn't find prometheus path: {}".format(ex))
+    return None
