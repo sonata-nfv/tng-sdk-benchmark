@@ -139,14 +139,15 @@ class ProfileManager(object):
                              .format(self.args.result_dir))
             shutil.rmtree(self.args.result_dir)
             # also clean prometheus data (if present, rquires sudo)
-            try:
-                pm_path = get_prometheus_path()
-                self.logger.info("Removing Prometheus data: {}"
-                                 .format(pm_path))
-                subprocess.call(["./clean.sh"], cwd=pm_path)
-            except BaseException as ex:
-                self.logger.warning("Couldn't remove Prometheus data: {}"
-                                    .format(ex))
+            if not self.args.no_prometheus:
+                try:
+                    pm_path = get_prometheus_path()
+                    self.logger.info("Removing Prometheus data: {}"
+                                    .format(pm_path))
+                    subprocess.call(["./clean.sh"], cwd=pm_path)
+                except BaseException as ex:
+                    self.logger.warning("Couldn't remove Prometheus data: {}"
+                                        .format(ex))
 
     def start_prometheus_monitoring(self):
         try:
