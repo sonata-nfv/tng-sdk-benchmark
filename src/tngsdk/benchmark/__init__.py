@@ -115,11 +115,13 @@ class ProfileManager(object):
         if self.cgen is None:
             return
         self.generate_experiments()
-        self.start_prometheus_monitoring()
+        if not self.args.no_prometheus:
+            self.start_prometheus_monitoring()
         self.execute_experiments()
         self.process_results()
         self.copy_ped()
-        self.stop_prometheus_monitoring()
+        if not self.args.no_prometheus:
+            self.stop_prometheus_monitoring()
 
     def check_rd_existence(self):
         if os.path.exists(self.args.result_dir):
@@ -497,6 +499,14 @@ def parse_args(manual_args=None,
         required=False,
         default=False,
         dest="force_yes",
+        action="store_true")
+
+    parser.add_argument(
+        "--no-prometheus",
+        help="Do not launch Prometheus automatically.",
+        required=False,
+        default=False,
+        dest="no_prometheus",
         action="store_true")
 
     if manual_args is not None:
