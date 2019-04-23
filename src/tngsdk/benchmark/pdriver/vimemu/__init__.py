@@ -131,6 +131,10 @@ class VimEmuDriver(object):
             self.emudocker.execute(vnf_cname, cmd,
                                    os.path.join(PATH_SHARE,
                                                 PATH_CMD_START_LOG))
+        # TODO Have a configurable warmup period
+        LOG.info("Warmup period (10s) ...")
+        time.sleep(10)
+        LOG.info("Stimulating ...")
         self.emudocker.execute(MP_OUT_NAME, mp_out_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self.emudocker.execute(MP_IN_NAME, mp_in_cmd_start,
