@@ -143,7 +143,7 @@ class ProfileManager(object):
                 try:
                     pm_path = get_prometheus_path()
                     self.logger.info("Removing Prometheus data: {}"
-                                    .format(pm_path))
+                                     .format(pm_path))
                     subprocess.call(["./clean.sh"], cwd=pm_path)
                 except BaseException as ex:
                     self.logger.warning("Couldn't remove Prometheus data: {}"
