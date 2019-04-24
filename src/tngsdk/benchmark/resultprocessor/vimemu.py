@@ -141,11 +141,15 @@ class VimemuResultProcessor(object):
         r = dict()
         # iterate over all container directories
         for cd in self._get_container_from_rd(rd):
-            yml = read_yaml(os.path.join(rd, cd, PATH_CONTAINER_RESULT))
-            for k, v in yml.items():
-                # add container name as key prefix
-                k = "metric__{}__{}".format(self._get_clean_cname(cd), k)
-                r[k] = v
+            try:
+                yml = read_yaml(os.path.join(rd, cd, PATH_CONTAINER_RESULT))
+                for k, v in yml.items():
+                    # add container name as key prefix
+                    k = "metric__{}__{}".format(self._get_clean_cname(cd), k)
+                    r[k] = v
+            except BaseException as ex:
+                LOG.warning("Couldn't process all container results: {}"
+                            .format(ex))
         return r
 
     def _collect_ts_container_monitoring(self, rd):
