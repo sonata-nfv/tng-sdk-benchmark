@@ -39,6 +39,9 @@ from tngsdk.benchmark.logger import TangoLogger
 LOG = TangoLogger.getLogger(__name__)
 
 
+DEFAULT_TIME_WARMUP = 10  # only used if not in PED
+
+
 class Experiment(object):
 
     def __init__(self, args, definition, sut_package):
@@ -49,6 +52,7 @@ class Experiment(object):
         self.measurement_points = list()
         self.repetitions = 0
         self.time_limit = 0
+        self.time_warmup = DEFAULT_TIME_WARMUP
         # populate object from YAML definition
         self.__dict__.update(definition)
         # attributes
@@ -134,6 +138,7 @@ class Experiment(object):
         r = dict()
         r["ep::header::all::repetition"] = list(range(0, self.repetitions))
         r["ep::header::all::time_limit"] = [self.time_limit]
+        r["ep::header::all::time_warmup"] = [self.time_warmup]
         return r
 
     def _get_experiment_configuration_space_as_dict(self):

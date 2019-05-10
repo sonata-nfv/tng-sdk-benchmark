@@ -19,6 +19,7 @@ service_experiments:
     disabled: false
     repetitions: 1
     time_limit: 10  # seconds per experiment
+    # time_warmup: 5 # waiting time between deployment and start of the measurements (sec)
     # NSD to be used (vendor.name.version reference)
     target:
       vendor: "de.upb"
