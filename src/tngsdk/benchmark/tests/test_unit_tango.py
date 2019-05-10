@@ -105,16 +105,16 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 self.assertTrue(os.path.exists(
                     os.path.join(prj_p, "project.yml")))
                 self.assertTrue(os.path.exists(
-                    os.path.join(prj_p, "sources/Definitions/mynsd.yaml")))
+                    os.path.join(prj_p, "mynsd.yaml")))
                 self.assertTrue(os.path.exists(
-                    os.path.join(prj_p, "sources/Definitions/myvnfd.yaml")))
+                    os.path.join(prj_p, "myvnfd.yaml")))
                 self.assertTrue(os.path.exists(
                     os.path.join(prj_p, "mp.input.yaml")))
                 self.assertTrue(os.path.exists(
                     os.path.join(prj_p, "mp.output.yaml")))
                 # check MPs are in NSD
                 nsd = read_yaml(
-                    os.path.join(prj_p, "sources/Definitions/mynsd.yaml"))
+                    os.path.join(prj_p, "mynsd.yaml"))
                 self.assertIn("mp.input",
                               [nf.get("vnf_name") for nf
                                in nsd.get("network_functions")])
@@ -124,7 +124,7 @@ class UnitTangoGeneratorTests(unittest.TestCase):
                 # TODO check correct forwarding path, CPs, and links
                 # check config. params. of ec are in VNFD
                 vnfd = read_yaml(
-                    os.path.join(prj_p, "sources/Definitions/myvnfd.yaml"))
+                    os.path.join(prj_p, "myvnfd.yaml"))
                 vdu = vnfd.get(
                     "virtual_deployment_units")[0]
 

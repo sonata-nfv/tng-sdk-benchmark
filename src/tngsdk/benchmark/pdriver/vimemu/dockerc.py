@@ -106,16 +106,20 @@ class EmuDockerClient(object):
         """
         LOG.debug("Collect files from docker {}: {} -> {}".format(
             container_name, src_path, dst_path))
-        c = self.client.containers.get(container_name)
-        strm, _ = c.get_archive(src_path)
-        # write to intermediate tar
-        ensure_dir(PATH_TEMP_TAR)
-        with open(PATH_TEMP_TAR, 'wb') as f:
-            for d in strm:
-                f.write(d)
-        tar = tarfile.TarFile(PATH_TEMP_TAR)
-        tar.extractall(dst_path)
-        os.remove(PATH_TEMP_TAR)
+        try:
+            c = self.client.containers.get(container_name)
+            strm, _ = c.get_archive(src_path)
+            # write to intermediate tar
+            ensure_dir(PATH_TEMP_TAR)
+            with open(PATH_TEMP_TAR, 'wb') as f:
+                for d in strm:
+                    f.write(d)
+            tar = tarfile.TarFile(PATH_TEMP_TAR)
+            tar.extractall(dst_path)
+            os.remove(PATH_TEMP_TAR)
+        except BaseException as ex:
+            LOG.warning("Could not collect froles from docker {}: {}"
+                        .format(container_name, ex))
 
     def store_logs(self, container_name, dst_path):
         """

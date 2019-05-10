@@ -131,6 +131,12 @@ class VimEmuDriver(object):
             self.emudocker.execute(vnf_cname, cmd,
                                    os.path.join(PATH_SHARE,
                                                 PATH_CMD_START_LOG))
+        # give the VNF time to start: wait for "time_warmup"
+        time_warmup = int(ec.parameter.get(
+            "ep::header::all::time_warmup"))
+        LOG.info("Warmup period ({}s) ...".format(time_warmup))
+        time.sleep(time_warmup)
+        LOG.info("Stimulating ...")
         self.emudocker.execute(MP_OUT_NAME, mp_out_cmd_start,
                                os.path.join(PATH_SHARE, PATH_CMD_START_LOG))
         self.emudocker.execute(MP_IN_NAME, mp_in_cmd_start,
