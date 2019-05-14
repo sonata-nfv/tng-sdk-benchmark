@@ -97,7 +97,20 @@ class ProfileManager(object):
         self.args = args
         self.args.debug = self.args.verbose
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
-        self.args.config = self._load_config(os.path.abspath(args.configfile))
+        # load config file: try different paths
+        for path in [os.path.abspath(os.path.expanduser(args.configfile)),
+                     os.path.abspath(".tng-bench.conf"),
+                     os.path.abspath("config.yml")]:
+            try:
+                self.args.config = self._load_config(path)
+                break
+            except BaseException as ex:
+                self.logger.error(ex)
+                self.args.config = None
+        if self.args.config is None:
+            print("Connot run without configuration.")
+            exit(1)
+
         # logging setup
         coloredlogs.install(level="DEBUG" if args.verbose else "INFO")
         self.logger.info("5GTANGO benchmarking/profiling tool initialized")
@@ -269,12 +282,13 @@ class ProfileManager(object):
 
     def _load_config(self, path):
         try:
+            self.logger.info("Using config: {}".format(path))
             return read_yaml(path)
         except BaseException as ex:
             self.logger.exception("Couldn't read config file: '{}'. Abort."
                                   .format(path))
             self.logger.debug(ex)
-            exit(1)
+            raise BaseException("Config not found.")
 
     def _load_ped_file(self, ped_path):
         """
@@ -388,9 +402,9 @@ def parse_args(manual_args=None,
         "-c",
         "--config",
         help="Config file to be used, e.g., defining the execution platforms."
-        + "Default: config.yml",
+        + "Default: ~/.tng-bench.conf",
         required=False,
-        default="config.yml",
+        default="~/.tng-bench.conf",
         dest="configfile")
 
     parser.add_argument(
