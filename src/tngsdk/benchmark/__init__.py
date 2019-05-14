@@ -99,6 +99,7 @@ class ProfileManager(object):
         self.args.ped = os.path.join(os.getcwd(), self.args.ped)
         # load config file: try different paths
         for path in [os.path.abspath(os.path.expanduser(args.configfile)),
+                     os.path.abspath(".tng-bench.conf"),
                      os.path.abspath("config.yml")]:
             try:
                 self.args.config = self._load_config(path)
