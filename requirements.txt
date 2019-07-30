@@ -10,7 +10,8 @@ flask-restplus
 gevent==1.4.0
 jinja2
 docker
-pandas
+numpy==1.16
+pandas==0.24
 flatten-dict
 git+https://github.com/sonata-nfv/tng-sdk-package#egg=tngsdk.package
 git+https://github.com/sonata-nfv/tng-sdk-project#egg=tngsdk.project
