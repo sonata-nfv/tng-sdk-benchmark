@@ -27,8 +27,10 @@ Please follow [this guide](https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/
 
 ### Run a benchmarking experiment
 
+Before you can run your first benchmarking experiment, you need to install tng-bench and an execution platform following [this guide](https://github.com/sonata-nfv/tng-sdk-benchmark/wiki/Setup-execution-platform-(vim-emu)).
+
 ```sh
-tng-bench -p examples/peds/ped_suricata_tp_small.yml -rd results
+tng-bench -p examples/peds/ped_suricata_tp_small.yml
 ```
 
 ### Manually re-run the result processing
@@ -49,19 +51,6 @@ To contribute to the development of this 5GTANGO component, you may use the very
 
 ```bash
 $ python setup.py develop
-```
-
-#### VSCode Debugging
-
-```json
-{
-    "name": "Python: tng-bench debug.py",
-    "type": "python",
-    "request": "launch",
-    "program": "${workspaceRoot}/tng-sdk-benchmark/debug.py",
-    "cwd": "${workspaceRoot}/tng-sdk-benchmark/",
-    "console": "integratedTerminal"
-},
 ```
 
 ### CI Integration
