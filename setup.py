@@ -68,7 +68,7 @@ pkgs, new_links = install_deps()
 
 setup(name='tngsdk.benchmark',
       license='Apache License, Version 2.0',
-      version='4.1',
+      version='5.0',
       url='https://github.com/sonata-nfv/tng-sdk-benchmark',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
