@@ -8,7 +8,6 @@ requests
 mock
 flask-restplus
 gevent==1.4.0
-jinja2
 docker
 numpy==1.16
 pandas==0.24
