@@ -10,7 +10,21 @@ The seed code of this component is based on the `son-cli` toolbox, specifically 
 
 ## Cite this Work
 
-If you use this tool for your research, publications, or NFV projects, please consider to cite the following paper(s):
+If you use this tool for your research, publications, or NFV projects, please consider to cite the following paper:
+
+```
+@inproceedings{peuster2017chainprofiling,
+	Author = {Peuster, Manuel and Karl, Holger},
+	Booktitle = {2017 IEEE Conference on Network Function Virtualization and Software Defined Networks (NFV-SDN)},
+	Month = {Nov},
+	Pages = {1-6},
+	Title = {Profile your chains, not functions: Automated network service profiling in DevOps environments},
+	Year = {2017}}
+```
+
+## References
+
+* M. Peuster, S. Schneider, H. Karl: [The Softwarised Network Data Zoo](https://sndzoo.github.io/). In IEEE/IFIP 15th International Conference on Network and Service Management (CNSM), Halifax, Canada. (2019)
 
 * M. Peuster and H. Karl: [Profile Your Chains, Not Functions: Automated Network Service Profiling in DevOps Environments](http://ieeexplore.ieee.org/document/8169826/). IEEE Conference on Network Function Virtualization and Software Defined Networks (NFV-SDN), Berlin, Germany. (2017)
 
