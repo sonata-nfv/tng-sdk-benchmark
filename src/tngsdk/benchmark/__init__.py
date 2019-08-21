@@ -45,7 +45,7 @@ from tngsdk.benchmark.generator.tango \
                 import TangoServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
-from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
+from tngsdk.benchmark.ietf import IetfBmwgResultProcessor
 from tngsdk.benchmark.resultprocessor.vimemu import VimemuResultProcessor
 from tngsdk.benchmark.logger import TangoLogger
 

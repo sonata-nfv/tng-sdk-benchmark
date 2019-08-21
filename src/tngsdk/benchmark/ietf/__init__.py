@@ -32,8 +32,9 @@
 import os
 import yaml
 from tngsdk.benchmark.helper import ensure_dir, download_file
-from jinja2 import Environment, FileSystemLoader
 from tngsdk.benchmark.logger import TangoLogger
+from tngsdk.benchmark.ietf.vnf_bd import vnf_bd as VNF_BD_Model
+from jinja2 import Environment, FileSystemLoader
 
 
 LOG = TangoLogger.getLogger(__name__)
@@ -63,6 +64,10 @@ class IetfBmwgResultProcessor(object):
                                 TEMPLATE_PATH, BD_TEMPLATE)):
             # TODO this is temporary, don't rely on online resources
             raise BaseException("Could not download BD template. Abort.")
+        # test the new bd model
+        ff = VNF_BD_Model()
+        print(ff)
+        print(dir(ff))
         # instantiate reder environment
         self.render_env = Environment(
             loader=FileSystemLoader(TEMPLATE_PATH),
