@@ -30,8 +30,7 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 import os
-import yaml
-from tngsdk.benchmark.helper import ensure_dir, download_file
+from tngsdk.benchmark.helper import ensure_dir
 from tngsdk.benchmark.logger import TangoLogger
 from tngsdk.benchmark.ietf.vnf_bd import vnf_bd as VNF_BD_Model
 import pyangbind.lib.pybindJSON as pybindJSON
@@ -89,11 +88,15 @@ class IetfBmwgVnfBD_Generator(object):
         m.vnf_bd.experiments.trials = str(
             ec.parameter.get("ep::header::all::repetition", -1))
         # 3. environment section
-        m.vnf_bd.environment.name = self.args.config.get("targets")[0].get("name")
-        m.vnf_bd.environment.description = self.args.config.get("targets")[0].get("description")
-        m.vnf_bd.environment.plugin.type = self.args.config.get("targets")[0].get("pdriver")
+        m.vnf_bd.environment.name = self.args.config.get(
+            "targets")[0].get("name")
+        m.vnf_bd.environment.description = self.args.config.get(
+            "targets")[0].get("description")
+        m.vnf_bd.environment.plugin.type = self.args.config.get(
+            "targets")[0].get("pdriver")
         p1 = m.vnf_bd.environment.plugin.parameters.add("entrypoint")
-        p1.value = self.args.config.get("targets")[0].get("pdriver_config").get("host")
+        p1.value = self.args.config.get(
+            "targets")[0].get("pdriver_config").get("host")
         # 4. targets section
         t1 = m.vnf_bd.targets.add("01")
         t1.author = ec.experiment.target.get("vendor")
@@ -103,12 +106,17 @@ class IetfBmwgVnfBD_Generator(object):
         # TODO this must be build using the NS model and the CS.
         # (the generated VNFBDs would actually be of help here)
         n1 = m.vnf_bd.scenario.nodes.add("01")
+        print(n1)
         l1 = m.vnf_bd.scenario.links.add("01")
+        print(l1)
         # 6. proceedings section
         # TODO
         at1 = m.vnf_bd.proceedings.attributes.add("01")
+        print(at1)
         ag1 = m.vnf_bd.proceedings.agents.add("01")
+        print(ag1)
         mo1 = m.vnf_bd.proceedings.monitors.add("01")
+        print(mo1)
         """
         # collect inputs for BD -> old version based on templates
         bd_in = dict()
