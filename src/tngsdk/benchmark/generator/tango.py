@@ -235,6 +235,8 @@ class TangoServiceConfigurationGenerator(
         # 3. write updated VNFDs
         for path, vnfd in vnfds.items():
             write_yaml(path, vnfd)
+        # 4. also store in ec for later use
+        ec.vnfds = vnfds
 
     def _package_project(self, ec):
         """
@@ -330,6 +332,7 @@ class TangoServiceConfigurationGenerator(
                       .format(fg.get("fg_id"), fg))
         # 5. store updated nsd
         write_yaml(self._get_nsd_path(ec), nsd)
+        ec.nsd = nsd
         # 6. log
         LOG.debug("Added measurement point VNF '{}' to NDS '{}'"
                   .format(mp.get("name"), nsd.get("name")))

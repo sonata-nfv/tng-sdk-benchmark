@@ -252,6 +252,9 @@ class ExperimentConfiguration(object):
         # additional information
         self.function_ids = dict()  # mapping between VNF names and IDs
         self.function_units = dict()  # mapping between VNF names and VDUs
+        # keep also the descriptors in memory (e.g. for BD generation)
+        self.nsd = None
+        self.vnfds = None
         LOG.debug("Created: {}".format(self))
 
     def __repr__(self):

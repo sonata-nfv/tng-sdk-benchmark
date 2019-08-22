@@ -103,13 +103,54 @@ class IetfBmwgVnfBD_Generator(object):
         t1.name = ec.experiment.target.get("name")
         t1.version = ec.experiment.target.get("version")
         # 5. scenario section
-        # TODO this must be build using the NS model and the CS.
-        # (the generated VNFBDs would actually be of help here)
-        n1 = m.vnf_bd.scenario.nodes.add("01")
-        print(n1)
+        # 5.1. nodes
+        if ec.vnfds is not None:
+            for path, vnfd in ec.vnfds.items():
+                if "mp." in vnfd.get("name"):
+                    nid = vnfd.get("name")
+                else:
+                    nid = "{}.{}.{}".format(
+                        vnfd.get("vendor"), vnfd.get("name"), vnfd.get("version"))
+                n1 = m.vnf_bd.scenario.nodes.add(nid)
+                n1.type = "external"  # tng-bench always uses external ones?
+                # attention: assumes single VDU
+                vdu = vnfd.get("virtual_deployment_units")[0]
+                n1.image = vdu.get("vm_image")
+                n1.image_format = vdu.get("vm_image_format")
+                # 5.1.1. resources
+                res = vdu.get("resource_requirements")
+                if res.get("cpu").get("vcpus"):
+                    n1.resources.cpu.vcpus = str(res.get("cpu").get("vcpus"))
+                if res.get("cpu").get("cpu_bw"):
+                    n1.resources.cpu.cpu_bw = str(res.get("cpu").get("cpu_bw"))
+                if res.get("cpu").get("vcpus"):
+                    n1.resources.cpu.pinning = str(res.get("cpu").get("vcpus"))
+                if res.get("memory").get("size"):
+                    n1.resources.memory.size = str(res.get("memory").get("size"))
+                if res.get("memory").get("size_unit"):
+                    n1.resources.memory.units = str(res.get("memory").get("size_unit"))
+                if res.get("storage").get("size"):
+                    n1.resources.storage.size = str(res.get("storage").get("size"))
+                if res.get("storage").get("size_unit"):
+                    n1.resources.storage.units = str(res.get("storage").get("size_unit"))
+                n1.resources.storage.volumes = None # not supported
+                # 5.1.2. connection points
+                for cp in vnfd.get("connection_points", []):
+                    cpnew = n1.connection_points.add(cp.get("id"))
+                    cpnew.interface = cp.get("interface")
+                    cpnew.type = cp.get("type")
+                    # TODO: Problem: We define links with references to CPs; not CPs with references to links
+                # 5.1.3. lifecycle
+                # tng-bench only has two lifecycle events: start and stop
+                lc_start = n1.lifecycle.add("start")  # ep::function::de.upb.ids-suricata.0.1::cmd_start
+                # tng-bench does not support parameters
+                lc_start.implementation = ec.parameter.get("ep::function::{}::cmd_start".format(nid), "")  # fill with cmd_start
+                lc_stop = n1.lifecycle.add("stop")
+                lc_stop.implementation = ec.parameter.get("ep::function::{}::cmd_stop".format(nid), "")  # fill with cmd_start
+        # TODO: 5.2. links
         l1 = m.vnf_bd.scenario.links.add("01")
         print(l1)
-        # 6. proceedings section
+        # TODO: 6. proceedings section
         # TODO
         at1 = m.vnf_bd.proceedings.attributes.add("01")
         print(at1)
@@ -185,8 +226,8 @@ class IetfBmwgVnfBD_Generator(object):
         print(bd_str)
         print("---")
         print((ec.parameter))
-        print("---")
-        print((ec.experiment.target))
+        print("--- NSD")
+        print((ec.nsd))
         print("----")
         print(self.args.config)
         # write BD
