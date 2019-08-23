@@ -49,7 +49,7 @@ def install_deps():
         new_pkgs = []
         links = []
         for r in requirements:
-            if "https" in r:
+            if "git+" in r:
                 pkg = r.split('#')[-1]
                 links.append(r.strip())
                 new_pkgs.append(pkg.replace('egg=', '').rstrip())
