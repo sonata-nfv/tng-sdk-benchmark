@@ -8,10 +8,10 @@ requests
 mock
 flask-restplus
 gevent==1.4.0
-jinja2
 docker
 numpy==1.16
 pandas==0.24
 flatten-dict
+pyangbind
 git+https://github.com/sonata-nfv/tng-sdk-package#egg=tngsdk.package
 git+https://github.com/sonata-nfv/tng-sdk-project#egg=tngsdk.project
