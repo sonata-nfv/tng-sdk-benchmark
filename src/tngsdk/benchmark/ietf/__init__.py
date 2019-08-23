@@ -30,6 +30,8 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 import os
+import yaml
+import json
 from tngsdk.benchmark.helper import ensure_dir
 from tngsdk.benchmark.logger import TangoLogger
 from tngsdk.benchmark.ietf.vnf_bd import vnf_bd as VNF_BD_Model
@@ -165,14 +167,15 @@ class IetfBmwgVnfBD_Generator(object):
         #mo1 = m.vnf_bd.proceedings.monitors.add("01")
 
         # render BD using template
-        bd_str = pybindJSON.dumps(m)  # self._render(bd_in, BD_TEMPLATE)
+        bd_str_json = pybindJSON.dumps(m, mode="ietf")  # serialize
+        bd_str = yaml.dump(json.loads(bd_str_json))  # translate json to yaml
         print(bd_str)
         print("---")
-        print((ec.parameter))
-        print("--- NSD")
-        print((ec.nsd))
-        print("----")
-        print(self.args.config)
+        # print((ec.parameter))
+        # print("--- NSD")
+        # print((ec.nsd))
+        # print("----")
+        # print(self.args.config)
         # write BD
         ensure_dir(bd_path)
         with open(bd_path, "w") as f:
