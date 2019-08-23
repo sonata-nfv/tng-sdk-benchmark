@@ -140,20 +140,27 @@ class IetfBmwgVnfBD_Generator(object):
                 # 5.1.1. resources
                 res = vdu.get("resource_requirements")
                 if res.get("cpu").get("vcpus"):
-                    n1.resources.cpu.vcpus = str(res.get("cpu").get("vcpus"))
+                    n1.resources.cpu.vcpus = str(
+                        res.get("cpu").get("vcpus"))
                 if res.get("cpu").get("cpu_bw"):
-                    n1.resources.cpu.cpu_bw = str(res.get("cpu").get("cpu_bw"))
+                    n1.resources.cpu.cpu_bw = str(
+                        res.get("cpu").get("cpu_bw"))
                 if res.get("cpu").get("vcpus"):
-                    n1.resources.cpu.pinning = str(res.get("cpu").get("vcpus"))
+                    n1.resources.cpu.pinning = str(
+                        res.get("cpu").get("vcpus"))
                 if res.get("memory").get("size"):
-                    n1.resources.memory.size = str(res.get("memory").get("size"))
+                    n1.resources.memory.size = str(
+                        res.get("memory").get("size"))
                 if res.get("memory").get("size_unit"):
-                    n1.resources.memory.unit = str(res.get("memory").get("size_unit"))
+                    n1.resources.memory.unit = str(
+                        res.get("memory").get("size_unit"))
                 if res.get("storage").get("size"):
-                    n1.resources.storage.size = str(res.get("storage").get("size"))
+                    n1.resources.storage.size = str(
+                        res.get("storage").get("size"))
                 if res.get("storage").get("size_unit"):
-                    n1.resources.storage.unit = str(res.get("storage").get("size_unit"))
-                n1.resources.storage.volumes = None # not supported
+                    n1.resources.storage.unit = str(
+                        res.get("storage").get("size_unit"))
+                n1.resources.storage.volumes = None  # not supported
                 # 5.1.2. connection points
                 for cp in vnfd.get("connection_points", []):
                     # build connection point id: node_id:cp_id
@@ -164,10 +171,12 @@ class IetfBmwgVnfBD_Generator(object):
                 # 5.1.3. lifecycle
                 # tng-bench only has two lifecycle events: start and stop
                 lc_start = n1.lifecycle.add("start")
-                # tng-bench does not support parameters
-                lc_start.implementation = ec.parameter.get("ep::function::{}::cmd_start".format(nid), "")  # fill with cmd_start
+                # tng-bench does not support parameters (add two cmds instead)
+                lc_start.implementation = ec.parameter.get(
+                    "ep::function::{}::cmd_start".format(nid), "")
                 lc_stop = n1.lifecycle.add("stop")
-                lc_stop.implementation = ec.parameter.get("ep::function::{}::cmd_stop".format(nid), "")  # fill with cmd_start
+                lc_stop.implementation = ec.parameter.get(
+                    "ep::function::{}::cmd_stop".format(nid), "")
         # 5.2. links
         if ec.nsd is not None:
             for l in ec.nsd.get("virtual_links"):
@@ -179,21 +188,35 @@ class IetfBmwgVnfBD_Generator(object):
         # 6.1. attributes
         at_dur = m.vnf_bd.proceedings.attributes.add("duration")
         at_dur.value = str(ec.parameter.get("ep::header::all::time_limit"))
-        # TODO: 6.2 agents
-        #ag1 = m.vnf_bd.proceedings.agents.add("01")
-        # TODO: 6.3 monitors
-        #mo1 = m.vnf_bd.proceedings.monitors.add("01")
-
+        # 6.2 agents (turn tng-bench measurement points into agents)
+        for mp in ec.experiment.measurement_points:
+            ag = m.vnf_bd.proceedings.agents.add(mp.get("name"))
+            ag.host.setting = "internal"
+            ag.host.node = mp.get("name")
+            pr = ag.probers.add("1")
+            pr.instances = str(1)
+            pr.name = mp.get("name")
+            for k, v in mp.items():
+                # add mp info as properties
+                p1 = pr.parameters.add(k)
+                p1.value = str(v)
+            p1 = pr.parameters.add("start")
+            p1.value = ec.parameter.get(
+                "ep::function::{}::cmd_start".format(mp.get("name")), "")
+            p1 = pr.parameters.add("stop")
+            p1.value = ec.parameter.get(
+                "ep::function::{}::cmd_stop".format(mp.get("name")), "")
+        # 6.3 monitors (only add the default prometheus monitor)
+        mo1 = m.vnf_bd.proceedings.monitors.add("default")
+        mo1.host.setting = "external"
+        mo1.host.node = "{}.{}.{}".format(t1.author, t1.name, t1.version)
+        li1 = mo1.listeners.add(1)
+        li1.name = "prometheus"
+        p1 = li1.parameters.add("target")
+        p1.value = mo1.host.node
         # render BD using template
         bd_str_json = pybindJSON.dumps(m, mode="ietf")  # serialize
         bd_str = yaml.dump(json.loads(bd_str_json))  # translate json to yaml
-        print(bd_str)
-        print("---")
-        # print((ec.parameter))
-        # print("--- NSD")
-        # print((ec.nsd))
-        # print("----")
-        # print(self.args.config)
         # write BD
         ensure_dir(bd_path)
         with open(bd_path, "w") as f:
