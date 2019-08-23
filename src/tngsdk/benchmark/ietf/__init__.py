@@ -67,6 +67,15 @@ class IetfBmwgVnfBD_Generator(object):
                     LOG.error("Could not generate IETF VNF BD for EC: {}\n{}"
                               .format(ec, exx))
 
+    def _find_vnf_id(self, vnf_name, nsd):
+        """
+        Get the VNF ID defined in the NSD by using the VNF name.
+        """
+        for f in nsd.get("network_functions"):
+            if f.get("vnf_name") == vnf_name:
+                return f.get("vnf_id")
+        return vnf_name
+
     def _generate_bd(self, ex_id, ec):
         # instantiate model
         m = VNF_BD_Model()
@@ -110,9 +119,18 @@ class IetfBmwgVnfBD_Generator(object):
             for path, vnfd in ec.vnfds.items():
                 if "mp." in vnfd.get("name"):
                     nid = vnfd.get("name")
+                    short_nid = nid
                 else:
+                    # full tripple nid
                     nid = "{}.{}.{}".format(
-                        vnfd.get("vendor"), vnfd.get("name"), vnfd.get("version"))
+                        vnfd.get("vendor"),
+                        vnfd.get("name"),
+                        vnfd.get("version"))
+                    # short vnf_id defined in NSD
+                    if ec.nsd is not None:
+                        short_nid = self._find_vnf_id(vnfd.get("name"), ec.nsd)
+                    else:
+                        short_nid = nid
                 n1 = m.vnf_bd.scenario.nodes.add(nid)
                 n1.type = "external"  # tng-bench always uses external ones?
                 # attention: assumes single VDU
@@ -130,33 +148,33 @@ class IetfBmwgVnfBD_Generator(object):
                 if res.get("memory").get("size"):
                     n1.resources.memory.size = str(res.get("memory").get("size"))
                 if res.get("memory").get("size_unit"):
-                    n1.resources.memory.units = str(res.get("memory").get("size_unit"))
+                    n1.resources.memory.unit = str(res.get("memory").get("size_unit"))
                 if res.get("storage").get("size"):
                     n1.resources.storage.size = str(res.get("storage").get("size"))
                 if res.get("storage").get("size_unit"):
-                    n1.resources.storage.units = str(res.get("storage").get("size_unit"))
+                    n1.resources.storage.unit = str(res.get("storage").get("size_unit"))
                 n1.resources.storage.volumes = None # not supported
                 # 5.1.2. connection points
                 for cp in vnfd.get("connection_points", []):
-                    cpnew = n1.connection_points.add(cp.get("id"))
+                    # build connection point id: node_id:cp_id
+                    cp_id = "{}:{}".format(short_nid, cp.get("id"))
+                    cpnew = n1.connection_points.add(cp_id)
                     cpnew.interface = cp.get("interface")
                     cpnew.type = cp.get("type")
-                    # TODO: Problem: We define links with references to CPs; not CPs with references to links
                 # 5.1.3. lifecycle
                 # tng-bench only has two lifecycle events: start and stop
-                lc_start = n1.lifecycle.add("start")  # ep::function::de.upb.ids-suricata.0.1::cmd_start
+                lc_start = n1.lifecycle.add("start")
                 # tng-bench does not support parameters
                 lc_start.implementation = ec.parameter.get("ep::function::{}::cmd_start".format(nid), "")  # fill with cmd_start
                 lc_stop = n1.lifecycle.add("stop")
                 lc_stop.implementation = ec.parameter.get("ep::function::{}::cmd_stop".format(nid), "")  # fill with cmd_start
         # 5.2. links
         if ec.nsd is not None:
-            for i, l in enumerate(ec.nsd.get("virtual_links")):
-                lnew = m.vnf_bd.scenario.links.add(i)
+            for l in ec.nsd.get("virtual_links"):
+                lnew = m.vnf_bd.scenario.links.add(l.get("id"))
                 lnew.type = l.get("connectivity_type")
-                # TODO: Problem: Model does not fit 5GTANGO, ETSI referencing model
-                # lnew.references = str(l.get("connection_points_reference"))
-                lnew.network = str(l.get("id"))
+                for cpr in l.get("connection_points_reference"):
+                    lnew.connection_point_refs.append(cpr)
         # 6. proceedings section
         # 6.1. attributes
         at_dur = m.vnf_bd.proceedings.attributes.add("duration")

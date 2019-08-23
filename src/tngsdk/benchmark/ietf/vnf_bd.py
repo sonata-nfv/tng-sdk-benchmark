@@ -967,7 +967,7 @@ class yc_memory_vnf_bd__vnf_bd_scenario_nodes_resources_memory(PybindBase):
   the container is represented as a class variable - with a specific
   YANG type.
   """
-  __slots__ = ('_path_helper', '_extmethods', '__size','__units',)
+  __slots__ = ('_path_helper', '_extmethods', '__size','__unit',)
 
   _yang_name = 'memory'
 
@@ -979,7 +979,7 @@ class yc_memory_vnf_bd__vnf_bd_scenario_nodes_resources_memory(PybindBase):
 
     self._extmethods = False
     self.__size = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="size", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
-    self.__units = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+    self.__unit = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
     load = kwargs.pop("load", None)
     if args:
@@ -1041,43 +1041,43 @@ class yc_memory_vnf_bd__vnf_bd_scenario_nodes_resources_memory(PybindBase):
     self.__size = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="size", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
 
 
-  def _get_units(self):
+  def _get_unit(self):
     """
-    Getter method for units, mapped from YANG variable /vnf_bd/scenario/nodes/resources/memory/units (string)
+    Getter method for unit, mapped from YANG variable /vnf_bd/scenario/nodes/resources/memory/unit (string)
     """
-    return self.__units
+    return self.__unit
       
-  def _set_units(self, v, load=False):
+  def _set_unit(self, v, load=False):
     """
-    Setter method for units, mapped from YANG variable /vnf_bd/scenario/nodes/resources/memory/units (string)
+    Setter method for unit, mapped from YANG variable /vnf_bd/scenario/nodes/resources/memory/unit (string)
     If this variable is read-only (config: false) in the
-    source YANG file, then _set_units is considered as a private
+    source YANG file, then _set_unit is considered as a private
     method. Backends looking to populate this variable should
-    do so via calling thisObj._set_units() directly.
+    do so via calling thisObj._set_unit() directly.
     """
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """units must be of a type compatible with string""",
+          'error-string': """unit must be of a type compatible with string""",
           'defined-type': "string",
-          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
-    self.__units = t
+    self.__unit = t
     if hasattr(self, '_set'):
       self._set()
 
-  def _unset_units(self):
-    self.__units = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+  def _unset_unit(self):
+    self.__unit = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
   size = __builtin__.property(_get_size, _set_size)
-  units = __builtin__.property(_get_units, _set_units)
+  unit = __builtin__.property(_get_unit, _set_unit)
 
 
-  _pyangbind_elements = OrderedDict([('size', size), ('units', units), ])
+  _pyangbind_elements = OrderedDict([('size', size), ('unit', unit), ])
 
 
 class yc_storage_vnf_bd__vnf_bd_scenario_nodes_resources_storage(PybindBase):
@@ -1087,7 +1087,7 @@ class yc_storage_vnf_bd__vnf_bd_scenario_nodes_resources_storage(PybindBase):
   the container is represented as a class variable - with a specific
   YANG type.
   """
-  __slots__ = ('_path_helper', '_extmethods', '__size','__units','__volumes',)
+  __slots__ = ('_path_helper', '_extmethods', '__size','__unit','__volumes',)
 
   _yang_name = 'storage'
 
@@ -1099,7 +1099,7 @@ class yc_storage_vnf_bd__vnf_bd_scenario_nodes_resources_storage(PybindBase):
 
     self._extmethods = False
     self.__size = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="size", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
-    self.__units = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+    self.__unit = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__volumes = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="volumes", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
     load = kwargs.pop("load", None)
@@ -1162,37 +1162,37 @@ class yc_storage_vnf_bd__vnf_bd_scenario_nodes_resources_storage(PybindBase):
     self.__size = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="size", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
 
 
-  def _get_units(self):
+  def _get_unit(self):
     """
-    Getter method for units, mapped from YANG variable /vnf_bd/scenario/nodes/resources/storage/units (string)
+    Getter method for unit, mapped from YANG variable /vnf_bd/scenario/nodes/resources/storage/unit (string)
     """
-    return self.__units
+    return self.__unit
       
-  def _set_units(self, v, load=False):
+  def _set_unit(self, v, load=False):
     """
-    Setter method for units, mapped from YANG variable /vnf_bd/scenario/nodes/resources/storage/units (string)
+    Setter method for unit, mapped from YANG variable /vnf_bd/scenario/nodes/resources/storage/unit (string)
     If this variable is read-only (config: false) in the
-    source YANG file, then _set_units is considered as a private
+    source YANG file, then _set_unit is considered as a private
     method. Backends looking to populate this variable should
-    do so via calling thisObj._set_units() directly.
+    do so via calling thisObj._set_unit() directly.
     """
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """units must be of a type compatible with string""",
+          'error-string': """unit must be of a type compatible with string""",
           'defined-type': "string",
-          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
-    self.__units = t
+    self.__unit = t
     if hasattr(self, '_set'):
       self._set()
 
-  def _unset_units(self):
-    self.__units = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="units", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+  def _unset_unit(self):
+    self.__unit = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="unit", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_volumes(self):
@@ -1228,11 +1228,11 @@ class yc_storage_vnf_bd__vnf_bd_scenario_nodes_resources_storage(PybindBase):
     self.__volumes = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="volumes", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
   size = __builtin__.property(_get_size, _set_size)
-  units = __builtin__.property(_get_units, _set_units)
+  unit = __builtin__.property(_get_unit, _set_unit)
   volumes = __builtin__.property(_get_volumes, _set_volumes)
 
 
-  _pyangbind_elements = OrderedDict([('size', size), ('units', units), ('volumes', volumes), ])
+  _pyangbind_elements = OrderedDict([('size', size), ('unit', unit), ('volumes', volumes), ])
 
 
 class yc_resources_vnf_bd__vnf_bd_scenario_nodes_resources(PybindBase):
@@ -1397,7 +1397,7 @@ class yc_connection_points_vnf_bd__vnf_bd_scenario_nodes_connection_points(Pybin
   the container is represented as a class variable - with a specific
   YANG type.
   """
-  __slots__ = ('_path_helper', '_extmethods', '__id','__interface','__type','__address','__link_id',)
+  __slots__ = ('_path_helper', '_extmethods', '__id','__interface','__type','__address',)
 
   _yang_name = 'connection_points'
 
@@ -1412,7 +1412,6 @@ class yc_connection_points_vnf_bd__vnf_bd_scenario_nodes_connection_points(Pybin
     self.__interface = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="interface", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__type = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="type", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__address = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="address", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
-    self.__link_id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="link-id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
     load = kwargs.pop("load", None)
     if args:
@@ -1577,47 +1576,13 @@ class yc_connection_points_vnf_bd__vnf_bd_scenario_nodes_connection_points(Pybin
   def _unset_address(self):
     self.__address = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="address", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
-
-  def _get_link_id(self):
-    """
-    Getter method for link_id, mapped from YANG variable /vnf_bd/scenario/nodes/connection_points/link_id (string)
-    """
-    return self.__link_id
-      
-  def _set_link_id(self, v, load=False):
-    """
-    Setter method for link_id, mapped from YANG variable /vnf_bd/scenario/nodes/connection_points/link_id (string)
-    If this variable is read-only (config: false) in the
-    source YANG file, then _set_link_id is considered as a private
-    method. Backends looking to populate this variable should
-    do so via calling thisObj._set_link_id() directly.
-    """
-    if hasattr(v, "_utype"):
-      v = v._utype(v)
-    try:
-      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="link-id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
-    except (TypeError, ValueError):
-      raise ValueError({
-          'error-string': """link_id must be of a type compatible with string""",
-          'defined-type': "string",
-          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="link-id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
-        })
-
-    self.__link_id = t
-    if hasattr(self, '_set'):
-      self._set()
-
-  def _unset_link_id(self):
-    self.__link_id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="link-id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
-
   id = __builtin__.property(_get_id, _set_id)
   interface = __builtin__.property(_get_interface, _set_interface)
   type = __builtin__.property(_get_type, _set_type)
   address = __builtin__.property(_get_address, _set_address)
-  link_id = __builtin__.property(_get_link_id, _set_link_id)
 
 
-  _pyangbind_elements = OrderedDict([('id', id), ('interface', interface), ('type', type), ('address', address), ('link_id', link_id), ])
+  _pyangbind_elements = OrderedDict([('id', id), ('interface', interface), ('type', type), ('address', address), ])
 
 
 class yc_parameters_vnf_bd__vnf_bd_scenario_nodes_lifecycle_parameters(PybindBase):
@@ -2247,7 +2212,7 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
   the container is represented as a class variable - with a specific
   YANG type.
   """
-  __slots__ = ('_path_helper', '_extmethods', '__id','__name','__type','__network',)
+  __slots__ = ('_path_helper', '_extmethods', '__id','__name','__type','__network','__connection_point_refs',)
 
   _yang_name = 'links'
 
@@ -2258,10 +2223,11 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
     self._path_helper = False
 
     self._extmethods = False
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__name = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="name", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__type = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="type", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__network = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="network", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
+    self.__connection_point_refs = YANGDynClass(unique=True, base=TypedListType(allowed_type=six.text_type), is_leaf=False, yang_name="connection_point_refs", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='leafref', is_config=True)
 
     load = kwargs.pop("load", None)
     if args:
@@ -2292,13 +2258,13 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
 
   def _get_id(self):
     """
-    Getter method for id, mapped from YANG variable /vnf_bd/scenario/links/id (uint32)
+    Getter method for id, mapped from YANG variable /vnf_bd/scenario/links/id (string)
     """
     return self.__id
       
   def _set_id(self, v, load=False):
     """
-    Setter method for id, mapped from YANG variable /vnf_bd/scenario/links/id (uint32)
+    Setter method for id, mapped from YANG variable /vnf_bd/scenario/links/id (string)
     If this variable is read-only (config: false) in the
     source YANG file, then _set_id is considered as a private
     method. Backends looking to populate this variable should
@@ -2312,12 +2278,12 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """id must be of a type compatible with uint32""",
-          'defined-type': "uint32",
-          'generated-type': """YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)""",
+          'error-string': """id must be of a type compatible with string""",
+          'defined-type': "string",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
     self.__id = t
@@ -2325,7 +2291,7 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
       self._set()
 
   def _unset_id(self):
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_name(self):
@@ -2426,13 +2392,47 @@ class yc_links_vnf_bd__vnf_bd_scenario_links(PybindBase):
   def _unset_network(self):
     self.__network = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="network", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
+
+  def _get_connection_point_refs(self):
+    """
+    Getter method for connection_point_refs, mapped from YANG variable /vnf_bd/scenario/links/connection_point_refs (leafref)
+    """
+    return self.__connection_point_refs
+      
+  def _set_connection_point_refs(self, v, load=False):
+    """
+    Setter method for connection_point_refs, mapped from YANG variable /vnf_bd/scenario/links/connection_point_refs (leafref)
+    If this variable is read-only (config: false) in the
+    source YANG file, then _set_connection_point_refs is considered as a private
+    method. Backends looking to populate this variable should
+    do so via calling thisObj._set_connection_point_refs() directly.
+    """
+    if hasattr(v, "_utype"):
+      v = v._utype(v)
+    try:
+      t = YANGDynClass(v,unique=True, base=TypedListType(allowed_type=six.text_type), is_leaf=False, yang_name="connection_point_refs", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='leafref', is_config=True)
+    except (TypeError, ValueError):
+      raise ValueError({
+          'error-string': """connection_point_refs must be of a type compatible with leafref""",
+          'defined-type': "leafref",
+          'generated-type': """YANGDynClass(unique=True, base=TypedListType(allowed_type=six.text_type), is_leaf=False, yang_name="connection_point_refs", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='leafref', is_config=True)""",
+        })
+
+    self.__connection_point_refs = t
+    if hasattr(self, '_set'):
+      self._set()
+
+  def _unset_connection_point_refs(self):
+    self.__connection_point_refs = YANGDynClass(unique=True, base=TypedListType(allowed_type=six.text_type), is_leaf=False, yang_name="connection_point_refs", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='leafref', is_config=True)
+
   id = __builtin__.property(_get_id, _set_id)
   name = __builtin__.property(_get_name, _set_name)
   type = __builtin__.property(_get_type, _set_type)
   network = __builtin__.property(_get_network, _set_network)
+  connection_point_refs = __builtin__.property(_get_connection_point_refs, _set_connection_point_refs)
 
 
-  _pyangbind_elements = OrderedDict([('id', id), ('name', name), ('type', type), ('network', network), ])
+  _pyangbind_elements = OrderedDict([('id', id), ('name', name), ('type', type), ('network', network), ('connection_point_refs', connection_point_refs), ])
 
 
 class yc_policies_vnf_bd__vnf_bd_scenario_policies(PybindBase):
@@ -3173,7 +3173,7 @@ class yc_probers_vnf_bd__vnf_bd_proceedings_agents_probers(PybindBase):
     self._path_helper = False
 
     self._extmethods = False
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__instances = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="instances", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
     self.__name = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="name", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__parameters = YANGDynClass(base=YANGListType("input",yc_parameters_vnf_bd__vnf_bd_proceedings_agents_probers_parameters, yang_name="parameters", parent=self, is_container='list', user_ordered=False, path_helper=self._path_helper, yang_keys='input', extensions=None), is_container='list', yang_name="parameters", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='list', is_config=True)
@@ -3207,13 +3207,13 @@ class yc_probers_vnf_bd__vnf_bd_proceedings_agents_probers(PybindBase):
 
   def _get_id(self):
     """
-    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/probers/id (uint32)
+    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/probers/id (string)
     """
     return self.__id
       
   def _set_id(self, v, load=False):
     """
-    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/probers/id (uint32)
+    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/probers/id (string)
     If this variable is read-only (config: false) in the
     source YANG file, then _set_id is considered as a private
     method. Backends looking to populate this variable should
@@ -3227,12 +3227,12 @@ class yc_probers_vnf_bd__vnf_bd_proceedings_agents_probers(PybindBase):
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """id must be of a type compatible with uint32""",
-          'defined-type': "uint32",
-          'generated-type': """YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)""",
+          'error-string': """id must be of a type compatible with string""",
+          'defined-type': "string",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
     self.__id = t
@@ -3240,7 +3240,7 @@ class yc_probers_vnf_bd__vnf_bd_proceedings_agents_probers(PybindBase):
       self._set()
 
   def _unset_id(self):
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_instances(self):
@@ -3368,7 +3368,7 @@ class yc_agents_vnf_bd__vnf_bd_proceedings_agents(PybindBase):
     self._path_helper = False
 
     self._extmethods = False
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__name = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="name", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__host = YANGDynClass(base=yc_host_vnf_bd__vnf_bd_proceedings_agents_host, is_container='container', yang_name="host", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='container', is_config=True)
     self.__probers = YANGDynClass(base=YANGListType("id",yc_probers_vnf_bd__vnf_bd_proceedings_agents_probers, yang_name="probers", parent=self, is_container='list', user_ordered=False, path_helper=self._path_helper, yang_keys='id', extensions=None), is_container='list', yang_name="probers", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='list', is_config=True)
@@ -3402,13 +3402,13 @@ class yc_agents_vnf_bd__vnf_bd_proceedings_agents(PybindBase):
 
   def _get_id(self):
     """
-    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/id (uint32)
+    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/id (string)
     """
     return self.__id
       
   def _set_id(self, v, load=False):
     """
-    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/id (uint32)
+    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/agents/id (string)
     If this variable is read-only (config: false) in the
     source YANG file, then _set_id is considered as a private
     method. Backends looking to populate this variable should
@@ -3422,12 +3422,12 @@ class yc_agents_vnf_bd__vnf_bd_proceedings_agents(PybindBase):
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """id must be of a type compatible with uint32""",
-          'defined-type': "uint32",
-          'generated-type': """YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)""",
+          'error-string': """id must be of a type compatible with string""",
+          'defined-type': "string",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
     self.__id = t
@@ -3435,7 +3435,7 @@ class yc_agents_vnf_bd__vnf_bd_proceedings_agents(PybindBase):
       self._set()
 
   def _unset_id(self):
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_name(self):
@@ -3808,7 +3808,7 @@ class yc_listeners_vnf_bd__vnf_bd_proceedings_monitors_listeners(PybindBase):
     self._path_helper = False
 
     self._extmethods = False
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__instances = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="instances", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
     self.__name = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="name", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__parameters = YANGDynClass(base=YANGListType("input",yc_parameters_vnf_bd__vnf_bd_proceedings_monitors_listeners_parameters, yang_name="parameters", parent=self, is_container='list', user_ordered=False, path_helper=self._path_helper, yang_keys='input', extensions=None), is_container='list', yang_name="parameters", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='list', is_config=True)
@@ -3842,13 +3842,13 @@ class yc_listeners_vnf_bd__vnf_bd_proceedings_monitors_listeners(PybindBase):
 
   def _get_id(self):
     """
-    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/listeners/id (uint32)
+    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/listeners/id (string)
     """
     return self.__id
       
   def _set_id(self, v, load=False):
     """
-    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/listeners/id (uint32)
+    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/listeners/id (string)
     If this variable is read-only (config: false) in the
     source YANG file, then _set_id is considered as a private
     method. Backends looking to populate this variable should
@@ -3862,12 +3862,12 @@ class yc_listeners_vnf_bd__vnf_bd_proceedings_monitors_listeners(PybindBase):
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """id must be of a type compatible with uint32""",
-          'defined-type': "uint32",
-          'generated-type': """YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)""",
+          'error-string': """id must be of a type compatible with string""",
+          'defined-type': "string",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
     self.__id = t
@@ -3875,7 +3875,7 @@ class yc_listeners_vnf_bd__vnf_bd_proceedings_monitors_listeners(PybindBase):
       self._set()
 
   def _unset_id(self):
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_instances(self):
@@ -4003,7 +4003,7 @@ class yc_monitors_vnf_bd__vnf_bd_proceedings_monitors(PybindBase):
     self._path_helper = False
 
     self._extmethods = False
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__name = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="name", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     self.__host = YANGDynClass(base=yc_host_vnf_bd__vnf_bd_proceedings_monitors_host, is_container='container', yang_name="host", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='container', is_config=True)
     self.__listeners = YANGDynClass(base=YANGListType("id",yc_listeners_vnf_bd__vnf_bd_proceedings_monitors_listeners, yang_name="listeners", parent=self, is_container='list', user_ordered=False, path_helper=self._path_helper, yang_keys='id', extensions=None), is_container='list', yang_name="listeners", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, extensions=None, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='list', is_config=True)
@@ -4037,13 +4037,13 @@ class yc_monitors_vnf_bd__vnf_bd_proceedings_monitors(PybindBase):
 
   def _get_id(self):
     """
-    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/id (uint32)
+    Getter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/id (string)
     """
     return self.__id
       
   def _set_id(self, v, load=False):
     """
-    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/id (uint32)
+    Setter method for id, mapped from YANG variable /vnf_bd/proceedings/monitors/id (string)
     If this variable is read-only (config: false) in the
     source YANG file, then _set_id is considered as a private
     method. Backends looking to populate this variable should
@@ -4057,12 +4057,12 @@ class yc_monitors_vnf_bd__vnf_bd_proceedings_monitors(PybindBase):
     if hasattr(v, "_utype"):
       v = v._utype(v)
     try:
-      t = YANGDynClass(v,base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+      t = YANGDynClass(v,base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
     except (TypeError, ValueError):
       raise ValueError({
-          'error-string': """id must be of a type compatible with uint32""",
-          'defined-type': "uint32",
-          'generated-type': """YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)""",
+          'error-string': """id must be of a type compatible with string""",
+          'defined-type': "string",
+          'generated-type': """YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)""",
         })
 
     self.__id = t
@@ -4070,7 +4070,7 @@ class yc_monitors_vnf_bd__vnf_bd_proceedings_monitors(PybindBase):
       self._set()
 
   def _unset_id(self):
-    self.__id = YANGDynClass(base=RestrictedClassType(base_type=long, restriction_dict={'range': ['0..4294967295']}, int_size=32), is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='uint32', is_config=True)
+    self.__id = YANGDynClass(base=six.text_type, is_leaf=True, yang_name="id", parent=self, path_helper=self._path_helper, extmethods=self._extmethods, register_paths=True, is_keyval=True, namespace='urn:ietf:params:xml:ns:yang:vnf-bd', defining_module='vnf-bd', yang_type='string', is_config=True)
 
 
   def _get_name(self):
