@@ -94,3 +94,4 @@ The following lead developers are responsible for this repository and have admin
 #### Feedback-Chanel
 
 * Please use the GitHub issues to report bugs.
+* You may use the mailing list [sonata-dev@lists.atosresearch.eu](mailto:sonata-dev@lists.atosresearch.eu)
