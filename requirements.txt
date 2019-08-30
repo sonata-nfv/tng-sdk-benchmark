@@ -5,7 +5,6 @@ pyaml
 jsonschema
 coloredlogs
 requests
-mock
 flask-restplus
 gevent==1.4.0
 docker
