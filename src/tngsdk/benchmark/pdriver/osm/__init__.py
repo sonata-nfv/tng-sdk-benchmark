@@ -29,6 +29,7 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+from tngsdk.benchmark.pdriver.osm.conn_mgr import OSMConnectionManager
 
 
 class OsmDriver(object):
@@ -39,7 +40,5 @@ class OsmDriver(object):
     def __init__(self, args, config):
         self.args = args
         self.config = config
-        self.host = ("http://{}:{}"
-                     .format(config.get("host"),
-                             config.get("emusrv_port")))
+        conn_mgr = OSMConnectionManager(self.config)
         pass
