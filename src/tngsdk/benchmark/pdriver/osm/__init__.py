@@ -36,5 +36,10 @@ class OsmDriver(object):
     PDRIVER Class to allow connection to Open Source MANO (OSM)
     """
 
-    def __init__(self, args, pdriver_config):
+    def __init__(self, args, config):
+        self.args = args
+        self.config = config
+        self.host = ("http://{}:{}"
+                     .format(config.get("host"),
+                             config.get("emusrv_port")))
         pass
