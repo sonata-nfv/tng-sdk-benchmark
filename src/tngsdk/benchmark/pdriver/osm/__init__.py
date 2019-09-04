@@ -30,6 +30,8 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 from tngsdk.benchmark.pdriver.osm.conn_mgr import OSMConnectionManager
+from tngsdk.benchmark.logger import TangoLogger
+LOG = TangoLogger.getLogger(__name__)
 
 
 class OsmDriver(object):
@@ -41,4 +43,8 @@ class OsmDriver(object):
         self.args = args
         self.config = config
         conn_mgr = OSMConnectionManager(self.config)
-        pass
+        connection = conn_mgr.connect()
+        if connection:
+            LOG.info("Connection Established")
+        else:
+            raise Exception()

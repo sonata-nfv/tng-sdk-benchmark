@@ -72,6 +72,9 @@ class OSMConnectionManager(object):
         if result:
             self.token = result["_id"]
             self.header["Authorization"] = "Bearer {}".format(self.token)
+            return True
+        else:
+            return False
 
     def _request(self, method, url, payload, headers):
         _url = self.host + url
