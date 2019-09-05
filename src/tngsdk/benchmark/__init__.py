@@ -151,7 +151,7 @@ class ProfileManager(object):
             self.logger.info("Overwriting old results: {}"
                              .format(self.args.result_dir))
             shutil.rmtree(self.args.result_dir)
-            # also clean prometheus data (if present, rquires sudo)
+            # also clean prometheus data (if present, requires sudo)
             if not self.args.no_prometheus:
                 try:
                     pm_path = get_prometheus_path()
@@ -187,8 +187,9 @@ class ProfileManager(object):
             print("Skipping population: --no-population")
             return
         # try to load PED file
+        # TODO: Make compatible with OSM
         self.ped = self._load_ped_file(self.args.ped)
-        self._validate_ped_file(self.ped)
+        self._validate_ped_file(self.ped)  # TODO: Make compatible with OSM
         # load and populate experiment specifications
         (self.service_experiments,
          self.function_experiments) = (
