@@ -43,7 +43,7 @@ class OSMConnectionManager(object):
     """
 
     def __init__(self, config):
-        self.host = ("http://{}:{}/osm"
+        self.host = ("https://{}:{}/osm"
                      .format(config.get("osm_host"),
                              config.get("osm_port")))
         self.username = config.get("username")
