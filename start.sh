@@ -16,3 +16,6 @@ then
         --volume `pwd`:/tng-sdk-benchmark \
         $IMG_NAME
 fi
+
+CONTAINER_ID=`docker ps --all | grep avi/tng-bench | awk '{print$1}'`
+echo -e "INFO: Container ID -> $CONTAINER_ID"
