@@ -10,8 +10,9 @@ IMG_NAME="avi/tng-bench"
 if [ `basename $PWD` == "tng-sdk-benchmark" ]
 then
     docker build --tag $IMG_NAME .
+    # --rm Do not remove the docker for debugging and logging purposes
     docker run \
-        --interactive --rm --tty \
+        --interactive --tty \
         --volume `pwd`:/tng-sdk-benchmark \
         $IMG_NAME
 fi
