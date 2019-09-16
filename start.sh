@@ -5,7 +5,7 @@
 # PURPOSE : Quickly build and launch tng-bench commandline 
 
 
-IMG_NAME="UPB/tng-bench"
+IMG_NAME="avi/tng-bench"
 
 if [ `basename $PWD` == "tng-sdk-benchmark" ]
 then
