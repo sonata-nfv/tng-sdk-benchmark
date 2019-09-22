@@ -1,4 +1,4 @@
-#  Copyright (c) 2018 SONATA-NFV, 5GTANGO, Paderborn University
+#  Copyright (c) 2019 SONATA-NFV, 5GTANGO, Paderborn University
 # ALL RIGHTS RESERVED.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,31 +29,22 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+from tngsdk.benchmark.pdriver.osm.conn_mgr import OSMConnectionManager
+from tngsdk.benchmark.logger import TangoLogger
+LOG = TangoLogger.getLogger(__name__)
 
-#
-# tng-sdk-benchmark configuration file
-#
----
-# list of target platform for bench. execution
-# targets:
-#   - name: default
-#     description: "vim-emu on remote host"
-#     pdriver: vimemu  # type of target (vimemu, osm)
-#     pdriver_config:  # structure can be pdriver specific
-#       host: fgcn-peuster.cs.upb.de #fgcn-tango-1.cs.upb.de
-#       emusrv_port: 4999
-#       llcm_port: 5000
-#       docker_port: 4998
 
-# OSM CONFIG FORMAT
-#
-targets:
-  - name: default
-    description: "osm on remote host"
-    pdriver: osm  # type of target (vimemu, osm)
-    pdriver_config:  # structure can be pdriver specific
-      osm_host: fgcn-backflip3.cs.upb.de
-      osm_port: 9999
-      username: admin
-      password: admin
-      project_id: "6edb5643-bc69-4c9d-8623-b4eee539a458" # This could be optional, not sure
+class OsmDriver(object):
+    """
+    PDRIVER Class to allow connection to Open Source MANO (OSM)
+    """
+
+    def __init__(self, args, config):
+        self.args = args
+        self.config = config
+        conn_mgr = OSMConnectionManager(self.config)
+        connection = conn_mgr.connect()
+        if connection:
+            LOG.info("Connection Established")
+        else:
+            raise Exception()
