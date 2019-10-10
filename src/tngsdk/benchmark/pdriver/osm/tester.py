@@ -19,10 +19,9 @@ if project is not None:
    kwargs['project']=project
 myclient = client.Client(host=hostname, sol005=True, **kwargs)
 
-resp = myclient.vnfd.list()
-print(yaml.safe_dump(resp))
+print(myclient.vnfd.create("hackfest_cloudinit_vnf.tar.gz"))
 
-
+print("done")
 # config = {
 #     "osm_host": "fgcn-backflip3.cs.upb.de",
 #     "osm_port": "9999",
