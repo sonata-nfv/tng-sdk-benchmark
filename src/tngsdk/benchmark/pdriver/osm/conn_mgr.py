@@ -32,8 +32,8 @@
 
 import requests
 from tngsdk.benchmark.logger import TangoLogger
-
-
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 LOG = TangoLogger.getLogger(__name__)
 
 
@@ -68,8 +68,9 @@ class OSMConnectionManager(object):
             "project_id": self.project_id
         }
         dest = '/admin/v1/tokens'
-        result = self._request("POST", dest, request, self.header).json()
+        result = self._request("POST", dest, request, self.header)
         if result:
+            result = result.json()
             self.token = result["_id"]
             self.header["Authorization"] = "Bearer {}".format(self.token)
             return True
@@ -80,6 +81,15 @@ class OSMConnectionManager(object):
         _url = self.host + url
         response = requests.request(method, _url, json=payload, verify=False,
                                     headers=self.header)
+        if response.ok:
+            return response
+        else:
+            return False
+    
+    def _upload_request(self, method, url, file):
+        _url = self.host + url
+        response = requests.request(method, _url, files=file, verify=False,
+                                    headers={"Authorization": self.header["Authorization"]})
         if response.ok:
             return response
         else:
@@ -125,3 +135,15 @@ class OSMConnectionManager(object):
             return True
         else:
             return False
+
+    def get_vnfd_list(self):
+        url = "/vnfpkgm/v1/vnf_packages"
+        payload = None
+        result = self._request("GET", url, payload, self.header)
+        return result
+
+    def upload_vnfd(self, vnfd_file):
+        url = "/vnfpkgm/v1/vnf_packages"
+        vnfd = {"descriptor_file": open(vnfd_file, "rb")}
+        result = self._upload_request("POST", url, vnfd)
+        return result
