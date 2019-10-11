@@ -19,10 +19,10 @@ service_experiments:
     description: "Suricata performance benchmark using trafic traces."
     repetitions: 2
     time_limit: 30 # seconds per experiment
-    time_warmup: 50 # waiting time between deployment and start of the measurements (sec)
+    time_warmup: 90 # waiting time between deployment and start of the measurements (sec)
     # NSD to be used (vendor.name.version reference)
     target:
-      vendor: "de.upb"
+      # vendor: "de.upb"
       name: "ns-1vnf-ids-suricata"
       version: "0.1"
     # additional containers for traffic generation/measurements (measurement points)
