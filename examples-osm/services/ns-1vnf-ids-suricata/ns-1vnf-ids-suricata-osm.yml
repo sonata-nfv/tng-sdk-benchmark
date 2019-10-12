@@ -1,0 +1,41 @@
+nsd:nsd-catalog:
+    nsd:
+    -   id: ns-1vnf-ids-suricata
+        name: ns-1vnf-ids-suricata
+        short-name: ns-1vnf-ids-suricata
+        description: Test service for benchmarking experiments, containing a single VNF.
+        version: '0.2'
+        logo: osm.png
+        constituent-vnfd:
+        -   vnfd-id-ref: ids-suricata
+            member-vnf-index: '1'
+        #connection-point:
+        #-   name: "ns:mgmt1" 
+        #    floating-ip-required: true
+        #-   name: "ns:input"
+        #-   name: "ns:output"        
+        #-   name: "ns:mgmt2" 
+        #    floating-ip-required: true
+        #Editing here: mp.input is probe1 so assuming it takes ns input
+        #mp.output is probe2 so assuming it takes ns output
+        vld:
+        -   id: mgmtnet
+            name: mgmtnet
+            short-name: mgmtnet
+            type: ELAN
+            mgmt-network: 'true'
+            vim-network-name: mgmt
+            vnfd-connection-point-ref:
+            -   vnfd-id-ref: ids-suricata
+                member-vnf-index-ref: '1'
+                vnfd-connection-point-ref: mgmt #To be changed according to modified VNFD    
+        -   id: datanet
+            name: datanet
+            short-name: datanet
+            type: ELAN
+            vnfd-connection-point-ref:
+            -   vnfd-id-ref: ids-suricata
+                member-vnf-index-ref: '1'
+                vnfd-connection-point-ref: data #To be changed according to modified VNFD
+            
+
