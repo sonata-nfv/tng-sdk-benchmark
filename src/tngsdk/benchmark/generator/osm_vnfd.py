@@ -49,7 +49,7 @@ GEN_PKG_PATH = "gen_pkgs/"
 TEMPLATE_VNFD_MP = "template/tango_vnfd_mp.yml"
 
 
-class TangoServiceConfigurationGenerator(
+class OSMServiceConfigurationGenerator(
         ServiceConfigurationGenerator):
     """
     5GTANGO Service Configuration Generator.
@@ -63,8 +63,8 @@ class TangoServiceConfigurationGenerator(
         self.start_time = -1
         self.stat_n_ex = 0
         self.stat_n_ec = 0
-        LOG.info("New 5GTANGO service configuration generator")
-        LOG.debug("5GTANGO generator args: {}".format(self.args))
+        LOG.info("New OSM service configuration generator")
+        LOG.debug("OSM generator args: {}".format(self.args))
 
     def generate(self, in_pkg_path, func_ex,
                  service_ex):
@@ -72,6 +72,8 @@ class TangoServiceConfigurationGenerator(
         Generates service configurations according to the inputs.
         Returns a list of identifiers / paths to the
         generated service configurations.
+        
+        in_pkg_path is the directory that contains the ped and services folder
         """
         if func_ex is not None and len(func_ex):
             # function experiments are not considered
