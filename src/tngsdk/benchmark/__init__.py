@@ -43,6 +43,8 @@ from tngsdk.benchmark.generator.sonata \
                 import SonataServiceConfigurationGenerator
 from tngsdk.benchmark.generator.tango \
                 import TangoServiceConfigurationGenerator
+from tngsdk.benchmark.generator.osm_vnfd \
+                import OSMServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
 from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
@@ -200,8 +202,10 @@ class ProfileManager(object):
         cgen = None
         if self.args.service_generator == "sonata":
             cgen = SonataServiceConfigurationGenerator(self.args)
-        if self.args.service_generator == "eu.5gtango":
+        elif self.args.service_generator == "eu.5gtango":
             cgen = TangoServiceConfigurationGenerator(self.args)
+        elif self.args.service_generator == "osm":
+            cgen = OSMServiceConfigurationGenerator(self.args)
         else:
             self.logger.error(
                 "Unknown service configuration generator '{0}'. Exit 1."
@@ -494,7 +498,7 @@ def parse_args(manual_args=None,
     parser.add_argument(
         "--generator",
         help="Service configuration generator to be used."
-        + " Default: 'eu.5gtango'",
+        + " Default: 'osm'",
         required=False,
         default="eu.5gtango",
         dest="service_generator")

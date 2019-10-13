@@ -33,6 +33,8 @@
 import requests
 from tngsdk.benchmark.logger import TangoLogger
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from osmclient import client
+from osmclient.common.exceptions import ClientException
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 LOG = TangoLogger.getLogger(__name__)
 
@@ -43,107 +45,29 @@ class OSMConnectionManager(object):
     """
 
     def __init__(self, config):
-        self.host = ("https://{}:{}/osm"
-                     .format(config.get("osm_host"),
-                             config.get("osm_port")))
+        self.hostname = config.get("osm_host")
         self.username = config.get("username")
         self.password = config.get("password")
-        self.project_id = config.get("project_id")
-        self.header = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        self.token = None
+        self.project = config.get("project")
+    
+        kwargs = {}
+
+        if self.username is not None:
+            kwargs['user'] = self.username
+        if self.password is not None:
+            kwargs['password'] = self.password
+        if self.project is not None:
+            kwargs['project'] = self.project
 
     def connect(self):
-        if not self.token:
-            return self._get_token()
-        else:
+        self.client = client.Client(host=self.hostname, sol005=True, **kwargs)
+        if self.client:
             return True
-
-    def _get_token(self):
-        request = {
-            "username": self.username,
-            "password": self.password,
-            "project_id": self.project_id
-        }
-        dest = '/admin/v1/tokens'
-        result = self._request("POST", dest, request, self.header)
-        if result:
-            result = result.json()
-            self.token = result["_id"]
-            self.header["Authorization"] = "Bearer {}".format(self.token)
-            return True
-        else:
-            return False
-
-    def _request(self, method, url, payload, headers):
-        _url = self.host + url
-        response = requests.request(method, _url, json=payload, verify=False,
-                                    headers=self.header)
-        if response.ok:
-            return response
         else:
             return False
     
-    def _upload_request(self, method, url, file):
-        _url = self.host + url
-        response = requests.request(method, _url, files=file, verify=False,
-                                    headers={"Authorization": self.header["Authorization"]})
-        if response.ok:
-            return response
-        else:
-            return False
-
-    def list_ns_instances(self):
-        url = '/nslcm/v1/ns_instances_content'
-        payload = None
-        result = self._api_call("GET", url, payload, self.header).json()
-        return result
-
-    def add_networkservice(self, nsdId, nsName, nsDescription, vimAccountId):
-        url = '/nslcm/v1/ns_instances_content'
-        payload = {
-            "nsdId": nsdId,
-            "nsName": nsName,
-            "nsDescription": nsDescription,
-            "vimAccountId": vimAccountId
-        }
-        res = self._api_call("POST", url, payload, self.header)
-        # pdb.set_trace()
-        if res.status_code == 201:
-            result = res.json()
-            # Return ID of created NS
-            return result["id"]
-
-    def delete_networkservice(self, nsid):
-        url = "/nslcm/v1/ns_instances/{}/terminate".format(nsid)
-        payload = None
-        # pdb.set_trace()
-        res = self._api_call("POST", url, payload, self.header)
-        if res.status_code == 201:
-            # Return True if NS is deleted
-            return True
-        else:
-            return False
-
-    def remove_networkservice(self, nsid):
-        url = "/nslcm/v1/ns_instances/{}".format(nsid)
-        # pdb.set_trace()
-        res = self._api_call("DELETE", url, None, self.header)
-        if res:  # Faulty
-            return True
-        else:
-            return False
-
-    def get_vnfd_list(self):
-        url = "/vnfpkgm/v1/vnf_packages"
-        payload = None
-        result = self._request("GET", url, payload, self.header)
-        return result
-
-    def upload_vnfd(self, vnfd_file):
-        url = "/vnfpkgm/v1/vnf_packages"
-        vnfd = {"descriptor_file": open(vnfd_file, "rb")}
-        result = self._upload_request("POST", url, vnfd)
-        return result
+    def upload_package(self, package_path, ):
+        # re-init client
+        self.client = client.Client(host=self.hostname, sol005=True, **kwargs)
+        self.client.vnfd.create(package_path)
+        self.client.vnfd.get('package_name_goes_here')
