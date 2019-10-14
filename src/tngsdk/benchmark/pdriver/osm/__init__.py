@@ -133,3 +133,4 @@ class OsmDriver(object):
         self._collect_experiment_results(ec)
         LOG.info("Finalized '{}'".format(ec))
     def instantiate_service(self, uuid):
+        pass
