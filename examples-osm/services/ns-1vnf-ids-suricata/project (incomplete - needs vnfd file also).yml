@@ -1,0 +1,18 @@
+descriptor_extension: yml
+version: '0.1'
+files:
+- path: example_ns.tar.gz
+  type: application/gzip
+  tags:
+  - eu.5gtango
+- path: example_vnf.tar.gz
+  type: application/gzip
+  tags:
+  - eu.5gtango
+package:
+  name: example-ns-3vnf-any
+  version: '0.1'
+  maintainer: Bhuvan Sharma
+  vendor: de.upb
+  description: Test service for deployment.
+uuid: f23a4b70-a35c-422a-9e26-dc9add36df1b
