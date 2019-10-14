@@ -2,11 +2,11 @@ descriptor_extension: yml
 version: '0.1'
 files:
 - path: example_ns.tar.gz
-  type: application/gzip
+  type: application/vnd.5gtango.nsd+gzip
   tags:
   - eu.5gtango
 - path: example_vnf.tar.gz
-  type: application/gzip
+  type: application/vnd.5gtango.vnfd+gzip
   tags:
   - eu.5gtango
 package:
