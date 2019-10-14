@@ -7,12 +7,26 @@ from prettytable import PrettyTable
 import tarfile
 from io import StringIO, BytesIO
 import time
+import pprint
 
 def vnfd_update(vnfd):
     """
     Implement VNFD updater here
     """
+    temp_config={}
+    temp_config['specification']={}
+    temp_config['specification']['memory-mb']=1024
+    temp_config['specification']['storage-gb']=5
+    temp_config['specification']['vcpu-count']=2
+
     vnfd['vnfd:vnfd-catalog']['vnfd'][0]['version'] = '2.5'
+    vnfd['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor'] = {
+        'memory-mb':temp_config['specification']['memory-mb'],
+        'storage-gb':temp_config['specification']['storage-gb'],
+        'vcpu-count':temp_config['specification']['vcpu-count']}
+    # print("Type of vnfd in fn: ",type(vnfd),sep=' ')
+    # print(vnfd)
+
     return vnfd
 
 
@@ -29,12 +43,13 @@ if password is not None:
 if project is not None:
    kwargs['project']=project
 myclient = client.Client(host=hostname, sol005=True, **kwargs)
-myclient.vnfd.create("hackfest_cloudinit_vnf.tar.gz")
-
+myclient.vnfd.create("/home/bhuvan/tng-sdk-benchmark/examples-osm/services/example-ns-1vnf-any/example_vnf.tar.gz")
+# myclient.vnfd.create("hackfest_cloudinit_vnf.tar.gz")
 # Begin tar.gzip yaml extractor
 # Haydar
 
-tarf = tarfile.open("hackfest_cloudinit_vnf.tar.gz",'r:gz')
+tarf = tarfile.open("/home/bhuvan/tng-sdk-benchmark/examples-osm/services/example-ns-1vnf-any/example_vnf.tar.gz",'r:gz')
+# tarf = tarfile.open("hackfest_cloudinit_vnf.tar.gz",'r:gz')
 members = tarf.getmembers()
 new_tar = tarfile.open("new_vnfd.tar.gz", "w:gz")
 
@@ -45,9 +60,9 @@ for member in members:
     if member_name.endswith(".yaml") or member_name.endswith(".yml"):
         member_contents = tarf.extractfile(member)
         vnfd_contents = yaml.safe_load(member_contents)
-        new_vnfd = vnfd_update(vnfd_contents)
+        new_vnfd_contents = vnfd_update(vnfd_contents)
         new_vnfd_ti = tarfile.TarInfo(member_name)
-        new_vnfd_stream = yaml.dump(new_vnfd).encode('utf8')
+        new_vnfd_stream = yaml.dump(new_vnfd_contents).encode('utf8')
         new_vnfd_ti.size = len(new_vnfd_stream)
         vnf_size = new_vnfd_ti.size
         buffer = BytesIO(new_vnfd_stream)
@@ -61,10 +76,12 @@ print("new archive created")
     
 
 # print("Sleeping!")
-# time.sleep(15)
+# time.sleep(5)
 
 # New client needs to be created to actually update VNF, so weird! 
 myclient = client.Client(host=hostname, sol005=True, **kwargs)
-vnfd_name = myclient.vnfd.get("hackfest_cloudinit-vnf")
-print(vnfd_name)
-vnfd_updated = myclient.vnfd.update("hackfest_cloudinit-vnf", "new_vnfd.tar.gz")
+vnfd_name = myclient.vnfd.get("example_vnf")
+# print(vnfd_name)
+# pprint.pprint(vnfd_name)
+# print(type(vnfd_name))
+vnfd_updated = myclient.vnfd.update("example_vnf", "new_vnfd.tar.gz")
