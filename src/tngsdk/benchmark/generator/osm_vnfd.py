@@ -205,12 +205,18 @@ class OSMServiceConfigurationGenerator(
         e.g. mapping between VNF IDs and names
         """
         # VNF names to ID mapping based on NSD
-        nsd = read_yaml(self._get_nsd_path(ec))
-        for nf in nsd.get("network_functions"):
-            k = "{}.{}.{}".format(nf.get("vnf_vendor"),
-                                  nf.get("vnf_name"),
-                                  nf.get("vnf_version"))
-            ec.function_ids[k] = nf.get("vnf_id")
+        # nsd   = read_yaml(self._get_nsd_path(ec))
+        tarf = tarfile.open(self._get_nsd_path(ec),'r:gz')
+        members = tarf.getmembers()
+        for member in members:
+            member_name = member.name
+            if member_name.endswith(".yaml") or member_name.endswith(".yml"):
+                member_contents = tarf.extractfile(member)
+                nsd = yaml.safe_load(member_contents)
+                
+        for cvnfd in nsd.get("nsd:nsd-catalog").get("nsd")[0].get("constituent-vnfd"):
+            k = cvnfd.get("member-vnf-index")
+            ec.function_ids[k] = cvnfd.get("vnf-id-ref")
 
     def _add_mps_to_project(self, ec):
         """
@@ -255,23 +261,28 @@ class OSMServiceConfigurationGenerator(
         extends it and stores it in project folder.
         Finally the project.yml is updated.
         """
-        tpath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), template)
+        # tpath = os.path.join(
+            # os.path.dirname(os.path.abspath(__file__)), template)
+        tpath=PATH_TO_ORIGINAL_VNFD #TODO change it to original vnfd path
         vnfd = read_yaml(tpath)
         # TODO better use template engine like Jinja
         # replace placeholder fields (this highly depends on used template!)
-        vnfd["name"] = mp.get("name")
+        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["name"] = mp.get("name")
+        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["short-name"] = mp.get("name")
+        
         # allow different containers as parameter study
-        vnfd["virtual_deployment_units"][0]["vm_image"] = mp.get("container")
+        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["vdu"]["image"] = mp.get("container")
+
+        
         # add manually defined data interface address
-        if mp.get("address"):
-            for cp in vnfd["connection_points"]:
-                if cp.get("id") == "data":
-                    cp["address"] = mp.get("address")
-            for vdu in vnfd["virtual_deployment_units"]:
-                for cp in vdu["connection_points"]:
-                    if cp.get("id") == "data":
-                        cp["address"] = mp.get("address")
+        # if mp.get("address"):
+        #     for cp in vnfd["connection_points"]:
+        #         if cp.get("id") == "data":
+        #             cp["address"] = mp.get("address")
+        #     for vdu in vnfd["virtual_deployment_units"]:
+        #         for cp in vdu["connection_points"]:
+        #             if cp.get("id") == "data":
+        #                 cp["address"] = mp.get("address")
         # write vnfd to project
         vname = "{}.yaml".format(mp.get("name"))
         write_yaml(os.path.join(ec.project_path, vname), vnfd)
@@ -338,8 +349,7 @@ class OSMServiceConfigurationGenerator(
 
     def _apply_parameters_to_vnfds(self, ec, vnfd):
         applied = False
-        vnfd_uid = "{}.{}.{}".format(
-            vnfd.get("vendor"), vnfd.get("name"), vnfd.get("version"))
+        vnfd_uid = "{}".format(vnfd.get("vnfd:vnfd-catalog:").get("vnfd")[0].get("id"))
         # iterate over all parameters to be applied
         for pname, pvalue in ec.parameter.items():
             ep_uid = parse_ec_parameter_key(pname).get("function_name")
@@ -365,16 +375,18 @@ class OSMServiceConfigurationGenerator(
         vdu = None
         if unit_name is None:  # use first VDU in VNFD
             vdu = vnfd.get(  # FIXME allow cloud native functions
-                "virtual_deployment_units")[0]
+                "vnfd:vnfd-catalog:").get("vnfd")[0].get("vdu")[0]
         else:  # search for VDU to use
             # FIXME allow cloud native functions
-            for u in vnfd.get("virtual_deployment_units"):
+            for u in vnfd.get("vnfd:vnfd-catalog:").get("vnfd")[0].get("vdu"):
                 if str(u.get("id")) == str(unit_name):
                     vdu = u
                     break
         if vdu is None:
             raise BaseException("Couldn't find deployment unit to manipulate.")
         # apply command fields (to non-MP VNFDs)
+
+        ##NOT SURE ABOUT THIS PART, WHAT TO DO WITH IT
         if False:  # disabled (tng-bench directly injects commands for now)
             if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
                 # print("--- VNFD: {} --> cmd_start: {}"
@@ -384,25 +396,25 @@ class OSMServiceConfigurationGenerator(
                 # print("--- VNFD: {} --> cmd_stop: {}"
                 #       .format(vnfd.get("name"), value))
                 vdu["vm_cmd_stop"] = str(value)
-        # apply resource requirements
-        rr = vdu.get("resource_requirements")
+        
+        # apply resource requirements - vm-flavor
+        rr = vdu.get("vm-flavor")
         # cpu cores
         if field_name == "cpu_cores":
             # cpu cores:
             # actually cpu_sets e.g. "1, 4, 12" to use 3 specific cores
-            rr.get("cpu")["vcpus"] = (str(value)
+            rr["vcpu-count"] = (str(value)
                                       if value is not None else None)
-        elif field_name == "cpu_bw":
-            rr.get("cpu")["cpu_bw"] = (float(value)
-                                       if value is not None else None)
+        # elif field_name == "cpu_bw":
+        #     rr.get("cpu")["cpu_bw"] = (float(value)
+        #                                if value is not None else None)
         elif field_name == "mem_max":
-            rr.get("memory")["size"] = (int(value)
+            rr["memory-mb"] = (int(value)
                                         if value is not None else None)
-            rr.get("memory")["size_unit"] = "MB"
         elif field_name == "disk_max":
-            rr.get("storage")["size"] = int(value)
-            rr.get("storage")["size_unit"] = "GB"
-            # TODO extend this with io_bw etc?
+            rr["storage-gb"] = int(value)
+
+        # TODO extend this with io_bw etc?
         # LOG.debug("Updated '{}' in VNFD '{}' to: {}"
         #          .format(field_name, vnfd.get("name"), rr))
 
@@ -411,7 +423,7 @@ class OSMServiceConfigurationGenerator(
         Returns path of NSD for given EC project.
         """
         nsd_paths = self._get_paths_from_projectdescriptor(
-            ec, "application/vnd.5gtango.nsd")
+            ec, "application/vnd.5gtango.nsd+gzip")
         if len(nsd_paths) > 0:
             # always use the first NSD we find (TODO improve)
             return nsd_paths[0]
@@ -423,7 +435,7 @@ class OSMServiceConfigurationGenerator(
         Returns paths of VNFDs for given EC project.
         """
         return self._get_paths_from_projectdescriptor(
-            ec, "application/vnd.5gtango.vnfd")
+            ec, "application/vnd.5gtango.vnfd+gzip")
 
     def _get_paths_from_projectdescriptor(self, ec, mime_type):
         """
