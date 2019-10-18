@@ -49,16 +49,13 @@ class OsmDriver(object):
         else:
             LOG.error('Connection to OSM failed!')
             raise Exception()
-    
+
     def setup_platform(self):
         return True  # for now
 
     def setup_experiment(self, ec):
-        package_id = self.conn_mgr.upload_package(package_path)
+        # package_id = self.conn_mgr.upload_package(package_path)
         pass
 
     def instantiate_service(self, uuid):
-        pass
-
-    def setup_platform():
         pass

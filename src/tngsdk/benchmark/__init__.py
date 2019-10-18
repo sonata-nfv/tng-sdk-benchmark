@@ -41,11 +41,11 @@ import subprocess
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
 from tngsdk.benchmark.osm_experiment import OSMFunctionExperiment, OSMServiceExperiment
 from tngsdk.benchmark.generator.sonata \
-                import SonataServiceConfigurationGenerator
+    import SonataServiceConfigurationGenerator
 from tngsdk.benchmark.generator.tango \
-                import TangoServiceConfigurationGenerator
+    import TangoServiceConfigurationGenerator
 from tngsdk.benchmark.generator.osm_vnfd \
-                import OSMServiceConfigurationGenerator
+    import OSMServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
 from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
@@ -351,7 +351,7 @@ class ProfileManager(object):
         """
         service_experiments = list()
         function_experiments = list()
-        
+
         if self.args.service_generator == 'osm':
             # service experiments
             for e in input_ped.get("service_experiments", []):
@@ -505,7 +505,7 @@ def parse_args(manual_args=None,
 
     parser.add_argument(
         "--hold",
-        help=("Stop when experiment is started and" +
+        help=("Stop when experiment is started and"
               " wait for user input (helps for debugging)."),
         required=False,
         default=False,
@@ -514,7 +514,7 @@ def parse_args(manual_args=None,
 
     parser.add_argument(
         "--max-experiments",
-        help=("Maximum number of experiments to generate" +
+        help=("Maximum number of experiments to generate"
               " irrespective of PED def. (helps for debugging)."),
         required=False,
         default=None,

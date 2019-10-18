@@ -7,23 +7,23 @@ from prettytable import PrettyTable
 import tarfile
 from io import StringIO, BytesIO
 import time
-import pprint
+
 
 def vnfd_update(vnfd):
     """
     Implement VNFD updater here
     """
-    temp_config={}
-    temp_config['specification']={}
-    temp_config['specification']['memory-mb']=1024
-    temp_config['specification']['storage-gb']=5
-    temp_config['specification']['vcpu-count']=2
+    temp_config = {}
+    temp_config['specification'] = {}
+    temp_config['specification']['memory-mb'] = 1024
+    temp_config['specification']['storage-gb'] = 5
+    temp_config['specification']['vcpu-count'] = 2
 
     vnfd['vnfd:vnfd-catalog']['vnfd'][0]['version'] = '2.5'
     vnfd['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor'] = {
-        'memory-mb':temp_config['specification']['memory-mb'],
-        'storage-gb':temp_config['specification']['storage-gb'],
-        'vcpu-count':temp_config['specification']['vcpu-count']}
+        'memory-mb': temp_config['specification']['memory-mb'],
+        'storage-gb': temp_config['specification']['storage-gb'],
+        'vcpu-count': temp_config['specification']['vcpu-count']}
     # print("Type of vnfd in fn: ",type(vnfd),sep=' ')
     # print(vnfd)
 
@@ -37,18 +37,19 @@ project = "admin"
 kwargs = {}
 
 if user is not None:
-    kwargs['user']=user
+    kwargs['user'] = user
 if password is not None:
-    kwargs['password']=password
+    kwargs['password'] = password
 if project is not None:
-   kwargs['project']=project
+    kwargs['project'] = project
 myclient = client.Client(host=hostname, sol005=True, **kwargs)
 myclient.vnfd.create("/home/bhuvan/tng-sdk-benchmark/examples-osm/services/example-ns-1vnf-any/example_vnf.tar.gz")
 # myclient.vnfd.create("hackfest_cloudinit_vnf.tar.gz")
 # Begin tar.gzip yaml extractor
 # Haydar
 
-tarf = tarfile.open("/home/bhuvan/tng-sdk-benchmark/examples-osm/services/example-ns-1vnf-any/example_vnf.tar.gz",'r:gz')
+tarf = tarfile.open(
+    "/home/bhuvan/tng-sdk-benchmark/examples-osm/services/example-ns-1vnf-any/example_vnf.tar.gz", 'r:gz')
 # tarf = tarfile.open("hackfest_cloudinit_vnf.tar.gz",'r:gz')
 members = tarf.getmembers()
 new_tar = tarfile.open("new_vnfd.tar.gz", "w:gz")
@@ -73,12 +74,12 @@ for member in members:
 
 new_tar.close()
 print("new archive created")
-    
+
 
 # print("Sleeping!")
 # time.sleep(5)
 
-# New client needs to be created to actually update VNF, so weird! 
+# New client needs to be created to actually update VNF, so weird!
 myclient = client.Client(host=hostname, sol005=True, **kwargs)
 vnfd_name = myclient.vnfd.get("example_vnf")
 # print(vnfd_name)
