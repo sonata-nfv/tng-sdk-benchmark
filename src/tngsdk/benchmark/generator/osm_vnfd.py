@@ -105,11 +105,11 @@ class OSMServiceConfigurationGenerator(
         # Right now just one service experiment
         for ex_c in service_ex[0].experiment_configurations:
             filename_ext = f"{ex_c.name}_vnfd.tar.gz"
-            file_path = os.path.join(self.args.ibbd_dir, filename_ext)
+            file_path = os.path.join(self.args.work_dir, filename_ext)
             output_vnfd_streams.append(tarfile.open(file_path, "w:gz"))
         
         filename_ext = f"{service_ex[0].name}_nsd.tar.gz"
-        file_path = os.path.join(self.args.ibbd_dir, filename_ext)
+        file_path = os.path.join(self.args.work_dir, filename_ext)
         output_nsd_stream = tarfile.open(file_path, "w:gz")
 
         vnfd_contents = None
