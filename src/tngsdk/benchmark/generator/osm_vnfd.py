@@ -33,6 +33,8 @@
 import time
 import shutil
 import os
+import yaml
+import tarfile
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
 from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
 from tngsdk.benchmark.helper import parse_ec_parameter_key
@@ -66,7 +68,7 @@ class OSMServiceConfigurationGenerator(
         LOG.info("New OSM service configuration generator")
         LOG.debug("OSM generator args: {}".format(self.args))
 
-    def generate(self, in_pkg_path, func_ex,
+    def generate(self, nsd_pkg_path, vnfd_pkg_path, func_ex,
                  service_ex):
         """
         Generates service configurations according to the inputs.
@@ -80,398 +82,102 @@ class OSMServiceConfigurationGenerator(
             LOG.warning("Function experiments are not supported!")
         self.start_time = time.time()
         LOG.info("Generating {} service experiments using {}"
-                 .format(len(service_ex), in_pkg_path))
+                 .format(len(service_ex), nsd_pkg_path))
         # Step -1: Check if path exists
-        if not os.path.exists(in_pkg_path):
-            LOG.error("Could not load service referenced in PED: {}"
-                      .format(in_pkg_path))
+        if not os.path.exists(vnfd_pkg_path):
+            LOG.error("Could not load vnfd package referenced in PED: {}"
+                      .format(nsd_pkg_path))
             exit(1)
-        # Step 0 (optional): Support 5GTANGO projects
-        if self._is_tango_project(in_pkg_path):
-            # package the project first to temp
-            r = self._pack(in_pkg_path, os.path.join(
-                    self.args.work_dir, BASE_PKG_PATH))
-            # re-write in_pkg_path
-            in_pkg_path = r
-        # Step 1: Unpack in_pkg to work_dir/BASE_PROJECT
-        base_proj_path = os.path.join(
-            self.args.work_dir, BASE_PROJECT_PATH)
-        base_proj_path = self._unpack(in_pkg_path, base_proj_path)
-        # Step 2: Generate for each experiment and package it
-        for ex in service_ex:
-            self._generate_projects(base_proj_path, ex)
-            self.stat_n_ex += 1
-        # Step 3: Return pointers to func_ex and service_ex
+        if not os.path.exists(nsd_pkg_path):
+            LOG.error("Could not load nsd package referenced in PED: {}"
+                      .format(nsd_pkg_path))
+            exit(1)
+
+        # Step 1: decompress VNFD and NSD files 
+        original_vnfd_archive = tarfile.open(vnfd_pkg_path,'r:gz')
+        original_nsd_archive = tarfile.open(nsd_pkg_path, 'r:gz')
+        
+        # Step 2: Create enough file streams for VNFD
+
+        output_vnfd_streams = []
+        output_nsd_stream = None
+
+        # Right now just one service experiment
+        for ex_c in service_ex[0].experiment_configurations:
+            filename_ext = f"{ex_c.name}_vnfd.tar.gz"
+            file_path = os.path.join(self.args.ibbd_dir, filename_ext)
+            output_vnfd_streams.append(tarfile.open(file_path, "w:gz"))
+        
+        filename_ext = f"{service_ex[0].name}_nsd.tar.gz"
+        file_path = os.path.join(self.args.ibbd_dir, filename_ext)
+        output_nsd_stream = tarfile.open(file_path, "w:gz")
+
+        vnfd_contents = None
+        nsd_contents = None
+        
+
+        # Step 3: Create new VNFD files and update experiments
+
+        for output_vnfd_pkg in output_vnfd_streams:
+            self._update_output_vnfd_pkg(original_vnfd_archive, output_vnfd_pkg, service_ex[0])
+            
+            # Close and write the contents of the file
+            output_vnfd_pkg.close()
+
+        # Step 4: Create new NSD file 
+        # To be implemented here
+        self._update_output_nsd_pkg(original_nsd_archive, output_nsd_stream, service_ex[0])
+        # Don't forget to then set service_ex.experiment_configurations.nsd_package_path variable
         return func_ex, service_ex
 
-    def _unpack(self, pkg_path, proj_path):
+    def _update_output_vnfd_pkg(self, original_vnfd_archive, output_vnfd_pkg, service_ex):
         """
-        Wraps the tng-sdk-package unpacking functionality.
+        Updates the archive streams with data from the old archive
         """
-        args = [
-            "--unpackage", pkg_path,
-            "--output", proj_path,
-            "--store-backend", "TangoProjectFilesystemBackend",
-            "--format", "eu.5gtango",
-            "--quiet",
-            "--offline",
-            "--loglevel"
-        ]
-        if self.args.verbose:
-            args.append("info")
-            # args.append("-v")
-        else:
-            args.append("error")
-        if self.args.skip_validation:
-            args.append("--skip-validation")
-        # call the package component
-        r = tngpkg.run(args)
-        if r.error is not None:
-            raise BaseException("Can't read package {}: {}"
-                                .format(pkg_path, r.error))
-        # return the full path to the project
-        proj_path = r.metadata.get("_storage_location")
-        LOG.debug("Unpacked {} to {}".format(pkg_path, proj_path))
-        return proj_path
-
-    def _pack(self, proj_path, pkg_path):
-        """
-        Wraps the tng-sdk-package packaging functionality.
-        """
-        args = [
-            "--package", proj_path,
-            "--output", pkg_path,
-            "--store-backend", "TangoProjectFilesystemBackend",
-            "--format", "eu.5gtango",
-            "--quiet",
-            "--offline",
-            "--loglevel"
-        ]
-        if self.args.verbose:
-            args.append("info")
-            # args.append("-v")
-        else:
-            args.append("error")
-        # Hotfix: Always skip validateion here, because vim-emu treats
-        # some fields, like vcpus as type stirng not int etc.
-        if self.args.skip_validation or True:
-            args.append("--skip-validation")
-        # be sure that output dir is there
-        ensure_dir(pkg_path)
-        # call the package component
-        LOG.debug("Calling package with args: {}".format(args))
-        r = tngpkg.run(args)
-        if r.error is not None:
-            raise BaseException("Can't create package {}: {}"
-                                .format(pkg_path, r.error))
-        # return the full path to the package
-        pkg_path = r.metadata.get("_storage_location")
-        LOG.debug("Packed {} to {}".format(proj_path, pkg_path))
-        return pkg_path
-
-    def _generate_projects(self, base_proj_path, ex):
-        LOG.info("Generating {} projects for {}"
-                 .format(len(ex.experiment_configurations), ex))
-        # iterate over all experiment configurations
-        n_done = 0
-        for ec in ex.experiment_configurations:
-            # 1. create project by copying base_proj
-            self._copy_project(base_proj_path, ec)
-            # 2. gather additional project infos
-            self._gather_project_infos(ec)
-            # 3. add MPs to project
-            self._add_mps_to_project(ec)
-            # 4. apply configuration parameters to project
-            self._add_params_to_project(ec)
-            # 5. package project
-            self._package_project(ec)
-            # 6. status output
-            n_done += 1
-            LOG.info("Generated project ({}/{}): {}"
-                     .format(n_done,
-                             len(ex.experiment_configurations),
-                             os.path.basename(ec.package_path)))
-        self.stat_n_ec += n_done
-
-    def _copy_project(self, base_proj_path, ec):
-        ec.project_path = os.path.join(
-            self.args.work_dir, GEN_PROJECT_PATH, ec.name)
-        LOG.debug("Created project: {}".format(ec.project_path))
-        shutil.copytree(base_proj_path, ec.project_path)
-
-    def _gather_project_infos(self, ec):
-        """
-        Collect additional infors about project and store to ec.
-        e.g. mapping between VNF IDs and names
-        """
-        # VNF names to ID mapping based on NSD
-        # nsd   = read_yaml(self._get_nsd_path(ec))
-        tarf = tarfile.open(self._get_nsd_path(ec),'r:gz')
-        members = tarf.getmembers()
-        for member in members:
-            member_name = member.name
+        
+        for pkg_file in original_vnfd_archive.getmembers():
+            member_name = pkg_file.name
             if member_name.endswith(".yaml") or member_name.endswith(".yml"):
-                member_contents = tarf.extractfile(member)
-                nsd = yaml.safe_load(member_contents)
-                
-        for cvnfd in nsd.get("nsd:nsd-catalog").get("nsd")[0].get("constituent-vnfd"):
-            k = cvnfd.get("member-vnf-index")
-            ec.function_ids[k] = cvnfd.get("vnf-id-ref")
+                member_contents = original_vnfd_archive.extractfile(pkg_file)
+                vnfd_contents = yaml.safe_load(member_contents)
 
-    def _add_mps_to_project(self, ec):
-        """
-        Extend a project's VNFFG with the MPs
-        and add the MPs as new VNFs.
-        """
-        ex = ec.experiment
-        for mp in ex.measurement_points:
-            # 1. add MP VNFDs to project
-            self._add_mp_vnfd_to_project(mp, ec)
-            # 2. extend NSD
-            self._add_mp_to_nsd(mp, ec)
+                new_vnfd_contents = self._configure_vnfd_params(vnfd_contents, service_ex, output_vnfd_pkg)
 
-    def _add_params_to_project(self, ec):
-        """
-        Apply parameters, like resource limits, commands,
-        to the project descriptors.
-        """
-        # 1. read all VNFDs
-        vnfds = self._read_vnfds(ec)
-        # 2. update VNFDs
-        for _, vnfd in vnfds.items():
-            self._apply_parameters_to_vnfds(ec, vnfd)
-        # 3. write updated VNFDs
-        for path, vnfd in vnfds.items():
-            write_yaml(path, vnfd)
+                new_vnfd_ti = tarfile.TarInfo(member_name)
+                new_vnfd_stream = yaml.dump(new_vnfd_contents).encode('utf8')
+                new_vnfd_ti.size = len(new_vnfd_stream)
+                vnf_size = new_vnfd_ti.size
+                buffer = BytesIO(new_vnfd_stream)
+                output_vnfd_pkg.addfile(tarinfo=new_vnfd_ti, fileobj=buffer)
+            else:
+                output_vnfd_pkg.addfile(pkg_file, original_vnfd_archive.extractfile(pkg_file))
 
-    def _package_project(self, ec):
+    def _configure_vnfd_params(self, vnfd_yaml, service_experiment, output_vnfd_pkg):
         """
-        Package the project of the given experiment configuration.
+        Update the YAML VNFD contents
         """
-        tmp = os.path.join(
-            self.args.work_dir, GEN_PKG_PATH)
-        ensure_dir(tmp)
-        ec.package_path = "{}{}.tgo".format(tmp, ec.name)
-        self._pack(ec.project_path, ec.package_path)
+        for ec in service_experiment.experiment_configurations:
+            for pname, pvalue in ec.parameter.items():
+                function_type = parse_ec_parameter_key(pname).get("type")
+                vnf_type = parse_ec_parameter_key(pname).get("function_name")
+                field_name = parse_ec_parameter_key(pname).get("parameter_name")
+                if function_type == "function" and 'mp.' not in vnf_type:
+                    if field_name == 'cpu_cores':
+                        # Single VNFD single VDU for now
+                        vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['vcpu-count'] = pvalue
+                    if field_name == 'mem_max':
+                        # Single VNFD single VDU for now
+                        vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['memory-mb'] = pvalue
+            ex.vnfd_package_path = output_vnfd_pkg.name
 
-    def _add_mp_vnfd_to_project(self, mp, ec,
-                                template=TEMPLATE_VNFD_MP):
-        """
-        Uses templates/tango_vnfd_mp.yml as basis,
-        extends it and stores it in project folder.
-        Finally the project.yml is updated.
-        """
-        # tpath = os.path.join(
-            # os.path.dirname(os.path.abspath(__file__)), template)
-        tpath=PATH_TO_ORIGINAL_VNFD #TODO change it to original vnfd path
-        vnfd = read_yaml(tpath)
-        # TODO better use template engine like Jinja
-        # replace placeholder fields (this highly depends on used template!)
-        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["name"] = mp.get("name")
-        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["short-name"] = mp.get("name")
-        
-        # allow different containers as parameter study
-        vnfd['vnfd:vnfd-catalog']['vnfd'][0]["vdu"]["image"] = mp.get("container")
-
-        
-        # add manually defined data interface address
-        # if mp.get("address"):
-        #     for cp in vnfd["connection_points"]:
-        #         if cp.get("id") == "data":
-        #             cp["address"] = mp.get("address")
-        #     for vdu in vnfd["virtual_deployment_units"]:
-        #         for cp in vdu["connection_points"]:
-        #             if cp.get("id") == "data":
-        #                 cp["address"] = mp.get("address")
-        # write vnfd to project
-        vname = "{}.yaml".format(mp.get("name"))
-        write_yaml(os.path.join(ec.project_path, vname), vnfd)
-        # add vnfd to project.yml
-        ppath = os.path.join(ec.project_path, "project.yml")
-        projd = read_yaml(ppath)
-        projd.get("files").append({
-            "path": vname,
-            "type": "application/vnd.5gtango.vnfd",
-            "tags": ["eu.5gtango", "mp"]
-        })
-        write_yaml(ppath, projd)
-        LOG.debug("Added MP VNFD {} to project {}"
-                  .format(vname, projd.get("name")))
-
-    def _add_mp_to_nsd(self, mp, ec):
-        """
-        Add MP to NSD:
-        - add VNF to functions section
-        - connect measurement points w. virt. links
-        - update forwarding graph
-        """
-        # 1. load NSD
-        nsd = read_yaml(self._get_nsd_path(ec))
-        # 2. add MP VNF to NSD
-        nsd.get("network_functions").append({
-                "vnf_id": mp.get("name"),
-                "vnf_name": mp.get("name"),
-                "vnf_vendor": "eu.5gtango.benchmark",
-                "vnf_version": "1.0"
-        })
-        # 3. connect measurement point to service (replace virt. links)
-        mp_cp = mp.get("connection_point")
-        new_cp = "{}:data".format(mp.get("name"))
-        # update links
-        for vl in nsd.get("virtual_links"):
-            cprs = vl.get("connection_points_reference")
-            # replace ns in/out link endpoints in NSD
-            for i in range(0, len(cprs)):
-                if cprs[i] == mp_cp:
-                    cprs[i] = new_cp
-                    LOG.debug(
-                        "Replaced virtual link CPR '{}' by '{}'"
-                        .format(mp_cp, cprs[i]))
-        # 4. update forwarding graph (replace ns in and out)
-        for fg in nsd.get("forwarding_graphs"):
-            # add MP VNF to constituent VNF list
-            fg.get("constituent_vnfs").append(mp.get("name"))
-            # update forwarding paths
-            for fp in fg.get("network_forwarding_paths"):
-                # search and replace connection points specified in PED
-                for fp_cp in fp.get("connection_points"):
-                    if fp_cp.get("connection_point_ref") == mp_cp:
-                        fp_cp["connection_point_ref"] = new_cp
-            # update number of endpoints
-            fg["number_of_endpoints"] -= 1
-            LOG.debug("Updated forwarding graph '{}': {}"
-                      .format(fg.get("fg_id"), fg))
-        # 5. store updated nsd
-        write_yaml(self._get_nsd_path(ec), nsd)
-        # 6. log
-        LOG.debug("Added measurement point VNF '{}' to NDS '{}'"
-                  .format(mp.get("name"), nsd.get("name")))
-
-    def _apply_parameters_to_vnfds(self, ec, vnfd):
-        applied = False
-        vnfd_uid = "{}".format(vnfd.get("vnfd:vnfd-catalog:").get("vnfd")[0].get("id"))
-        # iterate over all parameters to be applied
-        for pname, pvalue in ec.parameter.items():
-            ep_uid = parse_ec_parameter_key(pname).get("function_name")
-            unit_name = parse_ec_parameter_key(pname).get("unit_name")
-            field_name = parse_ec_parameter_key(pname).get("parameter_name")
-            if ep_uid not in vnfd_uid:
-                continue  # not the right VNFD -> skip
-            # parameter should be applied to given VNF
-            self._apply_parameter_to_vnfd(field_name, unit_name, pvalue, vnfd)
-            applied = True
-        if not applied:
-            raise BaseException(
-                "Couln't find any experiment parameters for VNFD: {}"
-                .format(vnfd_uid))
-
-    def _apply_parameter_to_vnfd(self, field_name, unit_name, value, vnfd):
-        """
-        Applies a single parameter (given by field name)
-        to the given VNFD.
-        """
-        # Apply configuration to corresponding VNFD field
-        # Two cases: VDU (unit_name) specified or not
-        vdu = None
-        if unit_name is None:  # use first VDU in VNFD
-            vdu = vnfd.get(  # FIXME allow cloud native functions
-                "vnfd:vnfd-catalog:").get("vnfd")[0].get("vdu")[0]
-        else:  # search for VDU to use
-            # FIXME allow cloud native functions
-            for u in vnfd.get("vnfd:vnfd-catalog:").get("vnfd")[0].get("vdu"):
-                if str(u.get("id")) == str(unit_name):
-                    vdu = u
-                    break
-        if vdu is None:
-            raise BaseException("Couldn't find deployment unit to manipulate.")
-        # apply command fields (to non-MP VNFDs)
-
-        ##NOT SURE ABOUT THIS PART, WHAT TO DO WITH IT
-        if False:  # disabled (tng-bench directly injects commands for now)
-            if field_name == "cmd_start" and "mp." not in vnfd.get("name"):
-                # print("--- VNFD: {} --> cmd_start: {}"
-                #       .format(vnfd.get("name"), value))
-                vdu["vm_cmd_start"] = str(value)
-            if field_name == "cmd_stop" and "mp." not in vnfd.get("name"):
-                # print("--- VNFD: {} --> cmd_stop: {}"
-                #       .format(vnfd.get("name"), value))
-                vdu["vm_cmd_stop"] = str(value)
-        
-        # apply resource requirements - vm-flavor
-        rr = vdu.get("vm-flavor")
-        # cpu cores
-        if field_name == "cpu_cores":
-            # cpu cores:
-            # actually cpu_sets e.g. "1, 4, 12" to use 3 specific cores
-            rr["vcpu-count"] = (str(value)
-                                      if value is not None else None)
-        # elif field_name == "cpu_bw":
-        #     rr.get("cpu")["cpu_bw"] = (float(value)
-        #                                if value is not None else None)
-        elif field_name == "mem_max":
-            rr["memory-mb"] = (int(value)
-                                        if value is not None else None)
-        elif field_name == "disk_max":
-            rr["storage-gb"] = int(value)
-
-        # TODO extend this with io_bw etc?
-        # LOG.debug("Updated '{}' in VNFD '{}' to: {}"
-        #          .format(field_name, vnfd.get("name"), rr))
-
-    def _get_nsd_path(self, ec):
-        """
-        Returns path of NSD for given EC project.
-        """
-        nsd_paths = self._get_paths_from_projectdescriptor(
-            ec, "application/vnd.5gtango.nsd+gzip")
-        if len(nsd_paths) > 0:
-            # always use the first NSD we find (TODO improve)
-            return nsd_paths[0]
-        raise BaseException(
-            "No NSD found for {}".format(ec.experiment))
-
-    def _get_vnfd_paths(self, ec):
-        """
-        Returns paths of VNFDs for given EC project.
-        """
-        return self._get_paths_from_projectdescriptor(
-            ec, "application/vnd.5gtango.vnfd+gzip")
-
-    def _get_paths_from_projectdescriptor(self, ec, mime_type):
-        """
-        Get paths from project.yml for given mime_type.
-        """
-        projd = read_yaml(os.path.join(ec.project_path, "project.yml"))
-        r = list()
-        for f in projd.get("files"):
-            if f.get("type") == mime_type:
-                r.append(os.path.join(ec.project_path, f.get("path")))
-        return r
-
-    def _read_vnfds(self, ec):
-        """
-        Real all VNFDs from given project.
-        Return {path, dict(vnfd)}.
-        """
-        r = dict()
-        for p in self._get_vnfd_paths(ec):
-            r[p] = read_yaml(p)
-        return r
-
-    def _is_tango_project(self, in_pkg_path):
-        if not str(in_pkg_path).endswith(".tgo"):
-            if (os.path.exists(
-                os.path.join(in_pkg_path, "project.yml"))
-                    or os.path.exists(
-                        os.path.join(in_pkg_path, "project.yaml"))):
-                return True
-        return False
+    def _update_output_nsd_pkg(self, original_nsd_archive, output_nsd_stream, service_ex):
+        raise NotImplementedError
 
     def print_generation_and_packaging_statistics(self):
         print("-" * 80)
-        print("5GTANGO tng-bench: Experiment generation report")
+        print("OSM tng-bench: Experiment generation report")
         print("-" * 80)
-        print("Generated packages for {} experiments with {} configurations."
+        print("Generated OSM packages for {} experiments with {} configurations."
               .format(self.stat_n_ex, self.stat_n_ec))
         print("Total time: %s" % "%.4f" % (time.time() - self.start_time))
         print("-" * 80)

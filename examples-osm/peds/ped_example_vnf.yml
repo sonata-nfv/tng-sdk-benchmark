@@ -11,19 +11,20 @@ author: "Haydar Qarawlus"
 description: "This is an example profiling experiment testing cirros VM."
 
 # Path to the network service we want to profile (relative from PED location)
-service_package: "../services/hackfest_cloudinit_nsd.tar.gz"
+service_package: "../services/example-ns-1vnf-any/example_ns.tar.gz"
+function_package: "../services/example-ns-1vnf-any/example_vnf.tar.gz"
 
 # Experiment definition
 service_experiments:
-  - name: "cloud_init"
-    description: "Suricata performance benchmark using trafic traces."
+  - name: "example_vnf"
+    description: "example_vnf"
     repetitions: 2
     time_limit: 30 # seconds per experiment
     time_warmup: 90 # waiting time between deployment and start of the measurements (sec)
     # NSD to be used (vendor.name.version reference)
     target:
       # vendor: "de.upb"
-      name: "ns-1vnf-ids-suricata"
+      name: "example_ns"
       version: "0.1"
     # additional containers for traffic generation/measurements (measurement points)
     measurement_points:
@@ -37,9 +38,9 @@ service_experiments:
         # Address of data interface to be set automatically
     # experiment parameters to be tested during the experiment
     experiment_parameters:
-      - function: "de.upb.ids-suricata.0.1"
-        cmd_start: "./start.sh small_ruleset"
-        cmd_stop: "./stop.sh"
+      - function: "example_vnfd-VM"
+        cmd_start: "echo 'start'"
+        cmd_stop: "echo 'stop'"
         # cpu_bw: [0.1, 0.3, 0.5]  # float: fraction of CPU time in vim-emu (In Openstack, no need for this)
         cpu_cores: [1,2]  # Number of cores to be allocated to VM
         mem_max: 2048  # int: Memory in MByte
@@ -47,17 +48,9 @@ service_experiments:
         # io_bw: null
       - function: "mp.input"
         # loop longer than experiment lasts
-        cmd_start: ["tcpreplay -i data -tK --loop 1000 --preload-pcap /pcaps/smallFlows.pcap"]
-        cmd_stop: "./stop.sh"
+        cmd_start: "echo 'probe start'"
+        cmd_stop: "echo 'probe stop'"
         # cpu_bw: null  # float: fraction of CPU time in vim-emu (In OSM no need for this)
-        cpu_cores: 1  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
-        mem_max: 1024  # int: Memory in MByte
-        # mem_swap_max: null
-        # io_bw: null
-      - function: "mp.output"
-        cmd_start: null
-        cmd_stop: "./stop.sh"  # dump packet counters to logs
-        # cpu_bw: null  # float: fraction of CPU time in vim-emu (In Openstack no need for this)
         cpu_cores: 1  # string: this is "cpuset_cpu" in vim-emu e.g. ["0, 1"] -> 2 CPUs
         mem_max: 1024  # int: Memory in MByte
         # mem_swap_max: null
