@@ -87,8 +87,7 @@ class TangoServiceConfigurationGenerator(
         # Step 0 (optional): Support 5GTANGO projects
         if self._is_tango_project(in_pkg_path):
             # package the project first to temp
-            r = self._pack(in_pkg_path, os.path.join(
-                    self.args.work_dir, BASE_PKG_PATH))
+            r = self._pack(in_pkg_path, os.path.join(self.args.work_dir, BASE_PKG_PATH))
             # re-write in_pkg_path
             in_pkg_path = r
         # Step 1: Unpack in_pkg to work_dir/BASE_PROJECT
@@ -295,12 +294,13 @@ class TangoServiceConfigurationGenerator(
         # 1. load NSD
         nsd = read_yaml(self._get_nsd_path(ec))
         # 2. add MP VNF to NSD
-        nsd.get("network_functions").append({
+        nsd.get("network_functions").append(
+            {
                 "vnf_id": mp.get("name"),
                 "vnf_name": mp.get("name"),
                 "vnf_vendor": "eu.5gtango.benchmark",
                 "vnf_version": "1.0"
-        })
+            })
         # 3. connect measurement point to service (replace virt. links)
         mp_cp = mp.get("connection_point")
         new_cp = "{}:data".format(mp.get("name"))

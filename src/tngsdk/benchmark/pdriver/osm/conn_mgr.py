@@ -49,7 +49,7 @@ class OSMConnectionManager(object):
         self.username = config.get("username")
         self.password = config.get("password")
         self.project = config.get("project")
-    
+
         self.kwargs = {}
 
         if self.username is not None:
@@ -65,7 +65,7 @@ class OSMConnectionManager(object):
             return True
         else:
             return False
-    
+
     def upload_package(self, package_path):
         # re-init client
         self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)

@@ -35,6 +35,7 @@ import shutil
 import os
 import yaml
 import tarfile
+from io import BytesIO
 from tngsdk.benchmark.generator import ServiceConfigurationGenerator
 from tngsdk.benchmark.helper import ensure_dir, read_yaml, write_yaml
 from tngsdk.benchmark.helper import parse_ec_parameter_key
@@ -74,7 +75,7 @@ class OSMServiceConfigurationGenerator(
         Generates service configurations according to the inputs.
         Returns a list of identifiers / paths to the
         generated service configurations.
-        
+
         in_pkg_path is the directory that contains the ped and services folder
         """
         if func_ex is not None and len(func_ex):
@@ -93,10 +94,10 @@ class OSMServiceConfigurationGenerator(
                       .format(nsd_pkg_path))
             exit(1)
 
-        # Step 1: decompress VNFD and NSD files 
-        original_vnfd_archive = tarfile.open(vnfd_pkg_path,'r:gz')
+        # Step 1: decompress VNFD and NSD files
+        original_vnfd_archive = tarfile.open(vnfd_pkg_path, 'r:gz')
         original_nsd_archive = tarfile.open(nsd_pkg_path, 'r:gz')
-        
+
         # Step 2: Create enough file streams for VNFD
 
         output_vnfd_streams = []
@@ -105,70 +106,66 @@ class OSMServiceConfigurationGenerator(
         # Right now just one service experiment
         for ex_c in service_ex[0].experiment_configurations:
             filename_ext = f"{ex_c.name}_vnfd.tar.gz"
-            file_path = os.path.join(self.args.ibbd_dir, filename_ext)
+            file_path = os.path.join(self.args.work_dir, filename_ext)
             output_vnfd_streams.append(tarfile.open(file_path, "w:gz"))
-        
-        filename_ext = f"{service_ex[0].name}_nsd.tar.gz"
-        file_path = os.path.join(self.args.ibbd_dir, filename_ext)
-        output_nsd_stream = tarfile.open(file_path, "w:gz")
 
-        vnfd_contents = None
-        nsd_contents = None
-        
+        filename_ext = f"{service_ex[0].name}_nsd.tar.gz"
+        file_path = os.path.join(self.args.work_dir, filename_ext)
+        output_nsd_stream = tarfile.open(file_path, "w:gz")
 
         # Step 3: Create new VNFD files and update experiments
 
         for output_vnfd_pkg in output_vnfd_streams:
-            self._update_output_vnfd_pkg(original_vnfd_archive, output_vnfd_pkg, service_ex[0])
-            
+            self._update_output_vnfd_pkg(original_vnfd_archive, output_vnfd_pkg, service_ex[0],
+                                         output_vnfd_streams.index(output_vnfd_pkg))
+
             # Close and write the contents of the file
             output_vnfd_pkg.close()
 
-        # Step 4: Create new NSD file 
+        # Step 4: Create new NSD file
         # To be implemented here
         self._update_output_nsd_pkg(original_nsd_archive, output_nsd_stream, service_ex[0])
         # Don't forget to then set service_ex.experiment_configurations.nsd_package_path variable
         return func_ex, service_ex
 
-    def _update_output_vnfd_pkg(self, original_vnfd_archive, output_vnfd_pkg, service_ex):
+    def _update_output_vnfd_pkg(self, original_vnfd_archive, output_vnfd_pkg, service_ex, ec_index):
         """
         Updates the archive streams with data from the old archive
         """
-        
+
         for pkg_file in original_vnfd_archive.getmembers():
             member_name = pkg_file.name
             if member_name.endswith(".yaml") or member_name.endswith(".yml"):
                 member_contents = original_vnfd_archive.extractfile(pkg_file)
                 vnfd_contents = yaml.safe_load(member_contents)
 
-                new_vnfd_contents = self._configure_vnfd_params(vnfd_contents, service_ex, output_vnfd_pkg)
+                self._configure_vnfd_params(vnfd_contents, service_ex, ec_index, output_vnfd_pkg)
 
                 new_vnfd_ti = tarfile.TarInfo(member_name)
-                new_vnfd_stream = yaml.dump(new_vnfd_contents).encode('utf8')
+                new_vnfd_stream = yaml.dump(vnfd_contents).encode('utf8')
                 new_vnfd_ti.size = len(new_vnfd_stream)
-                vnf_size = new_vnfd_ti.size
                 buffer = BytesIO(new_vnfd_stream)
                 output_vnfd_pkg.addfile(tarinfo=new_vnfd_ti, fileobj=buffer)
             else:
                 output_vnfd_pkg.addfile(pkg_file, original_vnfd_archive.extractfile(pkg_file))
 
-    def _configure_vnfd_params(self, vnfd_yaml, service_experiment, output_vnfd_pkg):
+    def _configure_vnfd_params(self, vnfd_yaml, service_ex, ec_index, output_vnfd_pkg):
         """
         Update the YAML VNFD contents
         """
-        for ec in service_experiment.experiment_configurations:
-            for pname, pvalue in ec.parameter.items():
-                function_type = parse_ec_parameter_key(pname).get("type")
-                vnf_type = parse_ec_parameter_key(pname).get("function_name")
-                field_name = parse_ec_parameter_key(pname).get("parameter_name")
-                if function_type == "function" and 'mp.' not in vnf_type:
-                    if field_name == 'cpu_cores':
-                        # Single VNFD single VDU for now
-                        vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['vcpu-count'] = pvalue
-                    if field_name == 'mem_max':
-                        # Single VNFD single VDU for now
-                        vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['memory-mb'] = pvalue
-            ex.vnfd_package_path = output_vnfd_pkg.name
+
+        for pname, pvalue in service_ex.experiment_configurations[ec_index].parameter.items():
+            function_type = parse_ec_parameter_key(pname).get("type")
+            vnf_type = parse_ec_parameter_key(pname).get("function_name")
+            field_name = parse_ec_parameter_key(pname).get("parameter_name")
+            if function_type == "function" and 'mp.' not in vnf_type:
+                if field_name == 'cpu_cores':
+                    # Single VNFD single VDU for now
+                    vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['vcpu-count'] = pvalue
+                if field_name == 'mem_max':
+                    # Single VNFD single VDU for now
+                    vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['vdu'][0]['vm-flavor']['memory-mb'] = pvalue
+        service_ex.experiment_configurations[ec_index].vnfd_package_path = output_vnfd_pkg.name
 
     def _update_output_nsd_pkg(self, original_nsd_archive, output_nsd_stream, service_ex):
         raise NotImplementedError
