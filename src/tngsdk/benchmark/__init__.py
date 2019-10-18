@@ -39,6 +39,7 @@ import time
 import shutil
 import subprocess
 from tngsdk.benchmark.experiment import ServiceExperiment, FunctionExperiment
+from tngsdk.benchmark.osm_experiment import OSMFunctionExperiment, OSMServiceExperiment
 from tngsdk.benchmark.generator.sonata \
                 import SonataServiceConfigurationGenerator
 from tngsdk.benchmark.generator.tango \
@@ -229,13 +230,26 @@ class ProfileManager(object):
         #    .run_id
         #    .project_path
         #    .package_path
-        self.cgen.generate(
-            os.path.join(  # ensure that the reference is an absolute path
-                 os.path.dirname(
-                     self.ped.get("ped_path", "/")),
-                 self.ped.get("service_package")),
-            self.function_experiments,
-            self.service_experiments)
+        if self.args.service_generator == "osm":
+            self.cgen.generate(
+                os.path.join(  # ensure that the reference is an absolute path
+                    os.path.dirname(
+                        self.ped.get("ped_path", "/")),
+                    self.ped.get("service_package")),
+                os.path.join(  # ensure that the reference is an absolute path
+                    os.path.dirname(
+                        self.ped.get("ped_path", "/")),
+                    self.ped.get("function_package")),
+                self.function_experiments,
+                self.service_experiments)
+        else:
+            self.cgen.generate(
+                os.path.join(  # ensure that the reference is an absolute path
+                    os.path.dirname(
+                        self.ped.get("ped_path", "/")),
+                    self.ped.get("service_package")),
+                self.function_experiments,
+                self.service_experiments)
         # display generator statistics
         if not self.args.no_display:
             self.cgen.print_generation_and_packaging_statistics()
@@ -337,24 +351,43 @@ class ProfileManager(object):
         """
         service_experiments = list()
         function_experiments = list()
+        
+        if self.args.service_generator == 'osm':
+            # service experiments
+            for e in input_ped.get("service_experiments", []):
+                if e.get("disabled"):
+                    continue  # skip disabled experiments
+                e_obj = OSMServiceExperiment(
+                    self.args, e, input_ped.get("function_package"))
+                e_obj.populate()
+                service_experiments.append(e_obj)
 
-        # service experiments
-        for e in input_ped.get("service_experiments", []):
-            if e.get("disabled"):
-                continue  # skip disabled experiments
-            e_obj = ServiceExperiment(
-                self.args, e, input_ped.get("service_package"))
-            e_obj.populate()
-            service_experiments.append(e_obj)
+            # function experiments
+            for e in input_ped.get("function_experiments", []):
+                if e.get("disabled"):
+                    continue  # skip disabled experiments
+                e_obj = OSMFunctionExperiment(
+                    self.args, e, input_ped.get("function_package"))
+                e_obj.populate()
+                function_experiments.append(e_obj)
+        else:
+            # service experiments
+            for e in input_ped.get("service_experiments", []):
+                if e.get("disabled"):
+                    continue  # skip disabled experiments
+                e_obj = ServiceExperiment(
+                    self.args, e, input_ped.get("function_package"))
+                e_obj.populate()
+                service_experiments.append(e_obj)
 
-        # function experiments
-        for e in input_ped.get("function_experiments", []):
-            if e.get("disabled"):
-                continue  # skip disabled experiments
-            e_obj = FunctionExperiment(
-                self.args, e, input_ped.get("service_package"))
-            e_obj.populate()
-            function_experiments.append(e_obj)
+            # function experiments
+            for e in input_ped.get("function_experiments", []):
+                if e.get("disabled"):
+                    continue  # skip disabled experiments
+                e_obj = FunctionExperiment(
+                    self.args, e, input_ped.get("function_package"))
+                e_obj.populate()
+                function_experiments.append(e_obj)
 
         return service_experiments, function_experiments
 

@@ -50,24 +50,24 @@ class OSMConnectionManager(object):
         self.password = config.get("password")
         self.project = config.get("project")
     
-        kwargs = {}
+        self.kwargs = {}
 
         if self.username is not None:
-            kwargs['user'] = self.username
+            self.kwargs['user'] = self.username
         if self.password is not None:
-            kwargs['password'] = self.password
+            self.kwargs['password'] = self.password
         if self.project is not None:
-            kwargs['project'] = self.project
+            self.kwargs['project'] = self.project
 
     def connect(self):
-        self.client = client.Client(host=self.hostname, sol005=True, **kwargs)
+        self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
         if self.client:
             return True
         else:
             return False
     
-    def upload_package(self, package_path, ):
+    def upload_package(self, package_path):
         # re-init client
-        self.client = client.Client(host=self.hostname, sol005=True, **kwargs)
+        self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
         self.client.vnfd.create(package_path)
         self.client.vnfd.get('package_name_goes_here')
