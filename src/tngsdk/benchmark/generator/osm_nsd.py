@@ -168,14 +168,15 @@ class OSMServiceConfigurationGenerator(
         service_ex.experiment_configurations[ec_index].vnfd_package_path = output_vnfd_pkg.name
 
     def _update_output_nsd_pkg(self, original_nsd_archive, output_nsd_stream, service_ex):
+        """
+        Updates the output_nsd_stream according to service_ex
+        """
         for pkg_file in original_nsd_archive.getmembers():
             member_name = pkg_file.name
             if member_name.endswith(".yaml") or member_name.endswith(".yml"):
                 member_contents = original_nsd_archive.extractfile(pkg_file)
                 nsd_contents = yaml.safe_load(member_contents)
 
-                #self._configure_vnfd_params(vnfd_contents, service_ex, ec_index, output_vnfd_pkg)
-                #Similar work for nsd to be performed
                 self._add_probes_in_nsd(nsd_contents)
 
                 new_nsd_ti = tarfile.TarInfo(member_name)
@@ -187,64 +188,45 @@ class OSMServiceConfigurationGenerator(
                 output_nsd_stream.addfile(pkg_file, original_nsd_archive.extractfile(pkg_file))
     
     def _add_probes_in_nsd(self, nsd_contents):
-        # Step 1: Adding constituent vnfds for probes
+        """
+        Updates the nsd file contents by adding probe configuration
+        """        
         constituent_vnfd = nsd_contents['nsd:nsd-catalog']['nsd'][0]['constituent-vnfd']
-        cv_length = len(constituent_vnfd)
-        #ip_probe, op_probe = self.constituent_probe_generation(cv_length)
-        constituent_vnfd.append({
-            "member-vnf-index": 0,
-            "vnfd-id-ref": "ubuntu_vnfd",   #Remove hardcoded content
-            #"start-by-default": "true"
-        })
-        constituent_vnfd.append({
-            "member-vnf-index": len(constituent_vnfd),
-            "vnfd-id-ref": "ubuntu_vnfd",   #Remove hardcoded content
-            #"start-by-default": "true"
-        })
+        max_idx=constituent_vnfd[0].get('member-vnf-index')
+        for cv in constituent_vnfd:
+            if cv.get('member-vnf-index') > max_idx:
+                max_idx = cv.get('member-vnf-index')
+        for mp in service_ex[0].experiment_configuration[0].experiment.measurement_points:
+	        mp_name=mp.get(name)
+	        #get mp.vm-name -> image #we dont need this as of now
+            
+            # Step 1: Adding constituent vnfds for probes
+            constituent_vnfd.append({
+                "member-vnf-index": max_idx+1,
+                "vnfd-id-ref": mp_name,   
+                #"start-by-default": "true"
+            })
 
-        #Step 2:Adding probe vnfd connection point reference to vlds
-        vld = nsd_contents['nsd:nsd-catalog']['nsd'][0]['vld']
-        for vld_n in vld:
-            if vld_n.get('vim-network-name')=='mgmt':
-                # Management Network
-                vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
-                vnfd_connection_point_ref.append({
-                    'member-vnf-index-ref': 0,
-                    'vnfd-connection-point-ref': 'eth1-mgmt',
-                    'vnfd-id-ref': 'example_vnfd'
-                })
-                vnfd_connection_point_ref.append({
-                    'member-vnf-index-ref': len(vnfd_connection_point_ref),
-                    'vnfd-connection-point-ref': 'eth1-mgmt',
-                    'vnfd-id-ref': 'example_vnfd'
-                })
-            else:    
-                # Data Network
-                vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
-                vnfd_connection_point_ref.append({
-                    'member-vnf-index-ref': 0,
-                    'vnfd-connection-point-ref': 'eth0-data',
-                    'vnfd-id-ref': 'example_vnfd'
-                })
-                vnfd_connection_point_ref.append({
-                    'member-vnf-index-ref': len(vnfd_connection_point_ref),
-                    'vnfd-connection-point-ref': 'eth0-data',
-                    'vnfd-id-ref': 'example_vnfd'
-                })
-    def _constituent_probe_generation(self, cv_length):
-        """
-        """
-        constituent_probe_template = {
-            "member-vnf-index": 0,
-            "vnfd-id-ref": "ubuntu_vnfd",   #Remove hardcoded content
-            #"start-by-default": "true"
-        }
-        input_constituent_probe = constituent_probe_template
-        input_constituent_probe["member-vnf-index"] = 0
-        output_constituent_probe = constituent_probe_template
-        output_constituent_probe["member-vnf-index"] = cv_length + 1
-        
-        return (input_constituent_probe, output_constituent_probe)
+            #Step 2:Adding probe vnfd connection point reference to vlds
+            vld = nsd_contents['nsd:nsd-catalog']['nsd'][0]['vld']
+            for vld_n in vld:
+                if vld_n.get('vim-network-name')=='mgmt':
+                    # Management Network
+                    vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
+                    vnfd_connection_point_ref.append({
+                        'member-vnf-index-ref': max_idx+1,
+                        'vnfd-connection-point-ref': 'eth1-mgmt',
+                        'vnfd-id-ref': mp_name
+                    })
+                else:    
+                    # Data Network
+                    vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
+                    vnfd_connection_point_ref.append({
+                        'member-vnf-index-ref': max_idx+1,
+                        'vnfd-connection-point-ref': 'eth0-data',
+                        'vnfd-id-ref': mp_name
+                    })
+            max_idx =max_idx+1    
 
     def print_generation_and_packaging_statistics(self):
         print("-" * 80)
