@@ -44,7 +44,7 @@ from tngsdk.benchmark.generator.sonata \
     import SonataServiceConfigurationGenerator
 from tngsdk.benchmark.generator.tango \
     import TangoServiceConfigurationGenerator
-from tngsdk.benchmark.generator.osm_vnfd \
+from tngsdk.benchmark.generator.osm \
     import OSMServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
