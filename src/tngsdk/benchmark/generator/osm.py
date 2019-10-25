@@ -193,30 +193,28 @@ class OSMServiceConfigurationGenerator(
         """
         Updates the nsd file contents by adding probe configuration
         """
-        constituent_vnfd=nsd_contents['nsd:nsd-catalog']['nsd'][0]['constituent-vnfd']
-        max_idx=int(constituent_vnfd[0].get('member-vnf-index'))
+        constituent_vnfd = nsd_contents['nsd:nsd-catalog']['nsd'][0]['constituent-vnfd']
+        max_idx = int(constituent_vnfd[0].get('member-vnf-index'))
         for cv in constituent_vnfd:
-            if int(cv.get('member-vnf-index'))>max_idx:
-                max_idx=int(cv.get('member-vnf-index'))
-            else:
-                LOG.error("Invalidmember-vnf-index")
+            if int(cv.get('member-vnf-index')) > max_idx:
+                max_idx = int(cv.get('member-vnf-index'))
         for mp in service_ex.experiment_configurations[0].experiment.measurement_points:
-            mp_name=mp.get('name')
+            mp_name = mp.get('name')
             # get mp.vm-name->image #we dont need this as of now
             # Step 1 : Adding constituent vnfds for probes
-            constituent_vnfd.append({"member-vnf-index":max_idx+1,"vnfd-id-ref":mp_name})
+            constituent_vnfd.append({"member-vnf-index":max_idx+1, "vnfd-id-ref":mp_name})
             # Step 2 : Adding probe vnfd connection point reference to vlds
-            vld=nsd_contents['nsd:nsd-catalog']['nsd'][0]['vld']
+            vld = nsd_contents['nsd:nsd-catalog']['nsd'][0]['vld']
             for vld_n in vld:
                 if vld_n.get('vim-network-name')=='mgmt':
                     # Management Network
-                    vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
-                    vnfd_connection_point_ref.append({'member-vnf-index-ref':max_idx+1,'vnfd-connection-point-ref':'eth1-mgmt','vnfd-id-ref':mp_name})
+                    vnfd_connection_point_ref = vld_n.get('vnfd-connection-point-ref')
+                    vnfd_connection_point_ref.append({'member-vnf-index-ref':max_idx+1, 'vnfd-connection-point-ref':'eth1-mgmt', 'vnfd-id-ref':mp_name})
                 else:
                     # Data Network
-                    vnfd_connection_point_ref=vld_n.get('vnfd-connection-point-ref')
-                    vnfd_connection_point_ref.append({'member-vnf-index-ref':max_idx+1,'vnfd-connection-point-ref':'eth0-data','vnfd-id-ref':mp_name})
-            max_idx=max_idx+1
+                    vnfd_connection_point_ref = vld_n.get('vnfd-connection-point-ref')
+                    vnfd_connection_point_ref.append({'member-vnf-index-ref':max_idx+1, 'vnfd-connection-point-ref':'eth0-data', 'vnfd-id-ref':mp_name})
+            max_idx = max_idx+1
     def print_generation_and_packaging_statistics(self):
         print("-"*80)
         print("OSM tng-bench: Experiment generation report")
