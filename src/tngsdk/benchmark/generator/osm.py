@@ -185,11 +185,9 @@ class OSMServiceConfigurationGenerator(
                 output_nsd_stream.addfile(tarinfo=new_nsd_ti, fileobj=buffer)
             else:
                 output_nsd_stream.addfile(pkg_file, original_nsd_archive.extractfile(pkg_file))
-        service_ex.experiment_configurations[0].nsd_package_path = output_nsd_stream.name
-        service_ex.experiment_configurations[1].nsd_package_path = output_nsd_stream.name
-        service_ex.experiment_configurations[2].nsd_package_path = output_nsd_stream.name
-        service_ex.experiment_configurations[3].nsd_package_path = output_nsd_stream.name
-        
+        for ec_index in range(len(service_ex.experiment_configurations)):
+            service_ex.experiment_configurations[ec_index].nsd_package_path = output_nsd_stream.name
+
 
     def _add_probes_in_nsd(self,nsd_contents,service_ex):
         """
@@ -207,7 +205,7 @@ class OSMServiceConfigurationGenerator(
             # get mp.vm-name->image #we dont need this as of now
             # Step 1 : Adding constituent vnfds for probes
             constituent_vnfd.append({"member-vnf-index":max_idx+1,"vnfd-id-ref":mp_name})
-            # Step 2 : Adding probe vnfd connection point reference to vlds 
+            # Step 2 : Adding probe vnfd connection point reference to vlds
             vld=nsd_contents['nsd:nsd-catalog']['nsd'][0]['vld']
             for vld_n in vld:
                 if vld_n.get('vim-network-name')=='mgmt':
