@@ -45,9 +45,9 @@ class OsmDriver(object):
         self.conn_mgr = OSMConnectionManager(self.config)
         self.conn_mgr.connect()
         if self.conn_mgr.connect():
-            LOG.info("Connection Established")
+            LOG.info("Connection to OSM Established.")
         else:
-            LOG.error('Connection to OSM failed!')
+            LOG.error('Connection to OSM Failed!')
             raise Exception()
 
     def setup_platform(self):
@@ -55,7 +55,37 @@ class OsmDriver(object):
 
     def setup_experiment(self, ec):
         # package_id = self.conn_mgr.upload_package(package_path)
+        self.ip_addresses=[]
+        try:
+            self.conn_mgr.upload_vnfd_package(ec.vnfd_package_path)
+        except:
+            pass #TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+        try:
+            self.conn_mgr.upload_nsd_package(ec.nsd_package_path)
+        except:
+            pass #TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+
+        self.nsi_uuid=(self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
+        # Instantiate the NSD
+        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstacl-VIM-2', wait=True) #TODO Remove hardcoded VIM account name
+
+        ns = self.conn_mgr.client.ns.get(ec.name) #TODO Remove dependency of null NS instances present in OSM
+        for vnf_ref in ns.get('constituent-vnfr-ref'):
+            vnf_desc = self.conn_mgr.client.vnf.get(vnf_ref)
+            for vdur in vnf_desc.get('vdur'):
+                for interfaces in vdur.get('interfaces'):
+                    if interfaces.get('mgmt-vnf')==None:
+                        self.ip_addresses.append(interfaces.get('ip-address'))
+        print(self.ip_addresses)
+        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
+        
+
+    def execute_experiment(self, ec):
         pass
+
+    def teardown_experiment(self, ec):
+        self.conn_mgr.client.ns.delete(ec.name, wait=True)
+        LOG.info("Deleted service: {}".format(self.nsi_uuid))
 
     def instantiate_service(self, uuid):
         pass

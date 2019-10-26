@@ -151,6 +151,7 @@ class OSMServiceConfigurationGenerator(
         """
         Update the YAML VNFD contents
         """
+        vnfd_yaml['vnfd:vnfd-catalog']['vnfd'][0]['name']=service_ex.experiment_configurations[ec_index].name
         for pname, pvalue in service_ex.experiment_configurations[ec_index].parameter.items():
             function_type = parse_ec_parameter_key(pname).get("type")
             vnf_type = parse_ec_parameter_key(pname).get("function_name")
@@ -177,6 +178,7 @@ class OSMServiceConfigurationGenerator(
                 nsd_contents = yaml.safe_load(member_contents)
 
                 self._add_probes_in_nsd(nsd_contents,service_ex)
+                nsd_contents['nsd:nsd-catalog']['nsd'][0]['name']=service_ex.name
 
                 new_nsd_ti = tarfile.TarInfo(member_name)
                 new_nsd_stream = yaml.dump(nsd_contents).encode('utf8')
@@ -187,7 +189,6 @@ class OSMServiceConfigurationGenerator(
                 output_nsd_stream.addfile(pkg_file, original_nsd_archive.extractfile(pkg_file))
         for ec_index in range(len(service_ex.experiment_configurations)):
             service_ex.experiment_configurations[ec_index].nsd_package_path = output_nsd_stream.name
-
 
     def _add_probes_in_nsd(self,nsd_contents,service_ex):
         """
@@ -215,6 +216,7 @@ class OSMServiceConfigurationGenerator(
                     vnfd_connection_point_ref = vld_n.get('vnfd-connection-point-ref')
                     vnfd_connection_point_ref.append({'member-vnf-index-ref':max_idx+1, 'vnfd-connection-point-ref':'eth0-data', 'vnfd-id-ref':mp_name})
             max_idx = max_idx+1
+
     def print_generation_and_packaging_statistics(self):
         print("-"*80)
         print("OSM tng-bench: Experiment generation report")
