@@ -178,7 +178,7 @@ class OSMServiceConfigurationGenerator(
                 nsd_contents = yaml.safe_load(member_contents)
 
                 self._add_probes_in_nsd(nsd_contents,service_ex)
-                # nsd_contents['nsd:nsd-catalog']['nsd'][0]['name']=service_ex.experiment_configurations[0].name
+                nsd_contents['nsd:nsd-catalog']['nsd'][0]['name']=service_ex.name
 
                 new_nsd_ti = tarfile.TarInfo(member_name)
                 new_nsd_stream = yaml.dump(nsd_contents).encode('utf8')

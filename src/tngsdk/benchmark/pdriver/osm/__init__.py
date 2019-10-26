@@ -65,9 +65,9 @@ class OsmDriver(object):
         except:
             pass #TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
 
-        self.uuid=(self.conn_mgr.client.nsd.get('example_1vnf_ns').get('_id')) #TODO Remove hardcoded nsd name
+        self.nsi_uuid=(self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
         # Instantiate the NSD
-        self.conn_mgr.client.ns.create(self.uuid, ec.name, 'openstacl-VIM-2', wait=True) #TODO Remove hardcoded VIM account name
+        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstacl-VIM-2', wait=True) #TODO Remove hardcoded VIM account name
 
         ns = self.conn_mgr.client.ns.get(ec.name) #TODO Remove dependency of null NS instances present in OSM
         for vnf_ref in ns.get('constituent-vnfr-ref'):
@@ -77,15 +77,15 @@ class OsmDriver(object):
                     if interfaces.get('mgmt-vnf')==None:
                         self.ip_addresses.append(interfaces.get('ip-address'))
         print(self.ip_addresses)
-
-        # LOG.info("Instantiated service: {}".format(self.nsi_uuid))
-        pass
+        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
+        
 
     def execute_experiment(self, ec):
         pass
 
     def teardown_experiment(self, ec):
-        pass
+        self.conn_mgr.client.ns.delete(ec.name, wait=True)
+        LOG.info("Deleted service: {}".format(self.nsi_uuid))
 
     def instantiate_service(self, uuid):
         pass
