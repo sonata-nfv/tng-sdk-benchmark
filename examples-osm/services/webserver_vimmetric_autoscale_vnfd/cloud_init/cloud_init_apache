@@ -1,0 +1,5 @@
+#cloud-config
+hostname: apachevdu
+password: osm2018
+chpasswd: { expire: False }
+ssh_pwauth: True

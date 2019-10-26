@@ -1,0 +1,138 @@
+vnfd:vnfd-catalog:
+  vnfd:
+  - id: webserver_vimmetric_autoscale_vnf
+    name: webserver_vimmetric_autoscale_vnf
+    short-name: webserver_vimmetric_autoscale_vnf
+    description: Scaling web server with load balancer and metrics
+    vendor: Whitestack
+    version: '2.1'    
+    connection-point:
+    - name: haproxy_mgmt
+      type: VPORT
+    - name: haproxy_public
+      type: VPORT
+    - name: apache_mgmt
+      type: VPORT
+    ip-profiles:
+    - name: servsub
+      description: Services Subnet
+      ip-profile-params:
+        ip-version: ipv4
+        gateway-address: 0.0.0.0
+        subnet-address: 192.168.28.0/28
+        dhcp-params:
+          enabled: true
+    internal-vld:
+    - id: internal_services
+      ip-profile-ref: servsub
+      internal-connection-point:
+      - id-ref: haproxy_private
+        ip-address: 192.168.28.2
+      - id-ref: apache_service
+      name: internal_services
+      short-name: internal_services
+      type: ELAN
+    mgmt-interface:
+      cp: haproxy_mgmt
+    vdu:
+    - id: haproxy_vdu
+      name: haproxy_vdu 
+      cloud-init-file: cloud_init_haproxy
+      count: '1'
+      description: haproxy_vdu     
+      image: haproxy_ubuntu
+      interface:
+      - external-connection-point-ref: haproxy_public
+        name: haproxy_vdu_eth1
+        position: '1'
+        type: EXTERNAL
+        virtual-interface:
+          type: VIRTIO        
+      - external-connection-point-ref: haproxy_mgmt
+        mgmt-interface: true
+        name: haproxy_vdu_eth0
+        position: '2'
+        type: EXTERNAL
+        virtual-interface:
+          type: VIRTIO
+      - internal-connection-point-ref: haproxy_private
+        name: haproxy_vdu_eth2
+        position: '3'
+        type: INTERNAL
+        virtual-interface:
+          type: VIRTIO
+      internal-connection-point:
+      - id: haproxy_private
+        name: haproxy_private
+        short-name: haproxy_private
+        type: VPORT
+      vm-flavor:
+        memory-mb: '4096'
+        storage-gb: '10'
+        vcpu-count: '4'
+    - id: apache_vdu
+      name: apache_vdu
+      image: apache_ubuntu
+      cloud-init-file: cloud_init_apache
+      count: '1'
+      description: apache_vdu
+      interface:
+      - external-connection-point-ref: apache_mgmt
+        mgmt-interface: true
+        name: apache_vdu_eth0
+        position: '1'
+        type: EXTERNAL
+        virtual-interface:
+          type: VIRTIO        
+      - internal-connection-point-ref: apache_service
+        name: apache_vdu_eth1
+        position: '2'
+        type: INTERNAL
+        virtual-interface:
+          type: VIRTIO
+      internal-connection-point:
+      - id: apache_service
+        name: apache_service
+        short-name: apache_service
+        type: VPORT
+      vm-flavor:
+        memory-mb: '1024'
+        storage-gb: '10'
+        vcpu-count: '1'
+      monitoring-param:
+            - id: "apache_cpu_util"
+              nfvi-metric: "cpu_utilization"
+            - id: "apache_memory_util"
+              nfvi-metric: "average_memory_utilization"              
+    scaling-group-descriptor:
+    -   name: "apache_vdu_autoscale"
+        min-instance-count: 0
+        max-instance-count: 10
+        scaling-policy:
+        -   name: "apache_cpu_util_above_threshold"
+            scaling-type: "automatic"
+            threshold-time: 10
+            cooldown-time: 180
+            scaling-criteria:
+            -   name: "apache_cpu_util_above_threshold"
+                scale-in-threshold: 20
+                scale-in-relational-operation: "LT"
+                scale-out-threshold: 80
+                scale-out-relational-operation: "GT"
+                vnf-monitoring-param-ref: "apache_vnf_cpu_util"
+        vdu:
+        -   vdu-id-ref: apache_vdu
+            count: 1
+    monitoring-param:
+    -   id: "apache_vnf_cpu_util"
+        name: "apache_vnf_cpu_util"
+        aggregation-type: AVERAGE
+        vdu-monitoring-param:
+          vdu-ref: "apache_vdu"
+          vdu-monitoring-param-ref: "apache_cpu_util"
+    -   id: "apache_vnf_memory_util"
+        name: "apache_vnf_memory_util"
+        aggregation-type: AVERAGE
+        vdu-monitoring-param:
+          vdu-ref: "apache_vdu"
+          vdu-monitoring-param-ref: "apache_memory_util"          
