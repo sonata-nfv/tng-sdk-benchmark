@@ -31,6 +31,9 @@
 # partner consortium (www.5gtango.eu).
 from tngsdk.benchmark.pdriver.osm.conn_mgr import OSMConnectionManager
 from tngsdk.benchmark.logger import TangoLogger
+from tngsdk.benchmark.helper import parse_ec_parameter_key
+import paramiko
+import time
 LOG = TangoLogger.getLogger(__name__)
 
 
@@ -55,37 +58,96 @@ class OsmDriver(object):
 
     def setup_experiment(self, ec):
         # package_id = self.conn_mgr.upload_package(package_path)
-        self.ip_addresses=[]
-        try:
-            self.conn_mgr.upload_vnfd_package(ec.vnfd_package_path)
-        except:
-            pass #TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
-        try:
-            self.conn_mgr.upload_nsd_package(ec.nsd_package_path)
-        except:
-            pass #TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+        pass
+        # self.ip_addresses = []
+        # try:
+        #     self.conn_mgr.upload_vnfd_package(ec.vnfd_package_path)
+        # except:
+        #     pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+        # try:
+        #     self.conn_mgr.upload_nsd_package(ec.nsd_package_path)
+        # except:
+        #     pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
 
-        self.nsi_uuid=(self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
-        # Instantiate the NSD
-        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstacl-VIM-2', wait=True) #TODO Remove hardcoded VIM account name
+        # self.nsi_uuid = (self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
+        # # Instantiate the NSD
+        # # TODO Remove hardcoded VIM account name
+        # self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstacl-VIM-2', wait=True)
 
-        ns = self.conn_mgr.client.ns.get(ec.name) #TODO Remove dependency of null NS instances present in OSM
-        for vnf_ref in ns.get('constituent-vnfr-ref'):
-            vnf_desc = self.conn_mgr.client.vnf.get(vnf_ref)
-            for vdur in vnf_desc.get('vdur'):
-                for interfaces in vdur.get('interfaces'):
-                    if interfaces.get('mgmt-vnf')==None:
-                        self.ip_addresses.append(interfaces.get('ip-address'))
-        print(self.ip_addresses)
-        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
-        
+        # ns = self.conn_mgr.client.ns.get(ec.name)  # TODO Remove dependency of null NS instances present in OSM
+        # for vnf_ref in ns.get('constituent-vnfr-ref'):
+        #     vnf_desc = self.conn_mgr.client.vnf.get(vnf_ref)
+        #     for vdur in vnf_desc.get('vdur'):
+        #         for interfaces in vdur.get('interfaces'):
+        #             if interfaces.get('mgmt-vnf')==None:
+        #                 self.ip_addresses.append(interfaces.get('ip-address'))
+        # print(self.ip_addresses)
+        # LOG.info("Instantiated service: {}".format(self.nsi_uuid))
 
     def execute_experiment(self, ec):
-        pass
+
+        """
+        @Bhuvan:
+        IP Addresses should be similar to this format
+        self.ip_addresses = {
+            "example_vnfd-VM": {
+                "mgmt": "172.X.X.X",
+                "data": "192.X.X.X",
+            },
+            "input_probe": {
+                "mgmt": "172.x.x.x",
+                "data": "192.x.x.x"
+            }
+        }
+        """
+        self.ip_addresses = {
+            "example_vnfd-VM": {
+                "mgmt": "172.X.X.X",
+                "data": "192.X.X.X",
+            },
+            "mp.input": {
+                "mgmt": "172.x.x.x",
+                "data": "192.x.x.x"
+            }
+        }
+        self.ssh_clients = {}
+        vnf_username = self.config.get('main_vm_username')
+        vnf_password = self.config.get('main_vm_password')
+        probe_username = self.config.get('probe_username')
+        probe_password = self.config.get('probe_password')
+
+        # Begin executing commands
+        for ex_p in ec.experiment.experiment_parameters:
+            cmd_start = ex_p['cmd_start']
+            function = ex_p['function']
+            self.ssh_clients[function] = paramiko.SSHClient()
+            self.ssh_clients[function].set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            if function.beginswith('mp.'):
+                self.ssh_clients[function].connect(self.ip_addresses[function]['mgmt'], username=probe_username,
+                                                   password=probe_password)
+            else:
+                self.ssh_clients[function].connect(self.ip_addresses[function]['mgmt'], username=vnf_username,
+                                                   password=vnf_password)
+            stdin, stdout, stderr = self.ssh_clients[function].exec_command(cmd_start)
+            LOG.info(stdout)
+            LOG.info(f"Executing start command {cmd_start}")
 
     def teardown_experiment(self, ec):
+        for ex_p in ec.experiment.experiment_parameters:
+            cmd_stop = ex_p['cmd_stop']
+            function = ex_p['function']
+            self.ssh_clients[function] = paramiko.SSHClient()
+            self.ssh_clients[function].set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            stdin, stdout, stderr = self.ssh_clients[function].exec_command(cmd_stop)
+            LOG.info(f"Executing stop command {cmd_stop}")
+            LOG.info(stdout)
+        LOG.info("Sleeping for 20 before destroying NS")
+        time.sleep(20)
         self.conn_mgr.client.ns.delete(ec.name, wait=True)
         LOG.info("Deleted service: {}".format(self.nsi_uuid))
+
+    def teardown_platform(self, ec):
+        pass
 
     def instantiate_service(self, uuid):
         pass

@@ -13,6 +13,10 @@ description: "This is an example profiling experiment testing cirros VM."
 # Path to the network service we want to profile (relative from PED location)
 service_package: "../services/example-ns-1vnf-any/example_ns.tar.gz"
 function_package: "../services/example-ns-1vnf-any/example_vnf.tar.gz"
+vnf_username: "ubuntu"
+vnf_password: "osm4u"
+probe_username: "ubuntu"
+probe_password: "osm4u"
 
 # Experiment definition
 service_experiments:
@@ -28,10 +32,6 @@ service_experiments:
       version: "0.1"
     # additional containers for traffic generation/measurements (measurement points)
     measurement_points:
-      - name: "mp.output"
-        connection_point: "ns:output"
-        vm-name: "benchmarking-vm-name"
-        # Address of data interface to be set automatically
       - name: "mp.input"
         connection_point: "ns:input"
         vm-name: "benchmarking-vm-name"
