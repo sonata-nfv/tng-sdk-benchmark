@@ -70,10 +70,8 @@ class OSMConnectionManager(object):
         # re-init client
         self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
         self.client.vnfd.create(package_path)
-        
-    
-    def upload_nsd_package(self, package_path, package_name = None):
+
+    def upload_nsd_package(self, package_path, package_name=None):
         # re-init client
         self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
         self.client.nsd.create(package_path)
-    
