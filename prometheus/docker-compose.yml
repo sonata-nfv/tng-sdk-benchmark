@@ -36,15 +36,7 @@
 #
 
 version: '3.3'
-
-#volumes:
-#    prometheus_data: {}
-
-networks:
-  tng-bench-mon:
-
 services:
-
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -59,6 +51,10 @@ services:
       - 9090:9090
     #links:
     #depends_on:
-    networks:
-      - tng-bench-mon
+    # networks:
+    #   - tng-bench-mon
     restart: always
+
+# Custom network
+# networks:
+#   tng-bench-mon:
