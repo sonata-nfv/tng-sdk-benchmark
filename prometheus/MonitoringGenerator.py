@@ -10,6 +10,7 @@ class PrometheusGen():
     """ Generate monitoring configuration for prometheus """
 
     def __init__(self):
+    # def __init__(self, file_path):
         # self.file_path = file_path
         # self.file_contents = self.load_file(self.file_path)
         self.default_scrape_interval = '2s'
@@ -28,20 +29,24 @@ class PrometheusGen():
         self.result["global"] = self.prometheus_global 
 
     def generate(self):
+        """
+        todo - write to a file
+        """
         self.add_global_config()
         pp.pprint(self.result)
 
-    def new_static_job(self, job):
+    def add_static_job(self, job):
         """
         @job - dictionary
         {@name - string, @targets - list or string }
         """
         job_conf = {
-            "job_name": job.name,
+            "job_name": job["name"],
             "static_configs": [
-                    { "targets": job.targets }
+                    { "targets": job["targets"] }
                 ]
         }
+        pp.pprint(job_conf)
         self.result["scrape_configs"].append(job_conf)
 
     def load_file(self, file_path):
@@ -52,18 +57,66 @@ class PrometheusGen():
             except yaml.YAMLError as exc:
                 print(exc)
 
-    def add_static_host(self, ip):
-        pass
+    def add_openstack_dynamic_monitoring(self):
+        """
+        Dynamic openstack monitoring querying nova API
+        todo - use openstack infor from tng-bench
+        """
+    # - job_name: 'openstack'
+    #     openstack_sd_configs:
+    #   - identity_endpoint: http://fgcn-of-2.cs.upb.de/horizon/identity
+    #     username: admin
+    #     project_name: admin
+    #     password: ADMIN_PASS
+    #     role: instance
+    #     region: RegionOne
+    #     domain_name: Default
+        job_config = {
+            "job_name": "openstack",
+            "openstack_sd_configs": [
+                {
+                    "identity_endpoint": "http://fgcn-backflip9.cs.uni-paderborn.de/identity",
+                    "password": "admin",
+                    "username": "admin",
+                    "project_name": "admin",
+                    "region": "RegionOne",
+                    "role": "instance"
+                }
+            ],
+            "relabel_configs": [
+                {
+                    'action': 'keep',
+                    'regex': 'ACTIVE',
+                    'source_labels': ['__meta_openstack_instance_status']
+                }
+            ]
+        }
+        pp.pprint(job_config)
+        self.result["scrape_configs"].append(job_config)
 
-    def add_openstack_dynamic_monitoring(self, openstack_object):
-        pass
 
     def write_file(self, filename):
         pass
 
 if __name__ == '__main__':
-    # file = '/home/avi/REPO/tng-sdk-benchmark/prometheus/prometheus.yml'
+    file = '/home/avi/REPO/tng-sdk-benchmark/prometheus/prometheus.yml'
+    vnf1 = {
+        "name": "vnf1",
+        "targets": "192.169.1.10"
+    }
+    vnf2 = {
+        "name": "2-vnfs",
+        "targets": ["192.169.1.12", "192.169.1.11"]
+    }
+    openstack = {
+        ""
+    }
+
+    # TEST
     config = PrometheusGen()
+    # config = PrometheusGen(file)
+    config.add_static_job(vnf1)
+    config.add_static_job(vnf2)
+    config.add_openstack_dynamic_monitoring()
     config.generate()
-    # config.new_static_job()
     # pp.pprint(config.file_contents)
