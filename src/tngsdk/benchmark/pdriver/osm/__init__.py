@@ -57,59 +57,40 @@ class OsmDriver(object):
         return True  # for now
 
     def setup_experiment(self, ec):
-        # package_id = self.conn_mgr.upload_package(package_path)
-        pass
-        # self.ip_addresses = []
-        # try:
-        #     self.conn_mgr.upload_vnfd_package(ec.vnfd_package_path)
-        # except:
-        #     pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
-        # try:
-        #     self.conn_mgr.upload_nsd_package(ec.nsd_package_path)
-        # except:
-        #     pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+        self.ip_addresses = {}
+        try:
+            self.conn_mgr.upload_vnfd_package(ec.vnfd_package_path)
+        except:
+            LOG.debug("Could not upload vnfd package")
+            pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
+        try:
+            self.conn_mgr.upload_nsd_package(ec.nsd_package_path)
+        except:
+            LOG.debug("Could not upload nsd package")
+            pass # TODO Handle properly: In a sophisticated (empty) platform, it should give no error.
 
-        # self.nsi_uuid = (self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
-        # # Instantiate the NSD
-        # # TODO Remove hardcoded VIM account name
-        # self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstacl-VIM-2', wait=True)
+        self.nsi_uuid = (self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
+        # Instantiate the NSD
+        # TODO Remove hardcoded VIM account name
+        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'OS-DS-BF9', wait=True)
 
-        # ns = self.conn_mgr.client.ns.get(ec.name)  # TODO Remove dependency of null NS instances present in OSM
-        # for vnf_ref in ns.get('constituent-vnfr-ref'):
-        #     vnf_desc = self.conn_mgr.client.vnf.get(vnf_ref)
-        #     for vdur in vnf_desc.get('vdur'):
-        #         for interfaces in vdur.get('interfaces'):
-        #             if interfaces.get('mgmt-vnf')==None:
-        #                 self.ip_addresses.append(interfaces.get('ip-address'))
+        ns = self.conn_mgr.client.ns.get(ec.name)  # TODO Remove dependency of null NS instances present in OSM
+        for vnf_ref in ns.get('constituent-vnfr-ref'):
+            vnf_desc = self.conn_mgr.client.vnf.get(vnf_ref)
+            for vdur in vnf_desc.get('vdur'):
+                self.ip_addresses[vdur.get('vdu-id-ref')]={}
+                for interfaces in vdur.get('interfaces'):
+                    if interfaces.get('mgmt-vnf')==None:
+                        self.ip_addresses[vdur.get('vdu-id-ref')]['mgmt']=interfaces.get('ip-address')
+                    else:
+                        self.ip_addresses[vdur.get('vdu-id-ref')]['data']=interfaces.get('ip-address')
         # print(self.ip_addresses)
-        # LOG.info("Instantiated service: {}".format(self.nsi_uuid))
+        LOG.info("Instantiated service: {}".format(self.nsi_uuid))
 
     def execute_experiment(self, ec):
 
         """
-        @Bhuvan:
-        IP Addresses should be similar to this format
-        self.ip_addresses = {
-            "example_vnfd-VM": {
-                "mgmt": "172.X.X.X",
-                "data": "192.X.X.X",
-            },
-            "input_probe": {
-                "mgmt": "172.x.x.x",
-                "data": "192.x.x.x"
-            }
-        }
         """
-        self.ip_addresses = {
-            "example_vnfd-VM": {
-                "mgmt": "172.X.X.X",
-                "data": "192.X.X.X",
-            },
-            "mp.input": {
-                "mgmt": "172.x.x.x",
-                "data": "192.x.x.x"
-            }
-        }
         self.ssh_clients = {}
         vnf_username = self.config.get('main_vm_username')
         vnf_password = self.config.get('main_vm_password')
@@ -122,7 +103,7 @@ class OsmDriver(object):
             function = ex_p['function']
             self.ssh_clients[function] = paramiko.SSHClient()
             self.ssh_clients[function].set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            if function.beginswith('mp.'):
+            if function.startswith('mp.'):
                 self.ssh_clients[function].connect(self.ip_addresses[function]['mgmt'], username=probe_username,
                                                    password=probe_password)
             else:
