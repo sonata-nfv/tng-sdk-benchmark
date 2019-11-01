@@ -34,6 +34,7 @@ from tngsdk.benchmark.logger import TangoLogger
 from tngsdk.benchmark.helper import parse_ec_parameter_key
 import paramiko
 import time
+from tngsdk.benchmark.helper import write_yaml
 LOG = TangoLogger.getLogger(__name__)
 
 
@@ -54,7 +55,22 @@ class OsmDriver(object):
             raise Exception()
 
     def setup_platform(self):
-        return True  # for now
+        vim_access={}
+        vim_access['vim-type'] = "openstack"
+        vim_access['description'] = "description"
+        vim_access['vim-url'] = "http://fgcn-backflip9.cs.upb.de/identity/v3"
+        vim_access['vim-username'] = "admin"
+        vim_access['vim-password'] = "admin"
+        vim_access['vim-tenant-name'] = "admin"
+
+        vim_config = {"use_floating_ip":True}
+        write_yaml('/tmp/temp_vim_config.yaml', vim_config)
+        vim_access['config']=open(r'/tmp/temp_vim_config.yaml')
+        try:
+            self.conn_mgr.client.vim.create("openstack-site", vim_access, wait=True)
+        except:
+            pass
+
 
     def setup_experiment(self, ec):
         self.ip_addresses = {}
@@ -72,7 +88,7 @@ class OsmDriver(object):
         self.nsi_uuid = (self.conn_mgr.client.nsd.get(ec.experiment.name).get('_id'))
         # Instantiate the NSD
         # TODO Remove hardcoded VIM account name
-        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'OS-DS-BF9', wait=True)
+        self.conn_mgr.client.ns.create(self.nsi_uuid, ec.name, 'openstack-site', wait=True)
 
         ns = self.conn_mgr.client.ns.get(ec.name)  # TODO Remove dependency of null NS instances present in OSM
         for vnf_ref in ns.get('constituent-vnfr-ref'):
@@ -128,7 +144,7 @@ class OsmDriver(object):
         LOG.info("Deleted service: {}".format(self.nsi_uuid))
 
     def teardown_platform(self, ec):
-        pass
+        self.conn_mgr.client.vim.delete("trial_vim")
 
     def instantiate_service(self, uuid):
         pass
