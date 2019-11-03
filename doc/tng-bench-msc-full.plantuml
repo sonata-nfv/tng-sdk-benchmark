@@ -1,0 +1,163 @@
+title tng-bench
+
+activate main
+main->main:parse_args()
+main->main:setup_logging()
+activate main
+main->main:reconfigure_all_tango_loggers()
+deactivate main
+
+main->ProfileManager:__init__()
+activate ProfileManager
+ProfileManager->ProfileManager:getLogger()
+main->ProfileManager:run()
+ProfileManager->ProfileManager:check_rd_existence()
+ProfileManager->ProfileManager:populate_experiments()
+
+activate ProfileManager
+ProfileManager->ProfileManager:_validate_ped_file()
+ProfileManager->ProfileManager:_generate_experiment_specifications()
+activate ProfileManager
+ProfileManager->ServiceExperiment:__init__()
+activate ServiceExperiment
+ProfileManager<--ServiceExperiment:return obj
+ProfileManager->ServiceExperiment:populate()
+ProfileManager<--ServiceExperiment:
+deactivate ServiceExperiment
+ProfileManager->FunctionExperiment:__init__()
+activate FunctionExperiment
+ProfileManager<--FunctionExperiment:return obj
+ProfileManager->FunctionExperiment:populate()
+ProfileManager<--FunctionExperiment:return obj
+deactivate FunctionExperiment
+deactivate ProfileManager
+deactivate ProfileManager
+
+ProfileManager->ProfileManager:load_generator()
+activate ProfileManager
+activate TangoServiceConfigurationGenerator
+ProfileManager->TangoServiceConfigurationGenerator:__init__()
+ProfileManager<--TangoServiceConfigurationGenerator: return cgen
+deactivate ProfileManager
+
+ProfileManager->ProfileManager:generate_experiments()
+activate ProfileManager
+ProfileManager->TangoServiceConfigurationGenerator:generate()
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_generate_projects()
+activate TangoServiceConfigurationGenerator
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_copy_project()
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_gather_project_infos()
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_add_mps_to_project()
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_add_params_to_project()
+TangoServiceConfigurationGenerator->TangoServiceConfigurationGenerator:_package_project()
+ProfileManager<--TangoServiceConfigurationGenerator:
+deactivate TangoServiceConfigurationGenerator
+alt not args.no_display
+ProfileManager->ProfileManager:print_generation_and_packaging_statistics()
+end
+deactivate ProfileManager
+
+alt not self.args.no_prometheus
+ProfileManager->ProfileManager:start_prometheus_monitoring()
+end
+
+ProfileManager->ProfileManager:execute_experiments()
+activate ProfileManager
+ProfileManager->Executor:__init__()
+activate Executor
+Executor->Executor:_load_pdriver()
+activate Executor
+Executor->VimEmuDriver:__init__()
+activate VimEmuDriver
+
+VimEmuDriver->EmuSrvClient:__init__()
+activate EmuSrvClient
+VimEmuDriver<--EmuSrvClient:return emusrvc
+
+VimEmuDriver->LLCMClient:__init__()
+activate LLCMClient
+VimEmuDriver<--LLCMClient:return llcmc
+
+VimEmuDriver->EmuDockerClient:__init__()
+activate EmuDockerClient
+VimEmuDriver<--EmuDockerClient:return emudocker
+
+Executor<--VimEmuDriver:return obj
+deactivate Executor
+
+ProfileManager<--Executor:return exe
+
+ProfileManager->Executor:setup()
+Executor->VimEmuDriver:setup_platform()
+VimEmuDriver->EmuSrvClient:check_platform_ready()
+VimEmuDriver<--EmuSrvClient:
+Executor<--VimEmuDriver:
+ProfileManager<--Executor:
+
+ProfileManager->Executor:run()
+Executor->Executor:_write_experiment_configuration()
+Executor->VimEmuDriver:setup_experiment()
+VimEmuDriver->EmuSrvClient:start_emulation()
+VimEmuDriver<--EmuSrvClient:
+VimEmuDriver->EmuSrvClient:wait_emulation_ready()
+VimEmuDriver<--EmuSrvClient:
+VimEmuDriver->LLCMClient:upload_package()
+VimEmuDriver<--LLCMClient:
+VimEmuDriver->LLCMClient:instantiate_service()
+VimEmuDriver<--LLCMClient:
+Executor<--VimEmuDriver:
+
+Executor->VimEmuDriver:execute_experiment
+VimEmuDriver->VimEmuDriver:_collect_vnf_commands()
+VimEmuDriver->EmuDockerClient:execute()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->VimEmuDriver:_wait_experiment()
+VimEmuDriver->EmuDockerClient:execute()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->VimEmuDriver:_collect_experiment_results
+activate VimEmuDriver
+VimEmuDriver->EmuDockerClient:list_emu_containers()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->EmuDockerClient:copy_folder()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->EmuDockerClient:list_emu_containers()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->EmuDockerClient:store_logs()
+VimEmuDriver<--EmuDockerClient:
+VimEmuDriver->LLCMClient:store_stats()
+VimEmuDriver<--LLCMClient:
+VimEmuDriver->VimEmuDriver:_store_times()
+deactivate VimEmuDriver
+Executor<--VimEmuDriver:
+
+Executor->VimEmuDriver:teardown_experiment()
+VimEmuDriver->EmuSrvClient:stop_emulation()
+VimEmuDriver<--EmuSrvClient:
+Executor<--VimEmuDriver:
+
+ProfileManager<--Executor:
+ProfileManager->Executor:teardown()
+Executor->VimEmuDriver:teardown_platform()
+Executor<--VimEmuDriver:
+
+ProfileManager<--Executor:
+
+deactivate ProfileManager
+ProfileManager->ProfileManager:process_results()
+activate ProfileManager
+ProfileManager->IetfBmwgResultProcessor:__init__()
+activate IetfBmwgResultProcessor
+ProfileManager<--IetfBmwgResultProcessor:return obj
+ProfileManager->VimemuResultProcessor:__init__()
+activate VimemuResultProcessor
+ProfileManager<--VimemuResultProcessor:return obj
+ProfileManager->IetfBmwgResultProcessor:run()
+ProfileManager<--IetfBmwgResultProcessor:
+ProfileManager->VimemuResultProcessor:run()
+ProfileManager<--VimemuResultProcessor:
+
+deactivate ProfileManager
+ProfileManager->ProfileManager:copy_ped()
+alt not self.args.no_prometheus
+ProfileManager->ProfileManager:stop_prometheus_monitoring()
+end

@@ -48,7 +48,7 @@ from tngsdk.benchmark.generator.osm \
     import OSMServiceConfigurationGenerator
 from tngsdk.benchmark.executor import Executor
 from tngsdk.benchmark.helper import read_yaml, get_prometheus_path
-from tngsdk.benchmark.resultprocessor.ietfbmwg import IetfBmwgResultProcessor
+from tngsdk.benchmark.ietf import IetfBmwgVnfBD_Generator
 from tngsdk.benchmark.resultprocessor.vimemu import VimemuResultProcessor
 from tngsdk.benchmark.logger import TangoLogger
 
@@ -273,7 +273,7 @@ class ProfileManager(object):
             return
         # create result prcessor
         rp_list = list()
-        rp_list.append(IetfBmwgResultProcessor(
+        rp_list.append(IetfBmwgVnfBD_Generator(
             self.args, self.service_experiments))
         rp_list.append(VimemuResultProcessor(
             self.args, self.service_experiments))

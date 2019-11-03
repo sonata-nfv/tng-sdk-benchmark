@@ -4,7 +4,7 @@ set -e
 # Can be used to check code before pushing.
 
 # check style early
-flake8 --exclude .eggs --exclude venv --exclude build
+flake8 --exclude .eggs,venv,build,src/tngsdk/benchmark/ietf/vnf_bd.py
 # local test
 pytest -v
 # build container
