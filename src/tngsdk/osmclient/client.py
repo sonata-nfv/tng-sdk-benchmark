@@ -19,8 +19,8 @@
 OSM client entry point
 """
 
-from osmclient.v1 import client as client
-from osmclient.sol005 import client as sol005client
+from tngsdk.osmclient.v1 import client as client
+from tngsdk.osmclient.sol005 import client as sol005client
 
 
 def Client(version=1, host=None, sol005=False, *args, **kwargs):

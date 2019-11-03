@@ -84,7 +84,8 @@ class Executor(object):
             "run_id": ec.run_id,
             "parameter": ec.parameter,
             "project_path": ec.project_path,
-            # "package_path": ec.package_path #TODO This statement is for VIMEMU but is creating problem for OSM, find some workaround
+            # "package_path": ec.package_path #TODO This statement is for VIMEMU but is creating problem for OSM,
+            # find some workaround
         }
         with open(dst_path, "w") as f:
             json.dump(data, f)

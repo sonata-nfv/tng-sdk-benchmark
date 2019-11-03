@@ -19,22 +19,22 @@ OSM SOL005 client API
 """
 
 #from osmclient.v1 import vca
-from osmclient.sol005 import vnfd
-from osmclient.sol005 import nsd
-from osmclient.sol005 import nst
-from osmclient.sol005 import nsi
-from osmclient.sol005 import ns
-from osmclient.sol005 import vnf
-from osmclient.sol005 import vim
-from osmclient.sol005 import wim
-from osmclient.sol005 import package
-from osmclient.sol005 import http
-from osmclient.sol005 import sdncontroller
-from osmclient.sol005 import project as projectmodule
-from osmclient.sol005 import user as usermodule
-from osmclient.sol005 import role
-from osmclient.sol005 import pdud
-from osmclient.common.exceptions import ClientException
+from tngsdk.osmclient.sol005 import vnfd
+from tngsdk.osmclient.sol005 import nsd
+from tngsdk.osmclient.sol005 import nst
+from tngsdk.osmclient.sol005 import nsi
+from tngsdk.osmclient.sol005 import ns
+from tngsdk.osmclient.sol005 import vnf
+from tngsdk.osmclient.sol005 import vim
+from tngsdk.osmclient.sol005 import wim
+from tngsdk.osmclient.sol005 import package
+from tngsdk.osmclient.sol005 import http
+from tngsdk.osmclient.sol005 import sdncontroller
+from tngsdk.osmclient.sol005 import project as projectmodule
+from tngsdk.osmclient.sol005 import user as usermodule
+from tngsdk.osmclient.sol005 import role
+from tngsdk.osmclient.sol005 import pdud
+from tngsdk.osmclient.common.exceptions import ClientException
 import json
 
 

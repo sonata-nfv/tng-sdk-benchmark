@@ -33,8 +33,8 @@
 import requests
 from tngsdk.benchmark.logger import TangoLogger
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-from osmclient import client
-from osmclient.common.exceptions import ClientException
+from tngsdk.osmclient import client
+from tngsdk.osmclient.common.exceptions import ClientException
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 LOG = TangoLogger.getLogger(__name__)
 
@@ -69,9 +69,9 @@ class OSMConnectionManager(object):
     def upload_vnfd_package(self, package_path):
         # re-init client
         self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
-        self.client.vnfd.create(package_path)
+        return self.client.vnfd.create(package_path)
 
     def upload_nsd_package(self, package_path, package_name=None):
         # re-init client
         self.client = client.Client(host=self.hostname, sol005=True, **self.kwargs)
-        self.client.nsd.create(package_path)
+        return self.client.nsd.create(package_path)
