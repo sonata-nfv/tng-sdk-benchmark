@@ -169,7 +169,7 @@ class EmuDockerMonitor(threading.Thread):
             self.recorded_stats.append((time.time(),
                                         self.client.get_stats()))
             # wait
-            time.sleep(1.0/MONITORING_RATE)
+            time.sleep(1.0 / MONITORING_RATE)
         LOG.debug("Recorded {} Docker stats records"
                   .format(len(self.recorded_stats)))
 

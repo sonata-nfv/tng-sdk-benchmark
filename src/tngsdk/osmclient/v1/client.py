@@ -18,15 +18,15 @@
 OSM v1 client API
 """
 
-from osmclient.v1 import vnf
-from osmclient.v1 import vnfd
-from osmclient.v1 import ns
-from osmclient.v1 import nsd
-from osmclient.v1 import vim
-from osmclient.v1 import package
-from osmclient.v1 import vca
-from osmclient.v1 import utils
-from osmclient.common import http
+from tngsdk.osmclient.v1 import vnf
+from tngsdk.osmclient.v1 import vnfd
+from tngsdk.osmclient.v1 import ns
+from tngsdk.osmclient.v1 import nsd
+from tngsdk.osmclient.v1 import vim
+from tngsdk.osmclient.v1 import package
+from tngsdk.osmclient.v1 import vca
+from tngsdk.osmclient.v1 import utils
+from tngsdk.osmclient.common import http
 
 
 class Client(object):

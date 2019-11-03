@@ -17,7 +17,7 @@
 from io import BytesIO
 import pycurl
 import json
-from osmclient.common import http
+from tngsdk.osmclient.common import http
 
 class Http(http.Http):
 

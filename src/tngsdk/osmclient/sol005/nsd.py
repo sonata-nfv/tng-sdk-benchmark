@@ -18,9 +18,9 @@
 OSM nsd API handling
 """
 
-from osmclient.common.exceptions import NotFound
-from osmclient.common.exceptions import ClientException
-from osmclient.common import utils
+from tngsdk.osmclient.common.exceptions import NotFound
+from tngsdk.osmclient.common.exceptions import ClientException
+from tngsdk.osmclient.common import utils
 import json
 import magic
 from os.path import basename
@@ -165,7 +165,7 @@ class Nsd(object):
             if not resp or 'id' not in resp:
                 raise ClientException('unexpected response from server - {}'.format(
                                       resp))
-            print(resp['id'])
+            return resp['id']
         elif http_code == 204:
             print('Updated')
         else:

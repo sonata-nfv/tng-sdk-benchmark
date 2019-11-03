@@ -18,9 +18,9 @@
 OSM package API handling
 """
 
-from osmclient.common.exceptions import ClientException
-from osmclient.common.exceptions import NotFound
-from osmclient.common import utils
+from tngsdk.osmclient.common.exceptions import ClientException
+from tngsdk.osmclient.common.exceptions import NotFound
+from tngsdk.osmclient.common import utils
 
 
 class Package(object):

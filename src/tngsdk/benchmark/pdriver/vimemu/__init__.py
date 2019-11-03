@@ -248,8 +248,8 @@ class VimEmuDriver(object):
         if param_unit_name is None:  # case (a)
             param_unit_name = "vdu01"  # FIXME thus we use "vdu01" as default
         return "{}.{}.0".format(  # FIXME assumes single service instance ".0"
-                ec.function_ids.get(
-                    param_func_name, param_func_name), param_unit_name)
+            ec.function_ids.get(
+                param_func_name, param_func_name), param_unit_name)
 
     def _experiment_wait_time(self, ec):
         time_limit = int(ec.parameter.get("ep::header::all::time_limit", 0))
