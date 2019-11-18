@@ -48,6 +48,8 @@ virtual_deployment_units:
     description: ""
     vm_image: "{{ image }}"
     vm_image_format: "docker"
+    ipc_mode: null #"shareable"
+    devices: [] #["/dev/net/tun"]  # list of device strings
     resource_requirements:
       cpu:
         vcpus: null

@@ -263,6 +263,10 @@ class TangoServiceConfigurationGenerator(
         vnfd["name"] = mp.get("name")
         # allow different containers as parameter study
         vnfd["virtual_deployment_units"][0]["vm_image"] = mp.get("container")
+        # add additional parameters (if present)
+        vnfd["virtual_deployment_units"][0]["ipc_mode"] = mp.get("ipc_mode",
+                                                                 None)
+        vnfd["virtual_deployment_units"][0]["devices"] = mp.get("devices", [])
         # add manually defined data interface address
         if mp.get("address"):
             for cp in vnfd["connection_points"]:
