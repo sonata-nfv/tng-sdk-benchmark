@@ -90,7 +90,7 @@ class VimemuResultProcessor(object):
                 row.update(self._collect_ecs(rd))
                 row.update(self._collect_times(rd))
                 row.update(self._collect_container_results(rd))
-            except FileNotFoundError as ex:
+            except IOError as ex:
                 LOG.error("Result corrupted: {}".format(ex))
             rows.append(row)
         # to Pandas
@@ -106,7 +106,7 @@ class VimemuResultProcessor(object):
                      .format(idx + 1, len(rdlist)))
             try:
                 rows.extend(self._collect_ts_container_monitoring(rd))
-            except FileNotFoundError as ex:
+            except IOError as ex:
                 LOG.error("Result corrupted: {}".format(ex))
         # to Pandas
         return pd.DataFrame(rows)

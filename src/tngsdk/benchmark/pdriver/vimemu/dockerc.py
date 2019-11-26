@@ -132,7 +132,7 @@ class EmuDockerClient(object):
             with open(dst_path, "w") as f:
                 # can be emtpy since we do not use Docker's default CMD ep.
                 f.write(str(c.logs()))
-        except FileNotFoundError as ex:
+        except IOError as ex:
             LOG.warning("Could not store logs to {}: {}".format(dst_path, ex))
 
     def get_stats(self):
