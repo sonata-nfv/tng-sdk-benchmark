@@ -74,6 +74,14 @@ def parse_args(input_args=None):
         action="store_true")
 
     parser.add_argument(
+        "--learning",
+        help="Enable learning switch for E-LANs.",
+        required=False,
+        default=False,
+        dest="learning",
+        action="store_true")
+
+    parser.add_argument(
         "--address",
         help="Listen address of REST API."
         + "\nDefault: 0.0.0.0",
@@ -166,7 +174,8 @@ class EmulationEndpoint(Resource):
         app.emulation_process = mp.Process(
             target=start_emulation,
             args=(app.emulation_process_queue,
-                  app.emulation_process_running, ))  # (arg1,)
+                  app.emulation_process_running,
+                  app.cliargs, ))  # (arg1,)
         app.emulation_process.start()
         return True, 201
 
@@ -188,8 +197,8 @@ class EmulationEndpoint(Resource):
         return app.emulation_process is not None, 200
 
 
-def start_emulation(ipc_queue, ipc_running):
-    t = EmulatorProfilingTopology()
+def start_emulation(ipc_queue, ipc_running, cliargs):
+    t = EmulatorProfilingTopology(cliargs)
     t.start()
     print("{} Emulation running ..."
           .format(datetime.datetime.now()))
@@ -219,14 +228,16 @@ def stop_emulation():
 
 class EmulatorProfilingTopology(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, args):
+        self.args = args
 
     def start(self):
         LOG.info("Starting emulation ...")
+        LOG.info("Args: {}".format(self.args))
         setLogLevel('info')  # set Mininet loglevel
         # create topology
-        self.net = DCNetwork(monitor=False, enable_learning=False)
+        self.net = DCNetwork(monitor=False,
+                             enable_learning=self.args.learning)
         # we only need one DC for benchmarking
         dc = self.net.addDatacenter("dc1")
         # add the command line interface endpoint to each DC (REST API)
