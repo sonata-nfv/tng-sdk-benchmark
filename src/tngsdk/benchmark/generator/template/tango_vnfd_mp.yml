@@ -50,6 +50,7 @@ virtual_deployment_units:
     vm_image_format: "docker"
     ipc_mode: null #"shareable"
     devices: [] #["/dev/net/tun"]  # list of device strings
+    cap_add: [] # list of strings
     resource_requirements:
       cpu:
         vcpus: null

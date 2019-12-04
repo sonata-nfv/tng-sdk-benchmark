@@ -267,6 +267,7 @@ class TangoServiceConfigurationGenerator(
         vnfd["virtual_deployment_units"][0]["ipc_mode"] = mp.get("ipc_mode",
                                                                  None)
         vnfd["virtual_deployment_units"][0]["devices"] = mp.get("devices", [])
+        vnfd["virtual_deployment_units"][0]["cap_add"] = mp.get("cap_add", [])
         # add manually defined data interface address
         if mp.get("address"):
             for cp in vnfd["connection_points"]:
