@@ -48,7 +48,7 @@ See https://sndzoo.github.io for more details.
 
 setup(name='tngsdk.benchmark',
       license='Apache License, Version 2.0',
-      version='5.0.0',
+      version='5.1',
       url='https://github.com/sonata-nfv/tng-sdk-benchmark',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
