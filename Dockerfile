@@ -41,7 +41,7 @@ RUN pip install tngsdk.project
 RUN pip install tngsdk.package
 ADD . /tng-sdk-benchmark
 WORKDIR /tng-sdk-benchmark
-RUN python setup.py install
+RUN python setup.py develop
 
 #
 # Runtime
