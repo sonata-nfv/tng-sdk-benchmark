@@ -37,9 +37,11 @@ FROM python:3.6-slim
 RUN apt-get update && apt-get install -y git build-essential
 RUN pip install flake8
 RUN pip install tavern  # fix (try to remove once the tavern installation is not broken anymore)
+RUN pip install tngsdk.project
+RUN pip install tngsdk.package
 ADD . /tng-sdk-benchmark
 WORKDIR /tng-sdk-benchmark
-RUN python setup.py install
+RUN python setup.py develop
 
 #
 # Runtime

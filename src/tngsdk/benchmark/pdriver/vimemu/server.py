@@ -42,19 +42,16 @@ import multiprocessing as mp
 import time
 import signal
 import datetime
-import platform
 from ctypes import c_bool
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
 from gevent.pywsgi import WSGIServer
-# Hotfix:
-if "2.7" in str(platform.python_version()):
-    # pylint: disable=E0402
-    from emuvim.dcemulator.net import DCNetwork
-    from mininet.log import setLogLevel
-    from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
-    from emuvim.api.tango import TangoLLCMEndpoint
+# pylint: disable=E0402
+from emuvim.dcemulator.net import DCNetwork
+from mininet.log import setLogLevel
+from emuvim.api.rest.rest_api_endpoint import RestApiEndpoint
+from emuvim.api.tango import TangoLLCMEndpoint
 
 
 LOG = logging.getLogger(__name__)
