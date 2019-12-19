@@ -49,20 +49,25 @@
         creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
     - name: "Install: vim-emu setup.py"
       become: yes
-      shell: "python setup.py install"
+      shell: "python3 setup.py install"
       args:
         chdir: "{{ install_base_path }}/vim-emu"
         creates: "/usr/local/bin/vim-emu"  # skip if vim-emu is there
+    - name: "Install: tng-sdk-project (using pip3)"
+      become: yes
+      shell: "pip3 install tngsdk.project"
+    - name: "Install: tng-sdk-package (using pip3)"
+      become: yes
+      shell: "pip3 install tngsdk.package"
     - name: "Install: Git clone tng-sdk-benchmark (for emusrv component)"
       git:
         repo: "https://github.com/sonata-nfv/tng-sdk-benchmark.git"
         dest: "{{ install_base_path }}/tng-sdk-benchmark"
     - name: "Install: tng-sdk-benchmark setup.py"
       become: yes
-      shell: "python setup.py install"
+      shell: "python3 setup.py install"
       args:
         chdir: "{{ install_base_path }}/tng-sdk-benchmark"
-        # creates: "/usr/local/bin/tng-bench-emusrv"  # deatctivated: always use latest code from master
     - name: "Install: Pulling example Docker images"
       become: yes
       shell: |
