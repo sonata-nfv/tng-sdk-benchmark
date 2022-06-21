@@ -9,7 +9,7 @@ coloredlogs
 requests
 gevent==1.4.0
 docker
-numpy==1.16
+numpy==1.22.0
 pandas==0.24
 flatten-dict
 pyangbind
