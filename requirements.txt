@@ -7,7 +7,7 @@ pyaml
 jsonschema
 coloredlogs
 requests
-gevent==1.4.0
+gevent==23.9.1
 docker
 numpy==1.16
 pandas==0.24
